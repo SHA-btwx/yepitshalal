@@ -17,6 +17,27 @@ function toTriState(value: FormDataEntryValue | null): boolean | null {
   return null;
 }
 
+const UK_POSTCODE_REGEX = /([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\b/i;
+
+// Free, keyless, no billing risk (postcodes.io is an open-data UK government-backed
+// service) — used to place the pin at the right place instead of a London-centre
+// placeholder. Falls back to that placeholder if no postcode is found or the
+// lookup fails; the admin corrects it during verification either way.
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  const match = address.match(UK_POSTCODE_REGEX);
+  if (!match) return null;
+  const postcode = `${match[1]}${match[2]}`;
+  try {
+    const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json?.status !== 200 || !json?.result) return null;
+    return { lat: json.result.latitude, lng: json.result.longitude };
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
   const form = await request.formData();
 
@@ -31,6 +52,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Restaurant name and address are required.' }, { status: 400 });
   }
 
+  const geocoded = await geocodeAddress(address);
+
   const supabase = createServerSupabase();
 
   const { data: restaurant, error: restaurantError } = await supabase
@@ -43,9 +66,12 @@ export async function POST(request: Request) {
       website_url: String(form.get('website') ?? '') || null,
       halal_classification: 'unverified',
       data_source: 'owner_submitted',
-      // London-centre placeholder until the admin confirms exact coordinates during verification —
-      // geocoding a free-text address is a later enhancement, not required to accept the submission.
-      location: 'SRID=4326;POINT(-0.1278 51.5074)',
+      // Geocoded from a UK postcode in the submitted address when possible; falls back
+      // to a London-centre placeholder (the admin corrects it during verification) when
+      // no postcode was found or the lookup failed.
+      location: geocoded
+        ? `SRID=4326;POINT(${geocoded.lng} ${geocoded.lat})`
+        : 'SRID=4326;POINT(-0.1278 51.5074)',
     })
     .select('id, slug')
     .single();
