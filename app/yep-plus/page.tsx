@@ -40,6 +40,19 @@ export default function YepPlusPage({
           Halal info is always free for everyone. Yep+ just removes the distance limit and unlocks
           member-only deals.
         </p>
+        <p className="mx-auto mt-4 flex max-w-md items-center justify-center gap-2 text-sm font-medium text-ink/70">
+          <span aria-hidden>🍲</span>
+          Every Yep+ subscription funds a meal through{' '}
+          <a
+            href="https://sharethemeal.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-accent underline-offset-2 hover:text-ink"
+          >
+            ShareTheMeal
+          </a>
+          , the UN World Food Programme&apos;s hunger charity.
+        </p>
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">

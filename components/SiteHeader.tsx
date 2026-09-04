@@ -16,6 +16,12 @@ export async function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
+            href="/discover"
+            className="rounded-full px-3 py-1.5 text-sm font-medium text-ink/70 hover:bg-black/5"
+          >
+            Discover
+          </Link>
+          <Link
             href="/submit-restaurant"
             className="hidden rounded-full px-3 py-1.5 text-sm font-medium text-ink/70 hover:bg-black/5 sm:block"
           >
