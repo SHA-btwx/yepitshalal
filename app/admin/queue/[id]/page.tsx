@@ -1,30 +1,62 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { publishVerification } from '@/lib/admin-actions';
+import { HalalBadge } from '@/components/HalalBadge';
+import { ArrowUpRightIcon, InfoIcon } from '@/components/icons';
+import {
+  AdminPage,
+  Panel,
+  Field,
+  Tag,
+  QueueStatusTag,
+  FIELD,
+  BUTTON,
+} from '@/components/admin/ui';
+import type { HalalClassification, TriState } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-const FIELD_CLASS = 'rounded-lg border border-black/10 px-3 py-2 text-sm';
-
-function TriSelect({ name, label, defaultValue }: { name: string; label: string; defaultValue?: boolean | null }) {
+function TriSelect({
+  name,
+  label,
+  defaultValue,
+}: {
+  name: string;
+  label: string;
+  defaultValue?: TriState;
+}) {
   const value = defaultValue === true ? 'yes' : defaultValue === false ? 'no' : 'unknown';
   return (
-    <label className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-ink/70">{label}</span>
-      <select name={name} defaultValue={value} className={FIELD_CLASS}>
+    <div className="flex items-center justify-between gap-4">
+      <label htmlFor={name} className="text-sm text-ink/80">
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        defaultValue={value}
+        className={`${FIELD} w-auto min-w-[7.5rem] shrink-0`}
+      >
         <option value="yes">Yes</option>
         <option value="no">No</option>
         <option value="unknown">Unknown</option>
       </select>
-    </label>
+    </div>
   );
+}
+
+function claimValue(v: TriState): string {
+  return v === true ? 'Yes' : v === false ? 'No' : 'Unknown';
 }
 
 export default async function ReviewVerificationPage({ params }: { params: { id: string } }) {
   const supabase = createAdminSupabase();
   const { data: request } = await supabase
     .from('verification_requests')
-    .select('id, queue_type, status, contact_name, contact_email, restaurant_id, restaurants(id, name, slug, halal_classification)')
+    .select(
+      'id, queue_type, status, contact_name, contact_email, restaurant_id, restaurants(id, name, slug, halal_classification)'
+    )
     .eq('id', params.id)
     .maybeSingle();
 
@@ -42,68 +74,137 @@ export default async function ReviewVerificationPage({ params }: { params: { id:
     id: string;
     name: string;
     slug: string;
-    halal_classification: string;
+    halal_classification: HalalClassification;
   };
 
   const publishWithId = publishVerification.bind(null, request.id);
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="font-display text-2xl font-semibold text-ink">{restaurant.name}</h1>
-      <p className="text-sm text-ink/55">
-        {request.queue_type === 'priority' ? '£30 Priority' : 'Free'} request · currently{' '}
-        <strong>{restaurant.halal_classification}</strong>
-      </p>
-
-      {claim && (
-        <div className="mt-5 rounded-2xl border border-black/10 bg-white p-4 text-sm">
-          <h2 className="font-semibold text-ink">Restaurant&apos;s own claim</h2>
-          <p className="mt-1 text-ink/60">
-            All meat halal: {String(claim.all_meat_halal)} · Non-halal meat:{' '}
-            {String(claim.serves_non_halal_meat)} · Pork: {String(claim.serves_pork)} · Alcohol:{' '}
-            {String(claim.serves_alcohol)} · Certified: {String(claim.has_certification)}{' '}
-            {claim.certification_body ? `(${claim.certification_body})` : ''}
-          </p>
-          {claim.evidence_note && <p className="mt-1 text-ink/50">{claim.evidence_note}</p>}
-        </div>
-      )}
-
-      <form action={publishWithId} className="mt-6 space-y-4 rounded-2xl border border-black/10 bg-white p-5">
-        <h2 className="font-semibold text-ink">Verified facts</h2>
-        <TriSelect name="all_meat_halal" label="All meat halal?" defaultValue={claim?.all_meat_halal} />
-        <TriSelect name="serves_non_halal_meat" label="Serves non-halal meat?" defaultValue={claim?.serves_non_halal_meat} />
-        <TriSelect name="serves_pork" label="Serves pork?" defaultValue={claim?.serves_pork} />
-        <TriSelect name="serves_alcohol" label="Serves alcohol?" defaultValue={claim?.serves_alcohol} />
-        <TriSelect name="has_certification" label="Halal certified?" defaultValue={claim?.has_certification} />
-        <input
-          name="certification_body"
-          defaultValue={claim?.certification_body ?? ''}
-          placeholder="Certification body"
-          className={`${FIELD_CLASS} w-full`}
-        />
-        <textarea
-          name="notes"
-          placeholder="Internal verification notes (never shown publicly)"
-          className={`${FIELD_CLASS} w-full`}
-          rows={3}
-        />
-
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-ink">Classification</label>
-          <select name="classification" required className={`${FIELD_CLASS} w-full`}>
-            <option value="fully_halal">🟢 Fully Halal</option>
-            <option value="halal_options">🟡 Halal Options</option>
-            <option value="unverified">⚪ Unable to Verify</option>
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-ink"
+    <AdminPage
+      title={restaurant.name}
+      width="sm"
+      description={
+        <span className="flex flex-wrap items-center gap-2">
+          <Tag tone={request.queue_type === 'priority' ? 'ink' : 'neutral'}>
+            {request.queue_type === 'priority' ? '£30 Priority' : 'Free'}
+          </Tag>
+          <QueueStatusTag status={request.status} />
+          <span className="text-muted">currently</span>
+          <HalalBadge classification={restaurant.halal_classification} size="sm" />
+        </span>
+      }
+      action={
+        <Link
+          href={`/restaurant/${restaurant.slug}`}
+          className="inline-flex min-h-[36px] items-center gap-1 rounded-full px-2.5 text-sm font-semibold text-accent-ink transition hover:bg-accent-soft"
         >
-          Publish result
-        </button>
-      </form>
-    </div>
+          View listing
+          <ArrowUpRightIcon className="h-4 w-4" />
+        </Link>
+      }
+    >
+      <div className="space-y-5">
+        {claim && (
+          <Panel title="Restaurant's own claim">
+            <div className="px-5 py-4">
+              <p className="flex items-start gap-2 text-xs leading-relaxed text-muted">
+                <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
+                What the owner told us. Not evidence — check it, don&apos;t copy it.
+              </p>
+              <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+                {[
+                  ['All meat halal', claim.all_meat_halal],
+                  ['Non-halal meat', claim.serves_non_halal_meat],
+                  ['Pork', claim.serves_pork],
+                  ['Alcohol', claim.serves_alcohol],
+                  ['Certified', claim.has_certification],
+                ].map(([label, value]) => (
+                  <div key={label as string} className="flex justify-between gap-3 border-b border-line py-1 last:border-0 sm:border-0">
+                    <dt className="text-muted">{label as string}</dt>
+                    <dd className="font-medium text-ink">{claimValue(value as TriState)}</dd>
+                  </div>
+                ))}
+              </dl>
+              {claim.certification_body && (
+                <p className="mt-2 text-sm text-ink/80">
+                  Certification body: <strong className="font-semibold">{claim.certification_body}</strong>
+                </p>
+              )}
+              {claim.evidence_note && (
+                <p className="mt-2 rounded-xl bg-black/[0.03] px-3 py-2 text-sm leading-relaxed text-ink/80">
+                  {claim.evidence_note}
+                </p>
+              )}
+            </div>
+          </Panel>
+        )}
+
+        <form action={publishWithId}>
+          <Panel title="Verified facts">
+            <div className="space-y-4 px-5 py-4">
+              <TriSelect
+                name="all_meat_halal"
+                label="All meat halal?"
+                defaultValue={claim?.all_meat_halal}
+              />
+              <TriSelect
+                name="serves_non_halal_meat"
+                label="Serves non-halal meat?"
+                defaultValue={claim?.serves_non_halal_meat}
+              />
+              <TriSelect
+                name="serves_pork"
+                label="Serves pork?"
+                defaultValue={claim?.serves_pork}
+              />
+              <TriSelect
+                name="serves_alcohol"
+                label="Serves alcohol?"
+                defaultValue={claim?.serves_alcohol}
+              />
+              <TriSelect
+                name="has_certification"
+                label="Halal certified?"
+                defaultValue={claim?.has_certification}
+              />
+
+              <Field label="Certification body" htmlFor="certification_body">
+                <input
+                  id="certification_body"
+                  name="certification_body"
+                  defaultValue={claim?.certification_body ?? ''}
+                  placeholder="e.g. HMC, HFA"
+                  className={FIELD}
+                />
+              </Field>
+
+              <Field
+                label="Internal notes"
+                htmlFor="notes"
+                hint="Never shown publicly — what you checked and how."
+              >
+                <textarea id="notes" name="notes" rows={3} className={FIELD} />
+              </Field>
+
+              <Field
+                label="Classification"
+                htmlFor="classification"
+                hint="This is the label the public sees. Unverified means we could not confirm — never that a place isn't halal."
+              >
+                <select id="classification" name="classification" required className={FIELD}>
+                  <option value="fully_halal">Fully Halal</option>
+                  <option value="halal_options">Halal Options</option>
+                  <option value="unverified">Unable to Verify</option>
+                </select>
+              </Field>
+
+              <button type="submit" className={`${BUTTON} w-full`}>
+                Publish result
+              </button>
+            </div>
+          </Panel>
+        </form>
+      </div>
+    </AdminPage>
   );
 }

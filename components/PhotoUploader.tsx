@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { PlusIcon } from './icons';
 
 export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
   const router = useRouter();
@@ -16,7 +17,9 @@ export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
     const supabase = createClient();
     const path = `${restaurantId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
 
-    const { error: uploadError } = await supabase.storage.from('restaurant-photos').upload(path, file);
+    const { error: uploadError } = await supabase.storage
+      .from('restaurant-photos')
+      .upload(path, file);
     if (uploadError) {
       setUploading(false);
       setError(uploadError.message);
@@ -39,7 +42,7 @@ export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
   }
 
   return (
-    <div>
+    <div className="text-right">
       <input
         ref={inputRef}
         type="file"
@@ -54,11 +57,16 @@ export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="rounded-full border border-black/15 px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-ink/40 disabled:opacity-60"
+        className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-line bg-white px-3.5 text-xs font-semibold text-ink transition hover:border-ink/30 disabled:opacity-60"
       >
-        {uploading ? 'Uploading…' : '+ Upload photo'}
+        <PlusIcon className="h-3.5 w-3.5" />
+        {uploading ? 'Uploading…' : 'Upload photo'}
       </button>
-      {error && <p className="mt-1 text-xs text-halal-partial">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-1 text-xs font-medium text-halal-partialInk">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

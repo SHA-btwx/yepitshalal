@@ -1,71 +1,141 @@
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { createOffer, deleteOffer } from '@/lib/admin-actions';
+import { ConfirmSubmitButton } from '@/components/admin/ConfirmSubmitButton';
+import { TrashIcon } from '@/components/icons';
+import { AdminPage, Panel, List, Row, Field, Tag, FIELD, BUTTON } from '@/components/admin/ui';
 
 export const dynamic = 'force-dynamic';
 
-const FIELD_CLASS = 'w-full rounded-lg border border-black/10 px-3 py-2 text-sm';
+export const metadata = { title: 'Yep+ offers' };
+
+interface OfferRow {
+  id: string;
+  title: string;
+  description: string | null;
+  yep_plus_only: boolean;
+  is_early_access: boolean;
+  voucher_code: string | null;
+  restaurants: { name: string } | null;
+}
 
 export default async function AdminOffersPage() {
   const supabase = createAdminSupabase();
   const [{ data: offers }, { data: restaurants }] = await Promise.all([
     supabase
       .from('offers')
-      .select('id, title, description, yep_plus_only, is_early_access, voucher_code, restaurants(name)')
+      .select(
+        'id, title, description, yep_plus_only, is_early_access, voucher_code, restaurants(name)'
+      )
       .order('created_at', { ascending: false }),
     supabase.from('restaurants').select('id, name').order('name'),
   ]);
 
+  const rows = (offers ?? []) as unknown as OfferRow[];
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="font-display text-2xl font-semibold text-ink">Yep+ offers</h1>
-      <p className="text-sm text-ink/55">
-        The basic concept only — no redemption/payment system. Voucher codes are hidden from
-        non-Yep+ users automatically via <code>offers_public</code>.
-      </p>
+    <AdminPage
+      title="Yep+ offers"
+      description={
+        <>
+          The basic concept only — no redemption or payment system. Voucher codes are hidden
+          from non-Yep+ users automatically via <code className="rounded bg-black/[0.06] px-1 py-0.5 font-mono text-[0.8em]">offers_public</code>.
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <Panel title="New offer">
+          <form action={createOffer} className="space-y-4 px-5 py-4">
+            <Field label="Title" htmlFor="offer-title">
+              <input
+                id="offer-title"
+                name="title"
+                required
+                placeholder="e.g. 20% off your bill"
+                className={FIELD}
+              />
+            </Field>
 
-      <form action={createOffer} className="mt-6 space-y-3 rounded-2xl border border-black/10 bg-white p-5">
-        <h2 className="font-semibold text-ink">New offer</h2>
-        <input name="title" required placeholder="Title — e.g. 20% off your bill" className={FIELD_CLASS} />
-        <textarea name="description" placeholder="Description" className={FIELD_CLASS} rows={2} />
-        <select name="restaurant_id" className={FIELD_CLASS}>
-          <option value="">Platform-wide (no specific restaurant)</option>
-          {(restaurants ?? []).map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-        </select>
-        <input name="voucher_code" placeholder="Voucher code (optional)" className={FIELD_CLASS} />
-        <div className="flex items-center gap-4 text-sm text-ink/70">
-          <label className="flex items-center gap-1.5">
-            <input type="checkbox" name="yep_plus_only" defaultChecked /> Yep+ exclusive
-          </label>
-          <label className="flex items-center gap-1.5">
-            <input type="checkbox" name="is_early_access" /> Early access
-          </label>
-        </div>
-        <button className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-accent-ink">
-          Create offer
-        </button>
-      </form>
+            <Field label="Description" htmlFor="offer-description">
+              <textarea id="offer-description" name="description" rows={2} className={FIELD} />
+            </Field>
 
-      <div className="mt-6 divide-y divide-black/5 rounded-2xl border border-black/10 bg-white">
-        {(offers ?? []).map((o: any) => (
-          <div key={o.id} className="flex items-center justify-between gap-3 p-4">
-            <div className="min-w-0">
-              <p className="font-medium text-ink">{o.title}</p>
-              <p className="text-xs text-ink/45">
-                {o.restaurants?.name ?? 'Platform-wide'} · {o.yep_plus_only ? 'Yep+ only' : 'All users'}
-                {o.is_early_access ? ' · Early access' : ''}
-              </p>
-            </div>
-            <form action={deleteOffer.bind(null, o.id)}>
-              <button className="text-xs font-medium text-halal-partial hover:underline">Delete</button>
-            </form>
-          </div>
-        ))}
-        {(offers ?? []).length === 0 && <p className="p-4 text-sm text-ink/40">No offers yet.</p>}
+            <Field
+              label="Restaurant"
+              htmlFor="offer-restaurant"
+              hint="Leave as platform-wide to show the offer everywhere."
+            >
+              <select id="offer-restaurant" name="restaurant_id" className={FIELD}>
+                <option value="">Platform-wide (no specific restaurant)</option>
+                {(restaurants ?? []).map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Voucher code" htmlFor="offer-voucher" hint="Optional.">
+              <input id="offer-voucher" name="voucher_code" className={FIELD} />
+            </Field>
+
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-medium text-ink">Visibility</legend>
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink/80">
+                <label className="inline-flex min-h-[36px] items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="yep_plus_only"
+                    defaultChecked
+                    className="h-4 w-4 accent-accent-ink"
+                  />
+                  Yep+ exclusive
+                </label>
+                <label className="inline-flex min-h-[36px] items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="is_early_access"
+                    className="h-4 w-4 accent-accent-ink"
+                  />
+                  Early access
+                </label>
+              </div>
+            </fieldset>
+
+            <button type="submit" className={BUTTON}>
+              Create offer
+            </button>
+          </form>
+        </Panel>
+
+        <Panel title="All offers" action={<Tag>{rows.length}</Tag>}>
+          <List empty="No offers yet.">
+            {rows.map((o) => (
+              <Row key={o.id}>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-ink">{o.title}</p>
+                  <p className="truncate text-xs text-muted">
+                    {o.restaurants?.name ?? 'Platform-wide'}
+                    {o.voucher_code ? ` · code ${o.voucher_code}` : ''}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {o.yep_plus_only ? <Tag tone="ink">Yep+ only</Tag> : <Tag>All users</Tag>}
+                  {o.is_early_access && <Tag tone="accent">Early access</Tag>}
+                  <form action={deleteOffer.bind(null, o.id)}>
+                    <ConfirmSubmitButton
+                      message={`Delete the offer “${o.title}”? This cannot be undone.`}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-halal-partialInk transition hover:bg-halal-partialSoft"
+                    >
+                      <TrashIcon className="h-[18px] w-[18px]" />
+                      <span className="sr-only">Delete offer</span>
+                    </ConfirmSubmitButton>
+                  </form>
+                </div>
+              </Row>
+            ))}
+          </List>
+        </Panel>
       </div>
-    </div>
+    </AdminPage>
   );
 }

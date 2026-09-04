@@ -1,7 +1,25 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { ArrowRightIcon } from '@/components/icons';
+import { AdminPage, Panel, List, Row, Tag, QueueStatusTag } from '@/components/admin/ui';
 
 export const dynamic = 'force-dynamic';
+
+interface QueueRequest {
+  id: string;
+  queue_type: string;
+  status: string;
+  entered_queue_at: string;
+  contact_email: string | null;
+  restaurants: { name: string; slug: string } | null;
+}
+
+function daysWaiting(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days === 0) return 'today';
+  if (days === 1) return '1 day';
+  return `${days} days`;
+}
 
 export default async function AdminQueuePage() {
   const supabase = createAdminSupabase();
@@ -12,41 +30,74 @@ export default async function AdminQueuePage() {
     .order('queue_type', { ascending: false })
     .order('entered_queue_at', { ascending: true });
 
-  const priority = (requests ?? []).filter((r) => r.queue_type === 'priority');
-  const free = (requests ?? []).filter((r) => r.queue_type === 'free');
+  const all = (requests ?? []) as unknown as QueueRequest[];
+  const priority = all.filter((r) => r.queue_type === 'priority');
+  const free = all.filter((r) => r.queue_type === 'free');
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="font-display text-2xl font-semibold text-ink">Verification queue</h1>
-
-      <Section title={`Priority (${priority.length})`} requests={priority} />
-      <Section title={`Free (${free.length})`} requests={free} />
-    </div>
+    <AdminPage
+      title="Verification queue"
+      description={`${all.length} open request${all.length === 1 ? '' : 's'} — priority first, then oldest.`}
+      width="lg"
+    >
+      <div className="space-y-5">
+        <Section
+          title="Priority"
+          tone="ink"
+          count={priority.length}
+          requests={priority}
+          empty="No priority requests waiting."
+        />
+        <Section
+          title="Free"
+          count={free.length}
+          requests={free}
+          empty="No free requests waiting."
+        />
+      </div>
+    </AdminPage>
   );
 }
 
-function Section({ title, requests }: { title: string; requests: any[] }) {
+function Section({
+  title,
+  count,
+  requests,
+  empty,
+  tone = 'neutral',
+}: {
+  title: string;
+  count: number;
+  requests: QueueRequest[];
+  empty: string;
+  tone?: 'ink' | 'neutral';
+}) {
   return (
-    <div className="mt-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/50">{title}</h2>
-      <div className="mt-2 divide-y divide-black/5 rounded-2xl border border-black/10 bg-white">
-        {requests.length === 0 && <p className="p-4 text-sm text-ink/40">Nothing here right now.</p>}
+    <Panel title={title} action={<Tag tone={tone}>{count}</Tag>}>
+      <List empty={empty}>
         {requests.map((r) => (
-          <Link
-            key={r.id}
-            href={`/admin/queue/${r.id}`}
-            className="flex items-center justify-between p-4 text-sm hover:bg-black/[0.02]"
-          >
-            <div>
-              <p className="font-medium text-ink">{r.restaurants?.name ?? 'Unknown restaurant'}</p>
-              <p className="text-xs text-ink/45">
-                {r.status} · entered {new Date(r.entered_queue_at).toLocaleDateString('en-GB')}
-              </p>
-            </div>
-            <span className="text-accent-ink">Review →</span>
-          </Link>
+          <Row key={r.id} padded={false}>
+            <Link
+              href={`/admin/queue/${r.id}`}
+              className="group flex min-h-[64px] flex-1 items-center justify-between gap-3 px-5 py-3.5 transition hover:bg-black/[0.02]"
+            >
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-ink">
+                  {r.restaurants?.name ?? 'Unknown restaurant'}
+                </span>
+                <span className="mt-0.5 block truncate text-xs text-muted">
+                  Waiting {daysWaiting(r.entered_queue_at)}
+                  {r.contact_email ? ` · ${r.contact_email}` : ''}
+                </span>
+              </span>
+              <span className="flex shrink-0 items-center gap-2.5">
+                <QueueStatusTag status={r.status} />
+                <ArrowRightIcon className="h-4 w-4 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" />
+              </span>
+            </Link>
+          </Row>
         ))}
-      </div>
-    </div>
+      </List>
+    </Panel>
   );
 }
