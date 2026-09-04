@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createServerSupabase } from './supabase/server';
 import type { HalalFactsPublic, OpeningHour, RestaurantPhoto, RestaurantVideo } from './types';
 
@@ -29,7 +30,11 @@ export interface FullRestaurant {
   }[];
 }
 
-export async function getRestaurantBySlug(slug: string): Promise<FullRestaurant | null> {
+// Wrapped in React cache so generateMetadata and the page body share one
+// round-trip instead of querying Supabase twice per request.
+export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
+  slug: string
+): Promise<FullRestaurant | null> {
   const supabase = createServerSupabase();
 
   const { data: restaurant } = await supabase
@@ -87,4 +92,4 @@ export async function getRestaurantBySlug(slug: string): Promise<FullRestaurant 
     halalFacts: facts ?? null,
     offers: offers ?? [],
   };
-}
+});

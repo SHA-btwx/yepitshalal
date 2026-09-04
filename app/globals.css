@@ -5,17 +5,84 @@
 :root {
   --font-display: 'Fraunces', ui-serif, Georgia, serif;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --focus: #0f5e2e;
 }
 
-html {
-  -webkit-tap-highlight-color: transparent;
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: #faf9f6;
+    color: #14181a;
+    /* iOS Safari: stop form controls inflating text on focus. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* One focus treatment for the whole product. Pointer users never see it;
+     keyboard users always do, on every operable control, including the ones
+     Tailwind's preflight strips the UA outline from. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Elements that are already pill-shaped shouldn't get a square focus ring. */
+  .rounded-full:focus-visible {
+    border-radius: 9999px;
+  }
+
+  ::selection {
+    background: #e3f5e9;
+    color: #0f5e2e;
+  }
 }
 
-body {
-  background: #faf9f6;
-  color: #14181a;
+@layer utilities {
+  /* Horizontal chip rails: scrollable, but without a visible scrollbar. */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Fades the trailing edge of a horizontally scrolling chip rail so it reads
+     as scrollable rather than clipped. */
+  .rail-fade {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  }
 }
 
 .maplibregl-ctrl-attrib {
   font-size: 10px !important;
+}
+
+/* MapLibre renders its own controls outside our styling; keep them on-brand
+   and keyboard-visible. */
+.maplibregl-ctrl-group button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* Honour the OS "reduce motion" setting everywhere rather than per component.
+   Motion in this product is decorative (hover lift, card fade-in, map easing);
+   nothing depends on it to convey meaning, so it is safe to remove entirely. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

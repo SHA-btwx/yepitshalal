@@ -4,7 +4,7 @@ import { DiscoverFeed } from '@/components/DiscoverFeed';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Discover — YepItsHalal',
+  title: 'Discover',
   description: 'Scroll through halal restaurants across London, one at a time.',
 };
 

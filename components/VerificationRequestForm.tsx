@@ -1,8 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { SealCheckIcon } from './icons';
 
-export function VerificationRequestForm({ restaurantId, restaurantName }: { restaurantId: string; restaurantName: string }) {
+const FIELD_CLASS =
+  'w-full rounded-xl border border-black/15 bg-white px-3.5 py-3 text-[16px] text-ink placeholder:text-subtle transition focus:border-accent-ink focus:outline-none focus:ring-2 focus:ring-accent-ink/20 sm:text-sm';
+
+export function VerificationRequestForm({
+  restaurantId,
+  restaurantName,
+}: {
+  restaurantId: string;
+  restaurantName: string;
+}) {
+  const nameId = useId();
+  const emailId = useId();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -38,51 +50,69 @@ export function VerificationRequestForm({ restaurantId, restaurantName }: { rest
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-ink/60">
-        Requesting verification for <strong className="text-ink">{restaurantName}</strong>.
+      <p className="text-sm text-muted">
+        Requesting verification for <strong className="font-semibold text-ink">{restaurantName}</strong>.
       </p>
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Your name"
-          className="rounded-xl border border-black/10 px-3.5 py-2.5 text-sm focus:border-ink/40 focus:outline-none"
-        />
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          placeholder="Your email"
-          className="rounded-xl border border-black/10 px-3.5 py-2.5 text-sm focus:border-ink/40 focus:outline-none"
-        />
+        <div>
+          <label htmlFor={nameId} className="mb-1.5 block text-sm font-medium text-ink">
+            Your name
+          </label>
+          <input
+            id={nameId}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+            className={FIELD_CLASS}
+          />
+        </div>
+        <div>
+          <label htmlFor={emailId} className="mb-1.5 block text-sm font-medium text-ink">
+            Your email
+          </label>
+          <input
+            id={emailId}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            autoComplete="email"
+            className={FIELD_CLASS}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-black/10 p-4">
+        <div className="flex flex-col rounded-2xl border border-line bg-white p-4">
           <h3 className="text-sm font-semibold text-ink">Free verification</h3>
-          <p className="mt-1 text-xs text-ink/55">
+          <p className="mt-1 flex-1 text-xs leading-relaxed text-muted">
             Joins the normal queue. No guaranteed timeframe — we process roughly 3 free
             verifications a day.
           </p>
           <button
+            type="button"
             onClick={() => requestVerification('free')}
             disabled={submitting}
-            className="mt-3 w-full rounded-full border border-ink px-4 py-2 text-xs font-semibold text-ink transition hover:bg-ink hover:text-white disabled:opacity-60"
+            className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-full border border-ink px-4 text-[13px] font-semibold text-ink transition hover:bg-ink hover:text-white disabled:opacity-60"
           >
             Request free verification
           </button>
         </div>
 
-        <div className="rounded-2xl border-2 border-ink bg-ink/[0.02] p-4">
-          <h3 className="text-sm font-semibold text-ink">Priority Verification — £30</h3>
-          <p className="mt-1 text-xs text-ink/55">
-            Moves you ahead of the free queue. Target: reviewed within 48 working hours.
-            Payment purchases priority, not a favourable outcome.
+        <div className="flex flex-col rounded-2xl border-2 border-ink bg-ink/[0.03] p-4">
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <SealCheckIcon className="h-4 w-4 text-accent-ink" />
+            Priority Verification — £30
+          </h3>
+          <p className="mt-1 flex-1 text-xs leading-relaxed text-muted">
+            Moves you ahead of the free queue. Target: reviewed within 48 working hours. Payment
+            purchases priority, not a favourable outcome.
           </p>
           <button
+            type="button"
             onClick={() => requestVerification('priority')}
             disabled={submitting}
-            className="mt-3 w-full rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white transition hover:bg-accent-ink disabled:opacity-60"
+            className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-ink px-4 text-[13px] font-semibold text-white transition hover:bg-accent-ink disabled:opacity-60"
           >
             Pay £30 for Priority Verification
           </button>
@@ -90,7 +120,16 @@ export function VerificationRequestForm({ restaurantId, restaurantName }: { rest
       </div>
 
       {result && (
-        <p className={`text-sm ${result.ok ? 'text-halal-full' : 'text-halal-partial'}`}>{result.message}</p>
+        <p
+          role={result.ok ? 'status' : 'alert'}
+          className={`rounded-xl px-4 py-3 text-sm font-medium ring-1 ${
+            result.ok
+              ? 'bg-halal-fullSoft text-halal-fullInk ring-halal-full/20'
+              : 'bg-halal-partialSoft text-halal-partialInk ring-halal-partial/20'
+          }`}
+        >
+          {result.message}
+        </p>
       )}
     </div>
   );
