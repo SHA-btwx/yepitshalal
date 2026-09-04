@@ -4,9 +4,6 @@ export default function AdminHome() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="font-display text-2xl font-semibold text-ink">Admin</h1>
-      <p className="mt-1 text-sm text-ink/55">
-        This surface has no auth gate yet — add a role check before deploying anywhere public.
-      </p>
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Link href="/admin/queue" className="rounded-2xl border border-black/10 bg-white p-5 hover:border-ink/30">
           <h2 className="font-display font-semibold text-ink">Verification queue</h2>

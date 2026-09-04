@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { createAdminSupabase } from './supabase/admin';
+import { requireAdmin } from './require-admin';
 
 export async function publishVerification(requestId: string, formData: FormData) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
 
   const { data: request } = await supabase
@@ -67,12 +69,14 @@ export async function publishVerification(requestId: string, formData: FormData)
 }
 
 export async function deleteRestaurant(restaurantId: string) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   await supabase.from('restaurants').delete().eq('id', restaurantId);
   revalidatePath('/admin/restaurants');
 }
 
 export async function updateRestaurant(restaurantId: string, formData: FormData) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   await supabase
     .from('restaurants')
@@ -90,6 +94,7 @@ export async function updateRestaurant(restaurantId: string, formData: FormData)
 }
 
 export async function addVideo(restaurantId: string, formData: FormData) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const embedUrl = String(formData.get('embed_url') ?? '').trim();
   if (!embedUrl) return;
@@ -108,12 +113,14 @@ export async function addVideo(restaurantId: string, formData: FormData) {
 }
 
 export async function deletePhoto(restaurantId: string, photoId: string) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   await supabase.from('restaurant_photos').delete().eq('id', photoId);
   revalidatePath(`/admin/restaurants/${restaurantId}`);
 }
 
 export async function setPrimaryPhoto(restaurantId: string, photoId: string) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   await supabase.from('restaurant_photos').update({ is_primary: false }).eq('restaurant_id', restaurantId);
   await supabase.from('restaurant_photos').update({ is_primary: true }).eq('id', photoId);
@@ -121,6 +128,7 @@ export async function setPrimaryPhoto(restaurantId: string, photoId: string) {
 }
 
 export async function createOffer(formData: FormData) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const restaurantId = String(formData.get('restaurant_id') ?? '') || null;
   await supabase.from('offers').insert({
@@ -136,6 +144,7 @@ export async function createOffer(formData: FormData) {
 }
 
 export async function deleteOffer(offerId: string) {
+  await requireAdmin();
   const supabase = createAdminSupabase();
   await supabase.from('offers').delete().eq('id', offerId);
   revalidatePath('/admin/offers');
