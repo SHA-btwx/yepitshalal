@@ -2,11 +2,13 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
-import { updateRestaurant, addVideo, deletePhoto, setPrimaryPhoto } from '@/lib/admin-actions';
+import { updateRestaurant, deletePhoto, setPrimaryPhoto } from '@/lib/admin-actions';
+import { assignRestaurantOwner, setPartnership } from '@/lib/reel-actions';
+import { getReelAllowance } from '@/lib/reels';
 import { PhotoUploader } from '@/components/PhotoUploader';
 import { ConfirmSubmitButton } from '@/components/admin/ConfirmSubmitButton';
 import { HalalBadge } from '@/components/HalalBadge';
-import { ArrowUpRightIcon, StarIcon, TrashIcon, PlusIcon } from '@/components/icons';
+import { ArrowUpRightIcon, StarIcon, TrashIcon } from '@/components/icons';
 import { AdminPage, Panel, Field, FIELD, BUTTON, BUTTON_SECONDARY } from '@/components/admin/ui';
 import type { HalalClassification } from '@/lib/types';
 
@@ -16,25 +18,27 @@ export default async function AdminRestaurantEditPage({ params }: { params: { id
   const supabase = createAdminSupabase();
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('id, name, slug, address, description, phone, website_url, menu_url, halal_classification')
+    .select('id, name, slug, address, description, phone, website_url, menu_url, halal_classification, owner_id')
     .eq('id', params.id)
     .maybeSingle();
   if (!restaurant) notFound();
 
-  const [{ data: photos }, { data: videos }] = await Promise.all([
-    supabase
-      .from('restaurant_photos')
-      .select('id, storage_path, is_primary')
-      .eq('restaurant_id', restaurant.id)
-      .order('is_primary', { ascending: false }),
-    supabase
-      .from('restaurant_videos')
-      .select('id, provider, embed_url, caption')
-      .eq('restaurant_id', restaurant.id),
+  const { data: photos } = await supabase
+    .from('restaurant_photos')
+    .select('id, storage_path, is_primary')
+    .eq('restaurant_id', restaurant.id)
+    .order('is_primary', { ascending: false });
+
+  const admin2 = createAdminSupabase();
+  const [{ data: partnership }, { data: owner }, allowance] = await Promise.all([
+    admin2.from('restaurant_partnerships').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
+    restaurant.owner_id
+      ? admin2.from('users').select('email').eq('id', restaurant.owner_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    getReelAllowance(restaurant.id),
   ]);
 
   const updateWithId = updateRestaurant.bind(null, restaurant.id);
-  const addVideoWithId = addVideo.bind(null, restaurant.id);
 
   return (
     <AdminPage
@@ -174,51 +178,79 @@ export default async function AdminRestaurantEditPage({ params }: { params: { id
           </div>
         </Panel>
 
-        <Panel title="Food videos">
-          <div className="px-5 py-4">
-            {(videos ?? []).length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted">No videos yet.</p>
-            ) : (
-              <ul className="space-y-2">
-                {(videos ?? []).map((v) => (
-                  <li key={v.id} className="flex items-center gap-2 text-sm">
-                    <span className="shrink-0 rounded-full bg-black/[0.05] px-2 py-0.5 text-xs font-semibold capitalize text-ink/75">
-                      {v.provider}
-                    </span>
-                    <a
-                      href={v.embed_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="truncate text-accent-ink hover:underline"
-                    >
-                      {v.embed_url}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+        <Panel title="Owner">
+          <form action={assignRestaurantOwner.bind(null, restaurant.id)} className="space-y-3 px-5 py-4">
+            <p className="text-sm leading-relaxed text-muted">
+              Linking an account hands them edit rights over this listing and the ability to
+              publish reels, so only link someone you have actually verified. They must have
+              signed in at least once. Leave blank to unlink.
+            </p>
+            <Field label="Owner email" htmlFor="owner_email">
+              <input
+                id="owner_email"
+                name="owner_email"
+                type="email"
+                defaultValue={owner?.email ?? ''}
+                placeholder="owner@restaurant.com"
+                className={FIELD}
+              />
+            </Field>
+            <button type="submit" className={BUTTON_SECONDARY}>
+              Save owner
+            </button>
+          </form>
+        </Panel>
 
-            <form action={addVideoWithId} className="mt-4 space-y-3 border-t border-line pt-4">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_12rem]">
-                <Field label="Video URL" htmlFor="embed_url">
-                  <input
-                    id="embed_url"
-                    name="embed_url"
-                    type="url"
-                    placeholder="YouTube / Instagram / TikTok"
-                    className={FIELD}
-                  />
-                </Field>
-                <Field label="Caption" htmlFor="caption">
-                  <input id="caption" name="caption" className={FIELD} />
-                </Field>
-              </div>
-              <button type="submit" className={BUTTON_SECONDARY}>
-                <PlusIcon className="h-4 w-4" />
-                Add video
-              </button>
-            </form>
-          </div>
+        <Panel title="Partnership">
+          <form action={setPartnership.bind(null, restaurant.id)} className="space-y-4 px-5 py-4">
+            <p className="text-sm leading-relaxed text-muted">
+              Controls reel capacity only. It has no bearing on halal classification, on the
+              verification queue, or on how quickly a reel is reviewed.
+            </p>
+
+            <div className="rounded-xl bg-black/[0.03] px-3.5 py-2.5 text-sm text-ink/80">
+              Currently {allowance.published} of {allowance.allowance} reels published
+              {allowance.isPartner ? ' (partner)' : ' (free tier)'}.
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Status" htmlFor="status">
+                <select
+                  id="status"
+                  name="status"
+                  defaultValue={partnership?.status ?? 'none'}
+                  className={FIELD}
+                >
+                  <option value="none">None (free tier)</option>
+                  <option value="active">Active partner</option>
+                  <option value="past_due">Past due</option>
+                  <option value="canceled">Canceled</option>
+                </select>
+              </Field>
+              <Field
+                label="Reel allowance override"
+                htmlFor="reel_allowance_override"
+                hint="Blank uses the tier default from platform_settings."
+              >
+                <input
+                  id="reel_allowance_override"
+                  name="reel_allowance_override"
+                  type="number"
+                  min={0}
+                  defaultValue={partnership?.reel_allowance_override ?? ''}
+                  className={FIELD}
+                />
+              </Field>
+            </div>
+
+            <Field label="Note" htmlFor="note" hint="Internal only.">
+              <input id="note" name="note" defaultValue={partnership?.note ?? ''} className={FIELD} />
+            </Field>
+
+            <button type="submit" className={BUTTON}>
+              Save partnership
+            </button>
+          </form>
         </Panel>
       </div>
     </AdminPage>

@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getRestaurantBySlug } from '@/lib/restaurants';
+import { getPublishedReels, isActivePartner } from '@/lib/reels';
 import { halalLabel, HalalBadge } from '@/components/HalalBadge';
 import { HalalFactsPanel } from '@/components/HalalFactsPanel';
 import { VerificationBadge } from '@/components/VerificationBadge';
 import { OpenStatusBadge } from '@/components/OpenStatusBadge';
 import { PhotoGallery } from '@/components/PhotoGallery';
-import { VideoEmbed } from '@/components/VideoEmbed';
+import { ReelShowcase } from '@/components/ReelShowcase';
+import { OwnershipCta } from '@/components/OwnershipCta';
 import { OpeningHoursList } from '@/components/OpeningHoursList';
 import { OffersList } from '@/components/OffersList';
 import {
@@ -40,6 +42,11 @@ export async function generateMetadata({
 export default async function RestaurantPage({ params }: { params: { slug: string } }) {
   const restaurant = await getRestaurantBySlug(params.slug);
   if (!restaurant) notFound();
+
+  const [reels, partner] = await Promise.all([
+    getPublishedReels(restaurant.id),
+    isActivePartner(restaurant.id),
+  ]);
 
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${restaurant.lat},${restaurant.lng}`;
   const cuisines = restaurant.cuisines.join(' · ') || 'Restaurant';
@@ -82,7 +89,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           </span>
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <HalalBadge classification={restaurant.halal_classification} size="lg" />
+          <HalalBadge classification={restaurant.halal_classification} size="lg" variant="solid" />
           <OpenStatusBadge hours={restaurant.openingHours} />
         </div>
       </header>
@@ -135,16 +142,14 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
 
           <HalalFactsPanel facts={restaurant.halalFacts} />
 
-          {restaurant.videos.length > 0 && (
-            <section>
-              <h2 className="mb-2.5 font-display text-lg font-semibold text-ink">See the food</h2>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {restaurant.videos.map((v) => (
-                  <VideoEmbed key={v.id} video={v} />
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Below the verification panel by design: the halal information is
+              the reason to trust the listing, the reels are the reason to go. */}
+          <ReelShowcase
+            reels={reels}
+            restaurantName={restaurant.name}
+            classification={restaurant.halal_classification}
+            isPartner={partner}
+          />
         </div>
 
         <div className="space-y-4">
@@ -202,6 +207,8 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           </section>
 
           <OffersList offers={restaurant.offers} />
+
+          <OwnershipCta restaurantId={restaurant.id} slug={restaurant.slug} />
 
           {restaurant.halal_classification === 'unverified' && (
             <Link

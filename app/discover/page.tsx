@@ -1,4 +1,4 @@
-import { getDiscoverFeed } from '@/lib/discover';
+import { getDiscoverFeed } from '@/lib/reels';
 import { DiscoverFeed } from '@/components/DiscoverFeed';
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +9,6 @@ export const metadata = {
 };
 
 export default async function DiscoverPage() {
-  const cards = await getDiscoverFeed();
-  return <DiscoverFeed cards={cards} />;
+  const items = await getDiscoverFeed();
+  return <DiscoverFeed items={items} />;
 }
