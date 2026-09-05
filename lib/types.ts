@@ -15,6 +15,10 @@ export interface SearchResultRestaurant {
   cuisines: string[] | null;
   effective_radius_meters: number;
   is_yep_plus: boolean;
+  /** Set when this location belongs to a multi-branch brand. */
+  brand_name: string | null;
+  /** The neighbourhood or street that distinguishes this branch. */
+  branch_label: string | null;
 }
 
 export interface RestaurantDetail {

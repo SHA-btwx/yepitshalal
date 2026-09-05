@@ -10,9 +10,25 @@ function formatDistance(meters: number): string {
   return `${miles.toFixed(1)} mi`;
 }
 
-// A horizontal row at every breakpoint. The previous vertical card meant only
-// ~3 results fitted the desktop list column beside the map; a row fits 6–7, and
-// a results list is scanned, not browsed.
+/**
+ * A branch descriptor used to live inside the name — "Morley's Chicken (Acton)".
+ * Now that brand and branch are separate columns, the card can show the brand
+ * once and put the location on its own line, so two nearby branches read as two
+ * places rather than as the same name twice.
+ *
+ * Falls back to the stored name when a record has no brand, and strips a
+ * trailing "(Area)" left over from the old convention so it never doubles up
+ * with the branch line beneath it.
+ */
+export function displayName(r: {
+  name: string;
+  brand_name?: string | null;
+  branch_label?: string | null;
+}): string {
+  if (r.brand_name) return r.brand_name;
+  return r.name.replace(/\s*\([^)]*\)\s*$/, '').trim() || r.name;
+}
+
 export function RestaurantCard({
   restaurant,
   priority = false,
@@ -22,6 +38,8 @@ export function RestaurantCard({
   priority?: boolean;
 }) {
   const cuisines = restaurant.cuisines?.slice(0, 2).join(' · ') || 'Restaurant';
+  const title = displayName(restaurant);
+  const distance = formatDistance(restaurant.distance_meters);
 
   return (
     <Link
@@ -47,15 +65,37 @@ export function RestaurantCard({
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <h3 className="truncate font-display text-[15px] font-semibold leading-snug text-ink sm:text-base">
-          {restaurant.name}
+          {title}
         </h3>
+
+        {/* Location line. For a chain this is what tells one branch from
+            another, so it leads with the branch and keeps distance beside it. */}
         <p className="truncate text-[13px] text-muted">
-          {cuisines}
-          <span className="mx-1.5 text-subtle" aria-hidden="true">
-            ·
+          {restaurant.branch_label && (
+            <>
+              <span className="font-medium text-ink/75">{restaurant.branch_label}</span>
+              <span className="mx-1.5 text-subtle" aria-hidden="true">
+                ·
+              </span>
+            </>
+          )}
+          <span className={restaurant.branch_label ? '' : 'font-medium text-ink/75'}>
+            {distance}
           </span>
-          <span className="font-medium text-ink/75">{formatDistance(restaurant.distance_meters)}</span>
+          {!restaurant.branch_label && (
+            <>
+              <span className="mx-1.5 text-subtle" aria-hidden="true">
+                ·
+              </span>
+              {cuisines}
+            </>
+          )}
         </p>
+
+        {restaurant.branch_label && (
+          <p className="truncate text-xs text-subtle">{cuisines}</p>
+        )}
+
         {/* Wrapped so the pill hugs its label — a bare flex child would stretch
             to the column width and read as a banner, not a badge. */}
         <span className="self-start">

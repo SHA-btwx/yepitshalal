@@ -16,6 +16,8 @@ export interface FullRestaurant {
   lat: number;
   lng: number;
   cuisines: string[];
+  brandName: string | null;
+  branchLabel: string | null;
   photos: RestaurantPhoto[];
   videos: RestaurantVideo[];
   openingHours: OpeningHour[];
@@ -40,7 +42,7 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
   const { data: restaurant } = await supabase
     .from('restaurants_with_coords')
     .select(
-      'id, name, slug, description, address, postcode, phone, website_url, menu_url, halal_classification, lat, lng'
+      'id, name, slug, description, address, postcode, phone, website_url, menu_url, halal_classification, lat, lng, branch_label, brands(name)'
     )
     .eq('slug', slug)
     .maybeSingle();
@@ -79,6 +81,14 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     website_url: restaurant.website_url,
     menu_url: restaurant.menu_url,
     halal_classification: restaurant.halal_classification,
+    // PostgREST types an embedded relation as either an object or an array
+    // depending on the inferred cardinality, so both shapes are handled.
+    brandName: (() => {
+      const b = (restaurant as { brands?: { name: string } | { name: string }[] | null }).brands;
+      if (!b) return null;
+      return Array.isArray(b) ? b[0]?.name ?? null : b.name;
+    })(),
+    branchLabel: restaurant.branch_label ?? null,
     lat: restaurant.lat,
     lng: restaurant.lng,
     cuisines: (cuisineRows ?? [])

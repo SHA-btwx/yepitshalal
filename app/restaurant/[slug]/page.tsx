@@ -31,7 +31,9 @@ export async function generateMetadata({
 
   const status = halalLabel(restaurant.halal_classification);
   return {
-    title: restaurant.name,
+    title: restaurant.branchLabel
+      ? `${restaurant.brandName ?? restaurant.name} — ${restaurant.branchLabel}`
+      : restaurant.name,
     description:
       restaurant.description ??
       `${restaurant.name} — ${status}. ${restaurant.cuisines.join(', ') || 'Restaurant'} in ${restaurant.address}.`,
@@ -76,7 +78,13 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
 
       <header className="mt-5">
         <h1 className="text-balance font-display text-[1.7rem] font-semibold leading-tight text-ink sm:text-3xl">
-          {restaurant.name}
+          {restaurant.brandName ?? restaurant.name.replace(/s*([^)]*)s*$/, '')}
+          {restaurant.branchLabel && (
+            <>
+              <span className="text-subtle"> — </span>
+              <span className="text-ink/80">{restaurant.branchLabel}</span>
+            </>
+          )}
         </h1>
         <p className="mt-1.5 flex items-start gap-1.5 text-sm text-muted">
           <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
