@@ -20,7 +20,7 @@ export default async function SubmitRestaurantPage() {
       </h1>
       <p className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm leading-relaxed text-muted">
         <span>Every new listing starts as</span>
-        <HalalBadge classification="unverified" size="sm" />
+        <HalalBadge classification="unverified" size="sm" variant="solid" />
         <span>— that&apos;s not a judgement, just our starting point.</span>
       </p>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">

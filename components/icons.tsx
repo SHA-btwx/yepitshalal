@@ -256,3 +256,51 @@ export function StarIcon(p: IconProps) {
     </Svg>
   );
 }
+
+// Halal status marks. These are fill-based rather than stroke-based, and they
+// carry the meaning themselves: solid-with-a-tick = we checked and it's all
+// halal; half-filled = some of the menu; dashed-and-empty = we haven't looked.
+// That reads before the words do, and the three are still distinguishable with
+// no colour at all — which colour-coded dots were not.
+export function HalalFullMark({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} aria-hidden="true" focusable="false">
+      <circle cx="10" cy="10" r="9" fill="currentColor" />
+      <path
+        d="m5.8 10.2 2.8 2.8 5.6-5.9"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function HalalPartialMark({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} aria-hidden="true" focusable="false">
+      {/* Left half solid, right half open — "some of the menu, not all of it". */}
+      <path d="M10 1.4a8.6 8.6 0 0 0 0 17.2Z" fill="currentColor" />
+      <circle cx="10" cy="10" r="8.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  );
+}
+
+export function HalalUnknownMark({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} aria-hidden="true" focusable="false">
+      <circle
+        cx="10"
+        cy="10"
+        r="8.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeDasharray="3.1 3.1"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}

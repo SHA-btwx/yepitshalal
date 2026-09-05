@@ -9,8 +9,15 @@ import { RestaurantCardSkeleton } from './RestaurantCardSkeleton';
 import { RadiusSelector } from './RadiusSelector';
 import { UpgradePrompt } from './UpgradePrompt';
 import { RestaurantPreviewCard } from './RestaurantPreviewCard';
-import { HALAL_DOT_COLOR } from './halalColors';
-import { ListIcon, MapIcon, MapPinIcon, SearchIcon } from './icons';
+import {
+  ListIcon,
+  MapIcon,
+  MapPinIcon,
+  SearchIcon,
+  HalalFullMark,
+  HalalPartialMark,
+  HalalUnknownMark,
+} from './icons';
 import type { HalalClassification, SearchResultRestaurant } from '@/lib/types';
 
 const RestaurantMap = dynamic(() => import('./RestaurantMap').then((m) => m.RestaurantMap), {
@@ -29,10 +36,22 @@ interface SearchViewProps {
   initialIsYepPlus: boolean;
 }
 
-const CLASSIFICATION_FILTERS: { value: HalalClassification; label: string }[] = [
-  { value: 'fully_halal', label: 'Fully Halal' },
-  { value: 'halal_options', label: 'Halal Options' },
-  { value: 'unverified', label: 'Unverified' },
+// Same marks the cards use, so the filter row and the map legend read in the
+// one visual language rather than a second colour-coded one.
+const CLASSIFICATION_FILTERS: {
+  value: HalalClassification;
+  label: string;
+  Mark: typeof HalalFullMark;
+  tone: string;
+}[] = [
+  { value: 'fully_halal', label: 'Fully Halal', Mark: HalalFullMark, tone: 'text-halal-full' },
+  {
+    value: 'halal_options',
+    label: 'Halal Options',
+    Mark: HalalPartialMark,
+    tone: 'text-halal-partial',
+  },
+  { value: 'unverified', label: 'Unverified', Mark: HalalUnknownMark, tone: 'text-halal-unverified' },
 ];
 
 export function SearchView({
@@ -203,10 +222,8 @@ export function SearchView({
                     : 'border-line bg-white text-ink/75 hover:border-ink/30 hover:text-ink'
                 )}
               >
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
-                  style={{ background: HALAL_DOT_COLOR[f.value] }}
-                  aria-hidden="true"
+                <f.Mark
+                  className={clsx('h-4 w-4 shrink-0', on ? 'text-white' : f.tone)}
                 />
                 {f.label}
               </button>
@@ -310,11 +327,7 @@ export function SearchView({
           <ul className="pointer-events-none absolute left-3 top-3 z-10 space-y-1 rounded-xl bg-white/90 px-3 py-2 text-xs font-medium text-ink shadow-md ring-1 ring-black/5 backdrop-blur">
             {CLASSIFICATION_FILTERS.map((f) => (
               <li key={f.value} className="flex items-center gap-1.5">
-                <span
-                  className="h-2.5 w-2.5 rounded-full ring-2 ring-inset ring-white"
-                  style={{ background: HALAL_DOT_COLOR[f.value] }}
-                  aria-hidden="true"
-                />
+                <f.Mark className={clsx('h-4 w-4 shrink-0', f.tone)} />
                 {f.label}
               </li>
             ))}
