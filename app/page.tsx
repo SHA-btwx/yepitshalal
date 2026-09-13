@@ -2,10 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LocationSearchBar } from '@/components/LocationSearchBar';
 import { HalalBadge } from '@/components/HalalBadge';
-import { MapPinIcon, SealCheckIcon, MapIcon, ArrowRightIcon, SparkleIcon, ForkKnifeIcon, HeartHandIcon } from '@/components/icons';
+import { MapPinIcon, SealCheckIcon, MapIcon, ArrowRightIcon, ForkKnifeIcon, HeartHandIcon } from '@/components/icons';
 import { HomeReelStrip } from '@/components/HomeReelStrip';
 import { getFeaturedReels } from '@/lib/reels';
-import { ctaPrimary, ctaSecondary, linkCard } from '@/components/cta';
+import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 
 // Hand-picked London neighbourhoods with dense halal high streets. Linking
 // straight to coordinates removes the "what do I even type?" beat for a first
@@ -47,11 +47,15 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* The hero used to lay copy over a full-bleed photo. Every image in the
-          library is a tight food macro; stretched to a 1265×570 banner it read
-          as texture, and the scrim needed to keep white text at 4.5:1 flattened
-          it to grey. Photos now sit in square frames — the crop they were shot
-          for — and text sits on a solid ground, so contrast is guaranteed. */}
+      {/* ATTENTION. A sign in a window is a claim; this page's entire pitch is
+          that we don't stop there. The headline names the customer's actual
+          state (guessing, whether they'd admit it or not) rather than
+          describing the product — curiosity comes from being seen, not from
+          being told what a directory does. The search bar is Action available
+          immediately, for the visitor who already knows what they want; the
+          rest of the page is for everyone else, who needs Interest and Desire
+          first. Photos sit in square frames rather than a stretched banner
+          crop, so contrast on the text never has to fight a scrim. */}
       <section className="relative overflow-hidden bg-ink">
         <div
           aria-hidden="true"
@@ -64,25 +68,23 @@ export default async function HomePage() {
 
         <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
           <div className="text-center lg:text-left">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/20">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20">
               <MapPinIcon className="h-3.5 w-3.5" />
-              London · Beta
+              London, for now
             </span>
             <h1 className="mt-4 text-balance font-display text-[2.15rem] font-semibold leading-[1.08] text-white sm:text-5xl">
-              Find halal food near you.
+              Stop guessing if it&apos;s halal.
             </h1>
-            <p className="mx-auto mt-4 max-w-lg text-pretty text-base leading-relaxed text-white/85 sm:text-lg lg:mx-0">
-              We show you which restaurants are halal, and how we know. No guessing.
+            <p className="mx-auto mt-4 max-w-md text-pretty text-base leading-relaxed text-white/85 sm:text-lg lg:mx-0">
+              Search your area. See what&apos;s halal, and how we know.
             </p>
 
-            <div className="mt-7 flex justify-center lg:justify-start">
+            <div id="search" className="mt-7 flex justify-center lg:justify-start">
               <LocationSearchBar />
             </div>
 
             <div className="mt-7">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
-                Popular areas
-              </h2>
+              <h2 className="text-xs font-semibold text-white/60">Popular areas</h2>
               <ul className="mt-2.5 flex flex-wrap justify-center gap-2 lg:justify-start">
                 {POPULAR_AREAS.map((area) => (
                   <li key={area.label}>
@@ -125,20 +127,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <HomeReelStrip reels={featuredReels} />
-
-      {/* A key, not a taxonomy. Three equal cards presented the statuses as
-          three kinds of restaurant to choose between; they are really one
-          reading that every restaurant carries, so they belong in a single
-          legend you scan top to bottom. */}
-      <section className="mx-auto max-w-2xl px-5 pb-14 pt-12 sm:px-6 sm:py-20">
+      {/* INTEREST. Before any proof of food or ease of use, the visitor needs
+          the one idea the rest of the site leans on: a label isn't a rating,
+          it's an answer to three specific questions. This used to sit after
+          the reel strip, as a dry legend; it belongs here, because Desire
+          (the reels, the three-step journey) only lands once someone has a
+          reason to trust the label under the food. */}
+      <section className="mx-auto max-w-2xl px-5 pb-10 pt-12 sm:px-6 sm:pb-12 sm:pt-20">
         <div className="text-center">
           <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
-            How to read the label
+            A &ldquo;halal&rdquo; sign only tells you so much
           </h2>
           <p className="mx-auto mt-2.5 max-w-lg text-pretty text-[15px] leading-relaxed text-muted">
-            Every restaurant carries one. It tells you what we know — not whether a place is any
-            good.
+            It doesn&apos;t say who checked, what they checked, or when. So every
+            restaurant here carries a different kind of label, one that answers all
+            three.
           </p>
         </div>
 
@@ -157,19 +160,22 @@ export default async function HomePage() {
         </dl>
 
         <p className="mt-4 text-center text-sm leading-relaxed text-muted">
-          &ldquo;Unverified&rdquo; never means a place isn&apos;t halal — only that we
+          &ldquo;Unverified&rdquo; never means a place isn&apos;t halal. It only means we
           haven&apos;t checked it yet.
         </p>
       </section>
 
-      {/* Discover -> Check -> Eat. Replaces three paragraphs of feature copy:
-          the same idea, but as the shape of the journey, which is what someone
-          landing here actually needs to grasp. */}
-      <section className="border-y border-line bg-white/60">
+      {/* DESIRE, beat one: proof, not a promise. Deliberately still rather
+          than autoplaying — the brief rules that out, and it would fight the
+          search field for attention if it sat any higher on the page. */}
+      <HomeReelStrip reels={featuredReels} />
+
+      {/* DESIRE, beat two: the journey is short, which is itself part of the
+          pitch. Genuinely a sequence, so it earns the step markers. */}
+      <section className="border-b border-line bg-white/60">
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6 sm:py-14">
-          {/* The steps are h3s; without this the outline jumped h1 -> h3. */}
-          <h2 className="sr-only">How YepItsHalal works</h2>
-          <ol className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+          <h2 className="text-sm font-semibold text-subtle">How it works</h2>
+          <ol className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
             {[
               {
                 Icon: MapIcon,
@@ -184,7 +190,7 @@ export default async function HomePage() {
               {
                 Icon: ForkKnifeIcon,
                 step: 'Eat',
-                body: 'Directions, hours and the menu — then go.',
+                body: 'Directions, hours and the menu, then go.',
               },
             ].map(({ Icon, step, body }, i) => (
               <li key={step} className="flex gap-3.5 sm:flex-col sm:gap-0">
@@ -206,77 +212,71 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Yep+ gets a mention, not a pitch — the dedicated page does the selling.
-          Halal information is never behind it, and the copy says so. */}
-      <section className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-16">
-        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-ink to-accent-ink p-6 text-white shadow-sm sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-md">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/20">
-                <SparkleIcon className="h-3.5 w-3.5" />
-                Yep+
-              </span>
-              <h2 className="mt-3 text-balance font-display text-2xl font-semibold sm:text-3xl">
-                Go further. Eat better. Give back.
-              </h2>
-              <p className="mt-2.5 text-pretty text-sm leading-relaxed text-white/85">
-                Search anywhere in London instead of just nearby, plus member offers and vouchers.
-                Halal information stays free for everyone, always.
-              </p>
-              <p className="mt-3 inline-flex items-start gap-2 text-sm leading-relaxed text-white/85">
-                <HeartHandIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-accent-onDark" />
-                Every month of membership funds a meal through ShareTheMeal.
-              </p>
-            </div>
-
-            <div className="shrink-0 sm:text-right">
-              <p className="font-display text-2xl font-semibold">
-                £4.99<span className="text-base font-normal text-white/70">/month</span>
-              </p>
-              <p className="mt-0.5 text-sm text-white/75">or £39.99/year</p>
-              <Link
-                href="/yep-plus"
-                className="group mt-4 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink shadow-sm transition duration-200 ease-out hover:-translate-y-px hover:shadow-md active:translate-y-0 active:scale-[0.985]"
-              >
-                See what you get
-                <ArrowRightIcon className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
-              </Link>
-            </div>
-          </div>
+      {/* ACTION. One dominant, unambiguous ask. There is nothing to buy on
+          this page, so the ask is the thing this site actually runs on:
+          keep looking. The headline deliberately echoes the hero's, closing
+          the loop it opened rather than introducing a new one. */}
+      <section className="mx-auto max-w-2xl px-5 pb-14 pt-14 text-center sm:px-6 sm:pb-16 sm:pt-16">
+        <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
+          Ready to stop guessing?
+        </h2>
+        <p className="mx-auto mt-2.5 max-w-md text-pretty text-[15px] leading-relaxed text-muted">
+          Open Discover and scroll through real kitchens, real labels, real answers, one
+          at a time. Or head back up and search your street directly.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/discover" className={ctaPrimary}>
+            Open Discover
+            <ArrowRightIcon className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
+          </Link>
+          <a href="#search" className={ctaSecondary}>
+            Search your street
+          </a>
         </div>
       </section>
 
-      {/* Restaurants matter commercially but this is a consumer homepage, so
-          they get one row near the bottom, not a second hero. */}
-      <section className="mx-auto max-w-5xl px-5 pb-16 sm:px-6 sm:pb-20">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
-            <h2 className="font-display text-lg font-semibold text-ink">Run a halal restaurant?</h2>
-            <p className="mt-1.5 max-w-md text-pretty text-sm leading-relaxed text-muted">
-              Listing is free, and so is your first reel — a short clip of your food that shows on
-              your page and can surface in Discover. Partners can publish more.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2.5">
-              <Link href="/submit-restaurant" className={ctaPrimary}>
-                Add your restaurant
+      {/* P.S. Yep+ and the restaurant-owner path are real, but this is a free
+          discovery site with nothing to sell on this page, so neither gets a
+          second hero. A postscript is the most-read line in a direct-response
+          letter, which is exactly the job here: seen by everyone, pushed on
+          no one. Halal information is never behind either of these. */}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-4xl px-5 py-12 sm:px-6 sm:py-14">
+          <p className="font-display text-sm font-semibold text-ink">P.S.</p>
+          <div className="mt-3 grid grid-cols-1 gap-x-10 gap-y-7 sm:grid-cols-2">
+            <div>
+              <p className="text-pretty text-sm leading-relaxed text-muted">
+                <span className="font-semibold text-ink">Yep+</span> opens search across
+                all of London instead of just nearby, plus member offers, from £4.99 a
+                month. Halal information itself stays free, always.
+              </p>
+              <p className="mt-2 flex items-start gap-1.5 text-pretty text-sm leading-relaxed text-muted">
+                <HeartHandIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-accent-ink" />
+                Every month of membership also funds a meal through ShareTheMeal.
+              </p>
+              <Link href="/yep-plus" className={`${ctaGhost} -ml-4 mt-1`}>
+                See what you get
+                <ArrowRightIcon className="h-4 w-4" />
               </Link>
-              <Link href="/partners" className={ctaSecondary}>
-                How partnerships work
-              </Link>
+            </div>
+
+            <div>
+              <p className="text-pretty text-sm leading-relaxed text-muted">
+                <span className="font-semibold text-ink">Run a halal restaurant?</span>{' '}
+                Listing is free. So is your first reel: a short clip of your food that
+                shows on your page and can surface in Discover.
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-1">
+                <Link href="/submit-restaurant" className={`${ctaGhost} -ml-4`}>
+                  Add your restaurant
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+                <Link href="/partners" className={ctaGhost}>
+                  How partnerships work
+                </Link>
+              </div>
             </div>
           </div>
-
-          <Link href="/discover" className={`${linkCard} p-6`}>
-            <div className="flex h-full items-start justify-between gap-4">
-              <div>
-                <h2 className="font-display text-lg font-semibold text-ink">Just show me food</h2>
-                <p className="mt-1 text-sm leading-relaxed text-muted">
-                  Scroll Discover, one restaurant at a time.
-                </p>
-              </div>
-              <ArrowRightIcon className="h-5 w-5 shrink-0 text-subtle transition duration-200 group-hover:translate-x-0.5 group-hover:text-ink" />
-            </div>
-          </Link>
         </div>
       </section>
     </div>

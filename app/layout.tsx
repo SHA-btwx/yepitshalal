@@ -27,11 +27,11 @@ export const metadata: Metadata = {
   // scraper can resolve them.
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'YepItsHalal — Find halal food near you',
-    template: '%s — YepItsHalal',
+    default: 'YepItsHalal: Find halal food near you',
+    template: '%s | YepItsHalal',
   },
   description:
-    'Discover halal restaurants in London with clear, verified halal information — not guesswork.',
+    'Discover halal restaurants in London. Clear, verified halal information, not guesswork.',
   openGraph: {
     type: 'website',
     siteName: 'YepItsHalal',

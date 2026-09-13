@@ -12,7 +12,7 @@ import type { FeaturedReel } from '@/lib/reels';
  * Deliberately still. Autoplaying a row of videos on a homepage is the exact
  * thing the brief rules out, and it would fight the search field for attention
  * on the one screen where search must win. Cards show a cover frame and link
- * through — the moving version lives on Discover, which is what the link is for.
+ * through: the moving version lives on Discover, which is what the link is for.
  */
 export function HomeReelStrip({ reels }: { reels: FeaturedReel[] }) {
   if (reels.length === 0) {

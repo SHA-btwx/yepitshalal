@@ -25,7 +25,7 @@ export function SiteFooter() {
               </span>
             </span>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Clear halal information for London — what we know, how we know it, and what we
+              Clear halal information for London: what we know, how we know it, and what we
               haven&apos;t checked yet.
             </p>
           </div>
