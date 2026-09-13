@@ -80,8 +80,43 @@ export const FREE_RADIUS_METERS = {
   searched_location: 805,
 } as const;
 
+/** Ceiling for a Yep+ search. Mirrors v_max_radius in search_restaurants(). */
+export const YEP_PLUS_MAX_RADIUS_METERS = 80467;
+
+export type SearchMode = 'current_location' | 'searched_location';
+
 export function milesToMeters(miles: number): number {
   return Math.round(miles * 1609.34);
+}
+
+/**
+ * The radius the search *actually* used, which is not always the one requested.
+ *
+ * search_restaurants() clamps every request to the caller's ceiling
+ * (`least(requested, max)`), so "Anywhere" (sent as 999 miles) comes back as a
+ * 50 mile search, and any locked tier a free user reaches comes back capped.
+ * Drawing coverage from the requested value would put a 999 mile ring on the map.
+ *
+ * This mirrors that clamp so the client can derive the true radius without a
+ * result row to read it from, which matters most in the case where the map has
+ * the most to say: a search that found nothing.
+ */
+export function effectiveRadiusMeters(options: {
+  requestedMiles: number | null;
+  mode: SearchMode;
+  isYepPlus: boolean;
+}): number {
+  const { requestedMiles, mode, isYepPlus } = options;
+  const max = isYepPlus ? YEP_PLUS_MAX_RADIUS_METERS : FREE_RADIUS_METERS[mode];
+  if (requestedMiles === null) return max;
+  return Math.min(milesToMeters(requestedMiles), max);
+}
+
+/** "0.5 mi" / "50 mi". Used for the radius chips and the map's coverage label. */
+export function formatRadiusMiles(meters: number): string {
+  const miles = meters / 1609.34;
+  const rounded = miles < 10 ? Math.round(miles * 10) / 10 : Math.round(miles);
+  return `${rounded} mi`;
 }
 
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

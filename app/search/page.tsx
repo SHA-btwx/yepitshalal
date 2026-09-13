@@ -34,6 +34,11 @@ export default async function SearchPage({
 
   return (
     <SearchView
+      // Keyed by location: moving from one search to another inside the app
+      // (a suggested nearby area, say) keeps this component mounted, and its
+      // state is only seeded from these props on first mount. Without the key
+      // the new place shows the previous place's results under its own name.
+      key={`${lat},${lng},${mode}`}
       lat={lat}
       lng={lng}
       mode={mode}

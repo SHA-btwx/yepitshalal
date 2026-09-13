@@ -10,6 +10,7 @@ import { RadiusSelector } from './RadiusSelector';
 import { UpgradePrompt } from './UpgradePrompt';
 import { RestaurantPreviewCard } from './RestaurantPreviewCard';
 import {
+  ArrowRightIcon,
   ListIcon,
   MapIcon,
   MapPinIcon,
@@ -18,7 +19,9 @@ import {
   HalalPartialMark,
   HalalUnknownMark,
 } from './icons';
+import { effectiveRadiusMeters, formatRadiusMiles } from '@/lib/types';
 import type { HalalClassification, SearchResultRestaurant } from '@/lib/types';
+import type { NearbyArea } from '@/app/api/nearby-areas/route';
 
 const RestaurantMap = dynamic(() => import('./RestaurantMap').then((m) => m.RestaurantMap), {
   ssr: false,
@@ -71,10 +74,56 @@ export function SearchView({
   const [selected, setSelected] = useState<SearchResultRestaurant | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [loading, setLoading] = useState(false);
+  // The radius the server reports it actually used. Null while a search is in
+  // flight, when the locally derived value (same clamp) is the honest answer.
+  const [serverRadiusMeters, setServerRadiusMeters] = useState<number | null>(null);
+  // A locked tier the user tapped. Never touches the query, only the map.
+  const [previewMiles, setPreviewMiles] = useState<number | null>(null);
+  // Null while loading; an empty array means we looked and there is nothing nearby.
+  const [nearbyAreas, setNearbyAreas] = useState<NearbyArea[] | null>(null);
+
+  // One clamp, shared with the API route and mirroring search_restaurants(), so
+  // the ring on the map and the rows in the list always describe one radius.
+  const coverageMeters =
+    serverRadiusMeters ?? effectiveRadiusMeters({ requestedMiles: radiusMiles, mode, isYepPlus });
+
+  // What that tier would cover *with* Yep+, which is the whole point of showing
+  // it. Capped the same way, so "Anywhere" previews 50 miles rather than 999.
+  const rawPreviewMeters =
+    previewMiles === null
+      ? null
+      : effectiveRadiusMeters({ requestedMiles: previewMiles, mode, isYepPlus: true });
+  const previewMeters = rawPreviewMeters && rawPreviewMeters > coverageMeters ? rawPreviewMeters : null;
+
+  // Only fetched for an unfiltered search that found nothing, and keyed to the
+  // radius actually searched, so a later radius change asks again.
+  const emptyAndUnfiltered = !loading && results.length === 0 && classifications.length === 0;
+  useEffect(() => {
+    if (!emptyAndUnfiltered) {
+      setNearbyAreas(null);
+      return;
+    }
+    let cancelled = false;
+    setNearbyAreas(null);
+    fetch(`/api/nearby-areas?lat=${lat}&lng=${lng}&radius_meters=${coverageMeters}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (!cancelled) setNearbyAreas(json.areas ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setNearbyAreas([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [emptyAndUnfiltered, lat, lng, coverageMeters]);
 
   const runSearch = useCallback(
     async (miles: number, filters: HalalClassification[]) => {
       setLoading(true);
+      // Dropped rather than left stale: until the server answers, the locally
+      // derived radius is the one matching the chip the user just pressed.
+      setServerRadiusMeters(null);
       const params = new URLSearchParams({
         lat: String(lat),
         lng: String(lng),
@@ -86,6 +135,9 @@ export function SearchView({
       const json = await res.json();
       setResults(json.results ?? []);
       setIsYepPlus(Boolean(json.is_yep_plus));
+      setServerRadiusMeters(
+        typeof json.effective_radius_meters === 'number' ? json.effective_radius_meters : null
+      );
       setLoading(false);
     },
     [lat, lng, mode]
@@ -130,7 +182,9 @@ export function SearchView({
 
   const filtered = classifications.length > 0;
   const skeletonCount = Math.min(Math.max(results.length, 3), 6);
-  const radiusLabel = radiusMiles === 999 ? 'London' : `${radiusMiles} mi`;
+  // Derived from the searched radius rather than the requested one, so the count
+  // line, the map ring and the query can never tell three different stories.
+  const radiusLabel = formatRadiusMiles(coverageMeters);
 
   return (
     <div className="mx-auto max-w-6xl sm:px-6 sm:py-4">
@@ -197,8 +251,15 @@ export function SearchView({
             isYepPlus={isYepPlus}
             freeCapMiles={freeCapMiles}
             selectedMiles={radiusMiles}
-            onSelect={setRadiusMiles}
-            onLockedSelect={() => setShowUpgrade(true)}
+            previewMiles={previewMiles}
+            onSelect={(miles) => {
+              setRadiusMiles(miles);
+              setPreviewMiles(null);
+            }}
+            onLockedSelect={(miles) => {
+              setPreviewMiles(miles);
+              setShowUpgrade(true);
+            }}
           />
         </div>
 
@@ -269,32 +330,89 @@ export function SearchView({
           {loading &&
             Array.from({ length: skeletonCount }).map((_, i) => <RestaurantCardSkeleton key={i} />)}
 
-          {!loading && results.length === 0 && (
+          {!loading && results.length === 0 && filtered && (
             <div className="rounded-2xl border border-dashed border-black/10 px-6 py-12 text-center">
               <MapPinIcon className="mx-auto h-8 w-8 text-subtle" />
-              <p className="mt-3 font-display text-base font-semibold text-ink">Nothing here yet</p>
+              <p className="mt-3 font-display text-base font-semibold text-ink">No matches for these filters</p>
               <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
-                {filtered
-                  ? 'No places match these filters in this area. Try clearing them, or widen the radius.'
-                  : 'We have no halal restaurants listed around here yet. Try a wider radius, or another part of London.'}
+                {/* "Widen the radius" is only advice when the visitor can act on it. */}
+                {isYepPlus
+                  ? 'Clear the filters, or try a wider radius.'
+                  : `Nothing within ${radiusLabel} matches. Clear the filters to see everything here.`}
               </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {filtered && (
-                  <button
-                    type="button"
-                    onClick={() => setClassifications([])}
-                    className="inline-flex min-h-[40px] items-center rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-ink/30"
-                  >
-                    Clear filters
-                  </button>
-                )}
-                <Link
-                  href="/submit-restaurant"
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setClassifications([])}
                   className="inline-flex min-h-[40px] items-center rounded-full bg-ink px-4 text-sm font-semibold text-white transition hover:bg-accent-ink"
                 >
-                  Add a restaurant
-                </Link>
+                  Clear filters
+                </button>
               </div>
+            </div>
+          )}
+
+          {/* Not a dead end: the nearest areas that do have places, each one an
+              ordinary search at the usual radius, with the count a visitor will
+              actually see when they get there. */}
+          {!loading && results.length === 0 && !filtered && (
+            <div className="rounded-2xl border border-dashed border-black/10 px-5 py-8 sm:px-6">
+              <div className="text-center">
+                <MapPinIcon className="mx-auto h-8 w-8 text-subtle" />
+                <p className="mt-3 font-display text-base font-semibold text-ink">
+                  Nothing listed within {radiusLabel} yet
+                </p>
+                <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
+                  {nearbyAreas && nearbyAreas.length === 0
+                    ? 'We have nothing listed near here yet.'
+                    : isYepPlus
+                      ? 'Try a wider radius, or one of these areas nearby.'
+                      : 'These areas nearby have places listed.'}
+                </p>
+              </div>
+
+              {nearbyAreas === null && (
+                <ul aria-hidden="true" className="mt-5 space-y-2">
+                  {[0, 1, 2].map((n) => (
+                    <li key={n} className="h-[58px] animate-pulse rounded-xl bg-black/[0.04]" />
+                  ))}
+                </ul>
+              )}
+
+              {nearbyAreas && nearbyAreas.length > 0 && (
+                <ul className="mt-5 space-y-2">
+                  {nearbyAreas.map((area) => {
+                    const where = `${area.label}, ${area.outcode}`;
+                    return (
+                      <li key={area.outcode}>
+                        <Link
+                          href={`/search?lat=${area.lat}&lng=${area.lng}&mode=searched_location&label=${encodeURIComponent(where)}`}
+                          className="group flex min-h-[58px] items-center gap-3 rounded-xl border border-line bg-white px-4 py-2.5 transition hover:border-ink/25 hover:shadow-sm"
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
+                            <MapPinIcon className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-ink">{area.label}</span>
+                            <span className="block truncate text-xs text-muted">
+                              {area.outcode} · {area.places} {area.places === 1 ? 'place' : 'places'} ·{' '}
+                              {(area.distance_meters / 1609.34).toFixed(1)} mi away
+                            </span>
+                          </span>
+                          <ArrowRightIcon className="h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              <p className="mt-5 text-center text-sm text-muted">
+                Know somewhere halal around here?{' '}
+                <Link href="/submit-restaurant" className="font-semibold text-accent-ink underline underline-offset-2">
+                  Add it
+                </Link>
+              </p>
             </div>
           )}
 
@@ -320,18 +438,51 @@ export function SearchView({
             selectedId={selected?.id ?? null}
             onSelect={setSelected}
             resizeSignal={resizeSignal}
+            coverageRadiusMeters={coverageMeters}
+            previewRadiusMeters={previewMeters}
           />
 
-          {/* Map pins carry their status in colour alone; this legend is what
-              makes them readable, colour vision differences included. */}
-          <ul className="pointer-events-none absolute left-3 top-3 z-10 space-y-1 rounded-xl bg-white/90 px-3 py-2 text-xs font-medium text-ink shadow-md ring-1 ring-black/5 backdrop-blur">
-            {CLASSIFICATION_FILTERS.map((f) => (
-              <li key={f.value} className="flex items-center gap-1.5">
-                <f.Mark className={clsx('h-4 w-4 shrink-0', f.tone)} />
-                {f.label}
-              </li>
-            ))}
-          </ul>
+          {/* One overlay, not two. The coverage line answers "what am I even
+              looking at" and so comes first; the pin key below it is what makes
+              the markers readable, colour vision differences included. */}
+          <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] rounded-xl bg-white/92 px-3 py-2.5 text-xs font-medium text-ink shadow-md ring-1 ring-black/5 backdrop-blur">
+            <p className="flex items-center gap-2 whitespace-nowrap">
+              <span
+                aria-hidden="true"
+                className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-halal-full bg-halal-full/15"
+              />
+              Search area · {radiusLabel}
+            </p>
+
+            {/* Only ever an outline, and never any pins: there is nothing inside
+                this ring that is in the results, and it must not look like
+                there is. */}
+            {previewMeters && (
+              <p className="pointer-events-auto mt-1.5 flex items-center gap-2 whitespace-nowrap text-ink/70">
+                <span
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-dashed border-ink/50"
+                />
+                Yep+ would reach {formatRadiusMiles(previewMeters)}
+                <button
+                  type="button"
+                  onClick={() => setPreviewMiles(null)}
+                  className="ml-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold text-accent-ink underline underline-offset-2 transition hover:bg-black/[0.04]"
+                >
+                  Hide
+                </button>
+              </p>
+            )}
+
+            <ul className="mt-2 space-y-1 border-t border-line pt-2">
+              {CLASSIFICATION_FILTERS.map((f) => (
+                <li key={f.value} className="flex items-center gap-1.5">
+                  <f.Mark className={clsx('h-4 w-4 shrink-0', f.tone)} />
+                  {f.label}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {selected && (
             <RestaurantPreviewCard restaurant={selected} onClose={() => setSelected(null)} />

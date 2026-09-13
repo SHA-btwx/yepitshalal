@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase/server';
-import { milesToMeters } from '@/lib/types';
+import { effectiveRadiusMeters, milesToMeters } from '@/lib/types';
 
 // Single search endpoint. Radius enforcement happens inside search_restaurants()
 // itself (server-side, keyed off the caller's real subscription row) — this route
@@ -40,13 +40,21 @@ export async function GET(request: Request) {
   }
 
   const results = data ?? [];
-  const effectiveRadiusMeters = results[0]?.effective_radius_meters ??
-    (isYepPlus ? null : mode === 'current_location' ? 1609 : 805);
+  // A search that matched nothing has no row to read the radius off, and that is
+  // exactly when the client most needs it: the map still has to show the area
+  // that was searched. Fall back to the shared clamp rather than to null.
+  const radiusMeters =
+    results[0]?.effective_radius_meters ??
+    effectiveRadiusMeters({
+      requestedMiles: radiusMiles ?? null,
+      mode,
+      isYepPlus: Boolean(isYepPlus),
+    });
 
   return NextResponse.json({
     results,
     is_yep_plus: Boolean(isYepPlus),
-    effective_radius_meters: effectiveRadiusMeters,
+    effective_radius_meters: radiusMeters,
     requested_radius_meters: radiusMiles ? milesToMeters(radiusMiles) : null,
   });
 }

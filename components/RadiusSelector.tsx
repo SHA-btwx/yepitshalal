@@ -8,8 +8,10 @@ interface RadiusSelectorProps {
   isYepPlus: boolean;
   freeCapMiles: number;
   selectedMiles: number;
+  /** Locked tier currently outlined on the map. Not a selection: search is unchanged. */
+  previewMiles?: number | null;
   onSelect: (miles: number) => void;
-  onLockedSelect: () => void;
+  onLockedSelect: (miles: number) => void;
 }
 
 // Radio-group semantics, not a row of buttons: exactly one radius is active,
@@ -18,6 +20,7 @@ export function RadiusSelector({
   isYepPlus,
   freeCapMiles,
   selectedMiles,
+  previewMiles = null,
   onSelect,
   onLockedSelect,
 }: RadiusSelectorProps) {
@@ -42,23 +45,40 @@ export function RadiusSelector({
       {options.map(({ miles, label }) => {
         const locked = !isYepPlus && (miles === 999 || miles > freeCapMiles);
         const active = miles === selectedMiles && !(miles === 999 && !isYepPlus);
+        const previewing = locked && miles === previewMiles;
         return (
           <button
             key={miles}
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={locked ? `${label} — Yep+ only` : label}
-            onClick={() => (locked ? onLockedSelect() : onSelect(miles))}
+            aria-label={
+              locked
+                ? `${label}, Yep+ only${previewing ? ', coverage shown on map' : ''}`
+                : label
+            }
+            onClick={() => (locked ? onLockedSelect(miles) : onSelect(miles))}
             className={clsx(
               'inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition',
               active
                 ? 'border-ink bg-ink text-white'
+                : previewing
+                ? // Dashed to match its outline on the map, so the chip and the
+                  // ring read as the same object without becoming a selection.
+                  'border-dashed border-ink/45 bg-white text-ink'
                 : locked
                 ? 'border-line bg-white text-subtle'
                 : 'border-line bg-white text-ink/75 hover:border-ink/30 hover:text-ink'
             )}
           >
+            {/* The same filled green ring the map draws, so the selected chip and
+                the searched area read as one thing: this chip is that circle. */}
+            {active && (
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 shrink-0 rounded-full border-[1.5px] border-accent-onDark bg-accent-onDark/30"
+              />
+            )}
             {label}
             {locked && <LockIcon className="h-3.5 w-3.5" />}
           </button>
