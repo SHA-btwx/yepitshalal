@@ -5,16 +5,25 @@ import { InfoIcon } from '@/components/icons';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Catalogue coverage' };
 
-interface CoverageRow {
+interface Counts {
+  total: number;
+  listed: number;
+  fully_halal: number;
+  halal_options: number;
+  unverified: number;
+  no_evidence: number;
+}
+
+interface DistrictRow extends Counts {
   district: string;
   outward: string;
-  total: number;
-  active: number;
   needs_review: number;
   closed: number;
-  unverified: number;
-  verified: number;
   chain_branches: number;
+}
+
+interface BoroughRow extends Counts {
+  borough: string;
 }
 
 // Rough compass grouping of London postcode districts, so a gap reads as
@@ -27,67 +36,104 @@ const REGION: Record<string, string> = {
   W: 'West', UB: 'West', HA: 'West', TW: 'West',
 };
 
+// Fewer listed places than this in a borough is flagged as thin.
+const THIN_BOROUGH = 25;
+
+function sum<T extends Counts>(rows: T[]): Counts {
+  return rows.reduce(
+    (a, r) => ({
+      total: a.total + r.total,
+      listed: a.listed + r.listed,
+      fully_halal: a.fully_halal + r.fully_halal,
+      halal_options: a.halal_options + r.halal_options,
+      unverified: a.unverified + r.unverified,
+      no_evidence: a.no_evidence + r.no_evidence,
+    }),
+    { total: 0, listed: 0, fully_halal: 0, halal_options: 0, unverified: 0, no_evidence: 0 }
+  );
+}
+
+function LabelCells({ r }: { r: Counts }) {
+  return (
+    <>
+      <td className="px-3 py-2.5 font-medium tabular-nums text-ink">{r.listed}</td>
+      <td className="px-3 py-2.5 tabular-nums text-halal-fullInk">{r.fully_halal}</td>
+      <td className="px-3 py-2.5 tabular-nums text-halal-partialInk">{r.halal_options}</td>
+      <td className="px-3 py-2.5 tabular-nums text-muted">{r.unverified}</td>
+      <td className="px-3 py-2.5 tabular-nums text-subtle">{r.no_evidence}</td>
+    </>
+  );
+}
+
+const HEAD = 'px-3 py-2.5 font-medium';
+
 export default async function AdminCoveragePage() {
   const supabase = createAdminSupabase();
-  const { data } = await supabase
-    .from('catalogue_coverage')
-    .select('*')
-    .order('total', { ascending: false });
+  const [{ data: districtData }, { data: boroughData }] = await Promise.all([
+    supabase.from('catalogue_coverage').select('*'),
+    supabase.from('catalogue_borough_coverage').select('*').order('listed', { ascending: false }),
+  ]);
 
-  const rows = (data ?? []) as CoverageRow[];
+  const boroughs = (boroughData ?? []) as BoroughRow[];
 
-  const byDistrict = new Map<string, CoverageRow>();
-  for (const r of rows) {
-    const existing = byDistrict.get(r.district);
+  const byDistrict = new Map<string, DistrictRow>();
+  for (const r of (districtData ?? []) as DistrictRow[]) {
+    const cur = byDistrict.get(r.district);
     byDistrict.set(
       r.district,
-      existing
+      cur
         ? {
-            ...existing,
-            total: existing.total + r.total,
-            active: existing.active + r.active,
-            needs_review: existing.needs_review + r.needs_review,
-            closed: existing.closed + r.closed,
-            unverified: existing.unverified + r.unverified,
-            verified: existing.verified + r.verified,
-            chain_branches: existing.chain_branches + r.chain_branches,
+            ...cur,
+            ...sum([cur, r]),
+            needs_review: cur.needs_review + r.needs_review,
+            closed: cur.closed + r.closed,
+            chain_branches: cur.chain_branches + r.chain_branches,
           }
         : { ...r }
     );
   }
-
-  const districts = [...byDistrict.values()].sort((a, b) => b.total - a.total);
-  const grandTotal = districts.reduce((n, d) => n + d.total, 0);
-  const busiest = districts[0]?.total ?? 1;
+  const districts = [...byDistrict.values()].sort((a, b) => b.listed - a.listed);
+  const totals = sum(boroughs);
 
   const byRegion = new Map<string, number>();
   for (const d of districts) {
     const region = REGION[d.district] ?? 'Other';
-    byRegion.set(region, (byRegion.get(region) ?? 0) + d.total);
+    byRegion.set(region, (byRegion.get(region) ?? 0) + d.listed);
   }
 
   return (
     <AdminPage
       title="Catalogue coverage"
       width="lg"
-      description={`${grandTotal.toLocaleString()} locations. The point of this page is to show where the gaps are, so ingestion can be aimed rather than repeated where we are already strong.`}
+      description={`${totals.listed.toLocaleString()} places listed in search, out of ${totals.total.toLocaleString()} records. Use it to see where the gaps are before looking for more places.`}
     >
       <div className="space-y-5">
+        <Panel title="Listed, by label">
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-4">
+            {[
+              ['Fully Halal', totals.fully_halal],
+              ['Halal Options', totals.halal_options],
+              ['Unverified', totals.unverified],
+              ['No evidence (hidden)', totals.no_evidence],
+            ].map(([label, n]) => (
+              <div key={label} className="rounded-xl border border-line px-3.5 py-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-subtle">{label}</p>
+                <p className="mt-0.5 font-display text-xl font-semibold text-ink">{Number(n).toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
         <Panel title="By region">
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-3">
             {['Central', 'East', 'North', 'South', 'West', 'Other'].map((region) => {
               const n = byRegion.get(region) ?? 0;
-              const thin = n < grandTotal * 0.05;
               return (
                 <div key={region} className="rounded-xl border border-line px-3.5 py-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-subtle">
-                    {region}
-                  </p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-subtle">{region}</p>
                   <p className="mt-0.5 font-display text-xl font-semibold text-ink">{n}</p>
-                  {thin && n >= 0 && (
-                    <p className="mt-1 text-[11px] font-medium text-halal-partialInk">
-                      Thin coverage
-                    </p>
+                  {n < totals.listed * 0.05 && (
+                    <p className="mt-1 text-[11px] font-medium text-halal-partialInk">Thin coverage</p>
                   )}
                 </div>
               );
@@ -95,18 +141,49 @@ export default async function AdminCoveragePage() {
           </div>
         </Panel>
 
+        <Panel title="By borough" action={<Tag>{boroughs.length}</Tag>}>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[40rem] text-sm">
+              <thead>
+                <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-subtle">
+                  <th className="px-5 py-2.5 font-medium">Borough</th>
+                  <th className={HEAD}>Listed</th>
+                  <th className={HEAD}>Fully Halal</th>
+                  <th className={HEAD}>Options</th>
+                  <th className={HEAD}>Unverified</th>
+                  <th className={HEAD}>No evidence</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {boroughs.map((b) => (
+                  <tr key={b.borough}>
+                    <td className="px-5 py-2.5">
+                      <span className="font-medium text-ink">{b.borough}</span>
+                      {b.listed < THIN_BOROUGH && (
+                        <span className="ml-2 text-[11px] font-medium text-halal-partialInk">Thin</span>
+                      )}
+                    </td>
+                    <LabelCells r={b} />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+
         <Panel title="By postcode district" action={<Tag>{districts.length}</Tag>}>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[36rem] text-sm">
+            <table className="w-full min-w-[44rem] text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-subtle">
                   <th className="px-5 py-2.5 font-medium">District</th>
-                  <th className="px-3 py-2.5 font-medium">Total</th>
-                  <th className="px-3 py-2.5 font-medium">Verified</th>
-                  <th className="px-3 py-2.5 font-medium">Unverified</th>
-                  <th className="px-3 py-2.5 font-medium">Needs review</th>
-                  <th className="px-3 py-2.5 font-medium">Chain</th>
-                  <th className="px-5 py-2.5 font-medium">Share</th>
+                  <th className={HEAD}>Listed</th>
+                  <th className={HEAD}>Fully Halal</th>
+                  <th className={HEAD}>Options</th>
+                  <th className={HEAD}>Unverified</th>
+                  <th className={HEAD}>No evidence</th>
+                  <th className={HEAD}>Needs review</th>
+                  <th className={HEAD}>Closed</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -114,23 +191,11 @@ export default async function AdminCoveragePage() {
                   <tr key={d.district}>
                     <td className="px-5 py-2.5">
                       <span className="font-medium text-ink">{d.district}</span>
-                      <span className="ml-2 text-xs text-subtle">
-                        {REGION[d.district] ?? 'Other'}
-                      </span>
+                      <span className="ml-2 text-xs text-subtle">{REGION[d.district] ?? 'Other'}</span>
                     </td>
-                    <td className="px-3 py-2.5 tabular-nums text-ink/80">{d.total}</td>
-                    <td className="px-3 py-2.5 tabular-nums text-halal-fullInk">{d.verified}</td>
-                    <td className="px-3 py-2.5 tabular-nums text-muted">{d.unverified}</td>
+                    <LabelCells r={d} />
                     <td className="px-3 py-2.5 tabular-nums text-muted">{d.needs_review}</td>
-                    <td className="px-3 py-2.5 tabular-nums text-muted">{d.chain_branches}</td>
-                    <td className="px-5 py-2.5">
-                      <span className="flex h-1.5 w-24 overflow-hidden rounded-full bg-black/10">
-                        <span
-                          className="h-full rounded-full bg-accent-ink"
-                          style={{ width: `${Math.round((d.total / busiest) * 100)}%` }}
-                        />
-                      </span>
-                    </td>
+                    <td className="px-3 py-2.5 tabular-nums text-muted">{d.closed}</td>
                   </tr>
                 ))}
               </tbody>
@@ -140,9 +205,9 @@ export default async function AdminCoveragePage() {
 
         <p className="flex items-start gap-2 px-1 text-xs leading-relaxed text-muted">
           <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
-          Districts come from the postcode on each record, so anything without a postcode groups
-          under ??. Verified counts a halal classification that is not Unverified — it is not a
-          measure of how good the data is, only of how much has been checked.
+          Listed means shown in search: active, not merged, and with at least some evidence of
+          halal food. No evidence counts active records we hold but do not show. Districts come
+          from each record&apos;s postcode, so records without one group under ??.
         </p>
       </div>
     </AdminPage>
