@@ -1,0 +1,12 @@
+{
+  "name": "yepitshalal-catalogue",
+  "private": true,
+  "type": "module",
+  "description": "Restaurant discovery and halal evidence pipeline. Kept out of the app's dependencies so Vercel never installs it.",
+  "dependencies": {
+    "@duckdb/node-api": "1.5.5-r.5"
+  },
+  "scripts": {
+    "test": "node tests/patterns.test.mjs && node tests/host-affinity.test.mjs"
+  }
+}
