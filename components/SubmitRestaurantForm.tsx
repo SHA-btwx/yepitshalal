@@ -82,7 +82,24 @@ const YES_NO = [
   { value: 'unknown', label: "Don't know" },
 ];
 
-export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; name: string }[] }) {
+export interface ExistingPlace {
+  slug: string;
+  name: string;
+  address: string;
+  postcode: string;
+  phone: string;
+  website: string;
+  cuisine: string;
+}
+
+export function SubmitRestaurantForm({
+  cuisines,
+  existing = null,
+}: {
+  cuisines: { id: number; name: string }[];
+  /** Set when suggesting an edit to a place we already have. */
+  existing?: ExistingPlace | null;
+}) {
   const cuisineId = useId();
   const notesId = useId();
   const [submitting, setSubmitting] = useState(false);
@@ -133,10 +150,12 @@ export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; nam
         </span>
         <h2 className="mt-3 font-display text-xl font-semibold text-ink">Thanks, we&apos;ve got it</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          We check every restaurant before it appears on YepItsHalal, so {done.name} won&apos;t show
-          up straight away. If you left an email, we may get in touch with a question.
+          {existing
+            ? `We check every suggestion before it changes a listing, so ${existing.name} won't update straight away.`
+            : `We check every restaurant before it appears on YepItsHalal, so ${done.name} won't show up straight away.`}{' '}
+          If you left an email, we may get in touch with a question.
         </p>
-        {done.duplicate && (
+        {done.duplicate && !existing && (
           <p className="mt-3 rounded-xl bg-halal-partialSoft px-4 py-3 text-sm text-halal-partialInk ring-1 ring-halal-partial/20">
             We may already list this restaurant as{' '}
             <Link href={`/restaurant/${done.duplicate.slug}`} className="font-semibold underline">
@@ -167,6 +186,7 @@ export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; nam
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate={false}>
       <input type="text" name="company_website" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+      {existing && <input type="hidden" name="update_slug" value={existing.slug} />}
 
       <p className="text-xs text-muted">
         <span className="text-halal-partialInk" aria-hidden="true">*</span> Required
@@ -174,8 +194,8 @@ export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; nam
 
       <section className="space-y-4">
         <h2 className="font-display text-lg font-semibold text-ink">The restaurant</h2>
-        <Field label="Restaurant name" name="name" required minLength={2} maxLength={120} autoComplete="organization" />
-        <Field label="Street address" name="address" required minLength={5} maxLength={300} autoComplete="street-address" placeholder="Number and street" />
+        <Field label="Restaurant name" name="name" required minLength={2} maxLength={120} autoComplete="organization" defaultValue={existing?.name} />
+        <Field label="Street address" name="address" required minLength={5} maxLength={300} autoComplete="street-address" placeholder="Number and street" defaultValue={existing?.address} />
         <Field
           label="Postcode"
           name="postcode"
@@ -183,15 +203,16 @@ export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; nam
           maxLength={10}
           autoComplete="postal-code"
           hint="We use this to place it on the map, so it needs to be the restaurant's full postcode."
+          defaultValue={existing?.postcode}
           className={`${FIELD_CLASS} uppercase sm:max-w-[12rem]`}
         />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Phone" name="phone" type="tel" autoComplete="tel" />
+          <Field label="Phone" name="phone" type="tel" autoComplete="tel" defaultValue={existing?.phone} />
           <div>
             <label htmlFor={cuisineId} className={LABEL_CLASS}>
               Cuisine
             </label>
-            <select id={cuisineId} name="cuisine" className={FIELD_CLASS} defaultValue="">
+            <select id={cuisineId} name="cuisine" className={FIELD_CLASS} defaultValue={cuisines.some((c) => c.name === existing?.cuisine) ? existing!.cuisine : ''}>
               <option value="">Choose one</option>
               {cuisines.map((c) => (
                 <option key={c.id} value={c.name}>
@@ -202,7 +223,7 @@ export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; nam
           </div>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Website" name="website" type="url" inputMode="url" placeholder="https://" />
+          <Field label="Website" name="website" type="url" inputMode="url" placeholder="https://" defaultValue={existing?.website} />
           <Field label="Instagram" name="instagram" placeholder="@handle" />
         </div>
       </section>
@@ -284,7 +305,7 @@ export function SubmitRestaurantForm({ cuisines }: { cuisines: { id: number; nam
         disabled={submitting}
         className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-accent-ink disabled:opacity-60"
       >
-        {submitting ? 'Sending…' : 'Send for review'}
+        {submitting ? 'Sending…' : existing ? 'Send the edit for review' : 'Send for review'}
       </button>
     </form>
   );

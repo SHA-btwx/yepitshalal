@@ -50,6 +50,11 @@ function instagramUrl(handle: string | null): string | null {
   return h ? `https://www.instagram.com/${h}/` : null;
 }
 
+/** Whether the submission says anything about halal food at all. "Not sure" doesn't. */
+function saysSomethingHalal(sub: Submission): boolean {
+  return Boolean(sub.halal_claim || sub.certification_body || sub.serves_pork !== null);
+}
+
 function evidenceFor(sub: Submission, restaurantId: string, reviewer: string) {
   const byOwner = sub.relationship === 'owner' || sub.relationship === 'staff';
   const said = [
@@ -104,6 +109,8 @@ export async function approveSubmission(id: string) {
       data_source: 'owner_submitted',
       catalogue_status: 'active',
       halal_classification: 'unverified',
+      // Nothing said about halal: listed as Not checked yet rather than given a label.
+      is_candidate: !saysSomethingHalal(sub),
       location: `SRID=4326;POINT(${sub.lng} ${sub.lat})`,
     })
     .select('id, slug')
@@ -122,8 +129,10 @@ export async function approveSubmission(id: string) {
     source_name: sub.name,
   });
 
-  // The evidence row is what makes it listed: refresh_halal_status runs on insert.
-  await supabase.from('restaurant_halal_evidence').insert(evidenceFor(sub, restaurant.id, admin.id));
+  // The evidence row is what gives it a label: refresh_halal_status runs on insert.
+  if (saysSomethingHalal(sub)) {
+    await supabase.from('restaurant_halal_evidence').insert(evidenceFor(sub, restaurant.id, admin.id));
+  }
 
   await supabase
     .from('restaurant_submissions')
@@ -141,7 +150,7 @@ export async function mergeSubmission(id: string, restaurantId: string) {
 
   const { data: existing } = await supabase
     .from('restaurants')
-    .select('id, phone, website_url, socials')
+    .select('id, phone, website_url, socials, address, postcode, cuisine_label')
     .eq('id', restaurantId)
     .maybeSingle();
   if (!existing) throw new Error('That listing no longer exists.');
@@ -150,11 +159,16 @@ export async function mergeSubmission(id: string, restaurantId: string) {
   const patch: Record<string, unknown> = {};
   if (!existing.phone && sub.phone) patch.phone = sub.phone;
   if (!existing.website_url && sub.website) patch.website_url = sub.website;
+  if (/street address not known/i.test(existing.address) && sub.address) patch.address = `${sub.address}, ${sub.postcode}`;
+  if (!existing.postcode && sub.postcode) patch.postcode = sub.postcode;
+  if (!existing.cuisine_label && sub.cuisine) patch.cuisine_label = sub.cuisine;
   const ig = instagramUrl(sub.instagram);
   if (ig && !(existing.socials ?? []).includes(ig)) patch.socials = [...(existing.socials ?? []), ig];
   if (Object.keys(patch).length) await supabase.from('restaurants').update(patch).eq('id', restaurantId);
 
-  await supabase.from('restaurant_halal_evidence').insert(evidenceFor(sub, restaurantId, admin.id));
+  if (saysSomethingHalal(sub)) {
+    await supabase.from('restaurant_halal_evidence').insert(evidenceFor(sub, restaurantId, admin.id));
+  }
 
   await supabase
     .from('restaurant_submissions')

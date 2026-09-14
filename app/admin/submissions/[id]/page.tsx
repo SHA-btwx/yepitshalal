@@ -76,6 +76,23 @@ export default async function SubmissionPage({ params }: { params: { id: string 
           </dl>
         </Panel>
 
+        {s.restaurant_id && pending && (
+          <Panel title="Suggested edit to a listing we have">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+              <p className="text-sm text-muted">
+                The visitor started from{' '}
+                <Link href={`/admin/restaurants/${s.restaurant_id}`} className="font-medium text-ink underline">
+                  this listing
+                </Link>
+                . Applying fills in details it is missing and records any halal information as weak evidence.
+              </p>
+              <form action={mergeSubmission.bind(null, s.id, s.restaurant_id)}>
+                <button className={BUTTON}>Apply to that listing</button>
+              </form>
+            </div>
+          </Panel>
+        )}
+
         <Panel title="Already listed nearby?">
           {candidates.length === 0 ? (
             <p className="px-5 py-4 text-sm text-muted">No similar listing within 250 m or at this postcode.</p>

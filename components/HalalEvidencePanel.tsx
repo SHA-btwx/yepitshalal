@@ -92,6 +92,8 @@ export function HalalEvidencePanel({
   summary,
   evidence,
   isListed,
+  isSearchable = false,
+  cuisine = null,
   slug,
 }: {
   classification: HalalClassification;
@@ -99,8 +101,48 @@ export function HalalEvidencePanel({
   summary: string | null;
   evidence: HalalEvidence[];
   isListed: boolean;
+  /** In search as a place not checked yet. */
+  isSearchable?: boolean;
+  cuisine?: string | null;
   slug: string;
 }) {
+  if (!isListed && isSearchable && !strength) {
+    return (
+      <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="halal-status" className="font-display text-lg font-semibold text-ink">
+            Halal status
+          </h2>
+          <HalalBadge classification="unknown" size="md" variant="solid" />
+        </div>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">
+          We don&apos;t know yet whether this place serves halal food. Nobody has checked, and we
+          haven&apos;t found anything it or anyone else has said about it.
+        </p>
+        <div className="mt-4 rounded-xl bg-paper p-4 text-sm leading-relaxed text-ink/80">
+          <h3 className="font-semibold text-ink">Why it&apos;s on YepItsHalal</h3>
+          <p className="mt-1">
+            {cuisine
+              ? `It's listed under ${cuisine}, a kind of food often served halal in London.`
+              : 'Its name suggests food that is often served halal in London.'}{' '}
+            That is a reason to ask, not an answer. Check with the restaurant before you order.
+          </p>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          <Link href={`/submit-restaurant?update=${slug}`} className="font-semibold text-accent-ink hover:underline">
+            Know if it&apos;s halal? Tell us
+          </Link>
+          <Link href={`/restaurant/${slug}/verify`} className="font-semibold text-accent-ink hover:underline">
+            Ask us to check it
+          </Link>
+          <Link href="/how-we-check" className="font-medium text-muted hover:text-ink hover:underline">
+            How we label places
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   if (!isListed || !strength) {
     return (
       <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
@@ -109,10 +151,10 @@ export function HalalEvidencePanel({
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           {summary ??
-            "We don't have any evidence that this place serves halal food, so it isn't listed in search. That doesn't mean it isn't halal. It means we can't tell you either way."}
+            "We don't have any evidence that this place serves halal food, so it isn't shown in search. That doesn't mean it isn't halal. It means we can't tell you either way."}
         </p>
         <p className="mt-3 text-sm">
-          <Link href="/submit-restaurant" className="font-semibold text-accent-ink hover:underline">
+          <Link href={`/submit-restaurant?update=${slug}`} className="font-semibold text-accent-ink hover:underline">
             Know it serves halal food? Tell us
           </Link>
         </p>
@@ -167,7 +209,7 @@ export function HalalEvidencePanel({
 
       <p className="mt-4 text-xs text-muted">
         <Link href="/how-we-check" className="font-medium text-accent-ink hover:underline">
-          How we label restaurants
+          How we label places
         </Link>
         {' · '}
         <Link href={`/submit-restaurant?update=${slug}`} className="font-medium text-accent-ink hover:underline">

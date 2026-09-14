@@ -34,6 +34,9 @@ export interface FullRestaurant {
   halal_summary: string | null;
   halal_checked_at: string | null;
   isListed: boolean;
+  /** Shown in search: listed with evidence, or a place not checked yet. */
+  isSearchable: boolean;
+  isCandidate: boolean;
   catalogueStatus: 'active' | 'temporarily_closed' | 'permanently_closed' | 'needs_review';
   lat: number;
   lng: number;
@@ -74,7 +77,7 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
   const { data: restaurant } = await supabase
     .from('restaurants_with_coords')
     .select(
-      'id, name, slug, description, address, postcode, borough, phone, website_url, menu_url, socials, halal_classification, halal_evidence_strength, halal_summary, halal_checked_at, is_listed, catalogue_status, lat, lng, branch_label, cuisine_label, brand_id'
+      'id, name, slug, description, address, postcode, borough, phone, website_url, menu_url, socials, halal_classification, halal_evidence_strength, halal_summary, halal_checked_at, is_listed, is_searchable, is_candidate, catalogue_status, lat, lng, branch_label, cuisine_label, brand_id'
     )
     .eq('slug', slug)
     .maybeSingle();
@@ -148,6 +151,8 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     halal_summary: restaurant.halal_summary ?? null,
     halal_checked_at: restaurant.halal_checked_at ?? null,
     isListed: Boolean(restaurant.is_listed),
+    isSearchable: Boolean(restaurant.is_searchable),
+    isCandidate: Boolean(restaurant.is_candidate),
     catalogueStatus: restaurant.catalogue_status,
     brandName: (brand as { name: string } | null)?.name ?? null,
     branchLabel: restaurant.branch_label ?? null,
@@ -167,4 +172,54 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     sources: (sources ?? []) as SourceLink[],
     offers: offers ?? [],
   };
+});
+
+export interface NearbyPlace {
+  id: string;
+  name: string;
+  slug: string;
+  brand_name: string | null;
+  branch_label: string | null;
+  halal_classification: 'fully_halal' | 'halal_options' | 'unverified';
+  halal_status: 'fully_halal' | 'halal_options' | 'unverified' | 'unknown';
+  halal_summary: string | null;
+  halal_evidence_strength: EvidenceStrength | null;
+  distance_meters: number;
+  cuisine_label: string | null;
+  cuisines: string[] | null;
+  primary_photo_path: string | null;
+  address: string;
+  lat: number;
+  lng: number;
+  effective_radius_meters: number;
+  is_yep_plus: boolean;
+  opening_hours: null;
+  total_count: number;
+  postcode: string | null;
+}
+
+/**
+ * Places with halal evidence within half a mile, strongest first. The same
+ * search, and the same half-mile a visitor gets from a searched place, so this
+ * shows nothing search would not.
+ */
+export const getNearbyWithEvidence = cache(async function getNearbyWithEvidence(
+  restaurant: { id: string; lat: number; lng: number },
+  limit = 6
+): Promise<NearbyPlace[]> {
+  const supabase = createServerSupabase();
+  const { data } = await supabase.rpc('search_restaurants', {
+    p_lat: restaurant.lat,
+    p_lng: restaurant.lng,
+    p_radius_meters: 805,
+    p_mode: 'searched_location',
+    p_classification: ['fully_halal', 'halal_options', 'unverified'],
+    p_cuisine_ids: null,
+    p_query: null,
+    p_limit: limit + 1,
+    p_offset: 0,
+    p_sort: 'evidence',
+    p_include_candidates: false,
+  });
+  return ((data ?? []) as NearbyPlace[]).filter((r) => r.id !== restaurant.id).slice(0, limit);
 });

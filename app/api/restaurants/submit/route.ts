@@ -21,6 +21,7 @@ type Tri = boolean | null;
 
 interface Body {
   company_website?: string; // honeypot
+  update_slug?: string; // suggesting an edit to a place we already have
   name?: string;
   address?: string;
   postcode?: string;
@@ -140,6 +141,18 @@ export async function POST(request: Request) {
     );
   }
 
+  // An edit to an existing place names it directly, so review starts from that listing.
+  let target: { id: string; name: string; slug: string } | null = null;
+  if (typeof body.update_slug === 'string' && body.update_slug) {
+    const { data } = await supabase
+      .from('restaurants')
+      .select('id, name, slug')
+      .eq('slug', body.update_slug.slice(0, 120))
+      .is('merged_into', null)
+      .maybeSingle();
+    target = data ?? null;
+  }
+
   const { data: similar } = await supabase.rpc('similar_restaurants', {
     p_name: name,
     p_lat: lat,
@@ -179,6 +192,7 @@ export async function POST(request: Request) {
       notes: clean(body.notes, 1000),
       duplicate_candidates: candidates,
       ip_hash: ipHash,
+      restaurant_id: target?.id ?? null,
     })
     .select('id')
     .single();
@@ -188,13 +202,13 @@ export async function POST(request: Request) {
   }
 
   await notifyAdmin(
-    `New restaurant submission: ${name}`,
+    target ? `Edit suggested for ${target.name}` : `New restaurant submission: ${name}`,
     [
       `${name}`,
       `${address}, ${postcode} (${borough})`,
       `Submitted by: ${relationship}${contactEmail ? `, ${contactEmail}` : ''}`,
       `Halal: ${claim ?? 'not stated'}`,
-      likely ? `Possible duplicate of: ${likely.name} (${SITE_URL}/restaurant/${likely.slug})` : 'No likely duplicate found.',
+      target ? `Edit to: ${target.name} (${SITE_URL}/restaurant/${target.slug})` : likely ? `Possible duplicate of: ${likely.name} (${SITE_URL}/restaurant/${likely.slug})` : 'No likely duplicate found.',
       '',
       `Review: ${SITE_URL}/admin/submissions/${inserted.id}`,
     ].join('\n')
@@ -202,6 +216,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    duplicate: likely && likely.is_listed ? { name: likely.name, slug: likely.slug } : null,
+    duplicate: !target && likely && likely.is_listed ? { name: likely.name, slug: likely.slug } : null,
   });
 }
