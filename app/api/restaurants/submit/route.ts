@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { notifyAdmin } from '@/lib/notify';
+import { SITE_URL } from '@/lib/site';
 
 // "Add a restaurant" creates a submission, never a listing.
 //
@@ -186,7 +187,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'We could not save that just now. Please try again.' }, { status: 500 });
   }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://yepitshalal.com';
   await notifyAdmin(
     `New restaurant submission: ${name}`,
     [
@@ -194,9 +194,9 @@ export async function POST(request: Request) {
       `${address}, ${postcode} (${borough})`,
       `Submitted by: ${relationship}${contactEmail ? `, ${contactEmail}` : ''}`,
       `Halal: ${claim ?? 'not stated'}`,
-      likely ? `Possible duplicate of: ${likely.name} (${site}/restaurant/${likely.slug})` : 'No likely duplicate found.',
+      likely ? `Possible duplicate of: ${likely.name} (${SITE_URL}/restaurant/${likely.slug})` : 'No likely duplicate found.',
       '',
-      `Review: ${site}/admin/submissions/${inserted.id}`,
+      `Review: ${SITE_URL}/admin/submissions/${inserted.id}`,
     ].join('\n')
   );
 

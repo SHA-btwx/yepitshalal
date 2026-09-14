@@ -14,6 +14,7 @@ import { OpeningHoursList } from '@/components/OpeningHoursList';
 import { OffersList } from '@/components/OffersList';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { jsonLdHtml } from '@/lib/jsonLd';
+import { SITE_URL } from '@/lib/site';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
 import { isStockPhoto, DAY_NAMES } from '@/lib/types';
 import {
@@ -95,7 +96,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
     name: title,
-    url: `https://yepitshalal.com/restaurant/${restaurant.slug}`,
+    url: `${SITE_URL}/restaurant/${restaurant.slug}`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: restaurant.address,

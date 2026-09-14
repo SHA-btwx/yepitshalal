@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { createServerSupabase } from '@/lib/supabase/server';
+import { SITE_URL } from '@/lib/site';
 
 // Live-mode Stripe account — price IDs stay unset until you're ready to test
 // real payments (see .env.local). Until then this redirects back with a
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
       : process.env.STRIPE_PRICE_YEP_PLUS_MONTHLY;
 
   const stripe = getStripe();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+  const siteUrl = SITE_URL;
 
   if (!stripe || !priceId) {
     const url = new URL('/yep-plus', request.url);

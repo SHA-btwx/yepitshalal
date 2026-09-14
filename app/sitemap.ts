@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getAreasWithPages, getListedRestaurantSlugs } from '@/lib/areas';
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yepitshalal.com';
+import { SITE_URL as siteUrl } from '@/lib/site';
 
 export const revalidate = 3600;
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getStripe } from '@/lib/stripe';
+import { SITE_URL } from '@/lib/site';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
   if (queueType === 'priority') {
     const stripe = getStripe();
     const priceId = process.env.STRIPE_PRICE_PRIORITY_VERIFICATION;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+    const siteUrl = SITE_URL;
 
     if (!stripe || !priceId) {
       return NextResponse.json(

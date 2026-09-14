@@ -7,6 +7,7 @@ import { ctaPrimary } from '@/components/cta';
 import { getAreaBySlug, getAreasWithPages, type AreaListing } from '@/lib/areas';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { jsonLdHtml } from '@/lib/jsonLd';
+import { SITE_URL } from '@/lib/site';
 import type { HalalClassification } from '@/lib/types';
 
 export const revalidate = 3600;
@@ -67,8 +68,8 @@ export default async function AreaPage({ params }: { params: { borough: string }
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Halal restaurants in London', item: 'https://yepitshalal.com/halal-restaurants' },
-        { '@type': 'ListItem', position: 2, name: area.borough, item: `https://yepitshalal.com/halal-restaurants/${area.slug}` },
+        { '@type': 'ListItem', position: 1, name: 'Halal restaurants in London', item: `${SITE_URL}/halal-restaurants` },
+        { '@type': 'ListItem', position: 2, name: area.borough, item: `${SITE_URL}/halal-restaurants/${area.slug}` },
       ],
     },
     {
@@ -79,7 +80,7 @@ export default async function AreaPage({ params }: { params: { borough: string }
       itemListElement: listings.map((r, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `https://yepitshalal.com/restaurant/${r.slug}`,
+        url: `${SITE_URL}/restaurant/${r.slug}`,
         name: title(r),
       })),
     },

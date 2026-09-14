@@ -5,6 +5,7 @@ import './globals.css';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { BottomNav } from '@/components/BottomNav';
+import { SITE_URL } from '@/lib/site';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -20,12 +21,10 @@ const inter = Inter({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yepitshalal.com';
-
 export const metadata: Metadata = {
   // Without this, the generated OG/Twitter image URLs stay relative and no
   // scraper can resolve them.
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'YepItsHalal: Find halal food near you',
     template: '%s | YepItsHalal',
