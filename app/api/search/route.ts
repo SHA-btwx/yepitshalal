@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { runSearch } from '@/lib/search';
-import type { HalalClassification } from '@/lib/types';
+import { HALAL_STATUSES, type HalalStatus } from '@/lib/types';
 
 // A thin pass-through to runSearch(). Radius entitlement is enforced inside the
 // database function, keyed off the caller's real subscription, never here.
-const CLASSES: HalalClassification[] = ['fully_halal', 'halal_options', 'unverified'];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -16,7 +15,7 @@ export async function GET(request: Request) {
 
   const classification = (searchParams.get('classification') ?? '')
     .split(',')
-    .filter((c): c is HalalClassification => (CLASSES as string[]).includes(c));
+    .filter((c): c is HalalStatus => (HALAL_STATUSES as string[]).includes(c));
 
   try {
     const response = await runSearch({

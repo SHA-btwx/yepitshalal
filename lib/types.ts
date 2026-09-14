@@ -1,5 +1,20 @@
 export type HalalClassification = 'fully_halal' | 'halal_options' | 'unverified';
 
+/**
+ * What a visitor is told about a place. The three labels come from evidence;
+ * 'unknown' is a place nobody has checked yet, shown because its name or cuisine
+ * makes it worth checking. It is never a halal claim.
+ */
+export type HalalStatus = HalalClassification | 'unknown';
+
+export const HALAL_STATUSES: HalalStatus[] = ['fully_halal', 'halal_options', 'unverified', 'unknown'];
+
+/** A place with no evidence at all is 'unknown', whatever its stored default label says. */
+export function statusOf(r: { halal_status?: HalalStatus | null; halal_evidence_strength?: string | null; halal_classification: HalalClassification }): HalalStatus {
+  if (r.halal_status) return r.halal_status;
+  return r.halal_evidence_strength ? r.halal_classification : 'unknown';
+}
+
 export type TriState = boolean | null;
 
 /** What kind of source an evidence record comes from. See migration 0023. */
@@ -54,6 +69,8 @@ export interface SearchResultRestaurant {
   opening_hours: OpeningHour[] | null;
   /** Every match within the searched radius, not just the rows returned. */
   total_count: number;
+  halal_status: HalalStatus;
+  postcode: string | null;
 }
 
 /** How many places the same search finds at one radius tier. */
@@ -61,6 +78,8 @@ export interface TierCount {
   miles: number;
   meters: number;
   places: number;
+  /** Of those, how many have halal evidence (any label but Not checked yet). */
+  withEvidence: number;
 }
 
 export interface RestaurantDetail {
@@ -163,9 +182,9 @@ export function formatRadiusMiles(meters: number): string {
 
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// Real uploads live in Supabase Storage; any Unsplash URL is a licensed
-// cuisine-representative placeholder we assigned, not the restaurant's own
-// photo, flagged in the UI so it's never mistaken for one.
+// Real uploads live in Supabase Storage. An Unsplash URL, or anything under
+// representative/, is a picture of the kind of food, not the restaurant's own
+// photo, and the UI says so wherever one is shown.
 export function isStockPhoto(url: string): boolean {
-  return url.includes('images.unsplash.com');
+  return url.includes('images.unsplash.com') || url.includes('/representative/');
 }

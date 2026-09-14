@@ -18,10 +18,11 @@ import {
   HalalFullMark,
   HalalPartialMark,
   HalalUnknownMark,
+  HalalNotCheckedMark,
   InfoIcon,
 } from './icons';
 import { effectiveRadiusMeters, formatRadiusMiles } from '@/lib/types';
-import type { HalalClassification, SearchResultRestaurant, TierCount } from '@/lib/types';
+import type { HalalStatus, SearchResultRestaurant, TierCount } from '@/lib/types';
 import type { SearchResponse } from '@/lib/search';
 import type { NearbyArea } from '@/app/api/nearby-areas/route';
 
@@ -41,7 +42,7 @@ interface SearchViewProps {
 // Same marks the cards use, so the filter row and the map legend read in the
 // one visual language rather than a second colour-coded one.
 const CLASSIFICATION_FILTERS: {
-  value: HalalClassification;
+  value: HalalStatus;
   label: string;
   Mark: typeof HalalFullMark;
   tone: string;
@@ -49,6 +50,7 @@ const CLASSIFICATION_FILTERS: {
   { value: 'fully_halal', label: 'Fully Halal', Mark: HalalFullMark, tone: 'text-halal-full' },
   { value: 'halal_options', label: 'Halal Options', Mark: HalalPartialMark, tone: 'text-halal-partial' },
   { value: 'unverified', label: 'Unverified', Mark: HalalUnknownMark, tone: 'text-halal-unverified' },
+  { value: 'unknown', label: 'Not checked yet', Mark: HalalNotCheckedMark, tone: 'text-subtle' },
 ];
 
 const PAGE = 30;
@@ -60,10 +62,12 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   const [tierCounts, setTierCounts] = useState<TierCount[]>(initial.tierCounts);
   const [isYepPlus, setIsYepPlus] = useState(initial.isYepPlus);
   const [radiusMiles, setRadiusMiles] = useState(freeCapMiles);
-  const [classifications, setClassifications] = useState<HalalClassification[]>([]);
+  const [classifications, setClassifications] = useState<HalalStatus[]>([]);
   const [queryInput, setQueryInput] = useState('');
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState<'distance' | 'evidence'>('distance');
+  // Evidence first by default: someone looking for halal food wants the places
+  // with a reason to believe first, nearest first within each label.
+  const [sort, setSort] = useState<'distance' | 'evidence'>('evidence');
   const [visible, setVisible] = useState(PAGE);
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
   const [selected, setSelected] = useState<SearchResultRestaurant | null>(null);
@@ -91,7 +95,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   const filtered = classifications.length > 0 || query.length > 0;
 
   const run = useCallback(
-    async (miles: number, filters: HalalClassification[], q: string, s: 'distance' | 'evidence') => {
+    async (miles: number, filters: HalalStatus[], q: string, s: 'distance' | 'evidence') => {
       setLoading(true);
       setFailed(false);
       setServerRadiusMeters(null);
@@ -179,7 +183,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
     return () => window.removeEventListener('keydown', onKey);
   }, [selected]);
 
-  function toggleClassification(value: HalalClassification) {
+  function toggleClassification(value: HalalStatus) {
     setSelected(null);
     setClassifications((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
   }
@@ -187,6 +191,8 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   const radiusLabel = formatRadiusMiles(coverageMeters);
   const unlock = !isYepPlus && !loading ? pickUnlockTier(tierCounts, coverageMeters, previewMiles) : null;
   const skeletonCount = Math.min(Math.max(results.length, 3), 6);
+  // Of the places in range, how many have halal evidence. Same query as the count.
+  const withEvidenceHere = tierCounts.find((t) => t.meters === coverageMeters)?.withEvidence ?? null;
 
   return (
     <div className="mx-auto max-w-6xl sm:px-6 sm:py-4">
@@ -312,11 +318,17 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             : failed
               ? "Search didn't load. Try again."
               : `${totalCount} ${totalCount === 1 ? 'place' : 'places'} within ${radiusLabel}`}
+          {!loading && !failed && totalCount > 0 && withEvidenceHere !== null && classifications.length === 0 && (
+            <span className="font-normal text-muted">
+              {' · '}
+              {withEvidenceHere === totalCount ? 'all with halal evidence' : `${withEvidenceHere} with halal evidence`}
+            </span>
+          )}
         </p>
         {totalCount > 1 && !loading && (
           <div role="group" aria-label="Sort results" className="flex items-center gap-1 text-xs">
             <span className="text-subtle">Sort:</span>
-            {(['distance', 'evidence'] as const).map((s) => (
+            {(['evidence', 'distance'] as const).map((s) => (
               <button
                 key={s}
                 type="button"
@@ -327,7 +339,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
                   sort === s ? 'bg-ink text-white' : 'text-ink/70 hover:text-ink'
                 )}
               >
-                {s === 'distance' ? 'Nearest' : 'Strongest evidence'}
+                {s === 'distance' ? 'Nearest' : 'Evidence first'}
               </button>
             ))}
           </div>
@@ -372,11 +384,11 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             <div className="rounded-2xl border border-dashed border-black/10 px-5 py-8 sm:px-6">
               <div className="text-center">
                 <MapPinIcon className="mx-auto h-8 w-8 text-subtle" />
-                <p className="mt-3 font-display text-base font-semibold text-ink">Nothing listed within {radiusLabel} yet</p>
+                <p className="mt-3 font-display text-base font-semibold text-ink">No places found within {radiusLabel} yet</p>
                 <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
                   {nearbyAreas && nearbyAreas.length === 0
-                    ? 'We have nothing listed near here yet.'
-                    : 'These areas nearby have places listed.'}
+                    ? "We don't know of any places near here yet."
+                    : 'These areas nearby have places to eat.'}
                 </p>
               </div>
               {nearbyAreas === null && (
@@ -434,7 +446,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           )}
           {!loading && totalCount > results.length && results.length <= visible && (
             <p className="text-center text-xs text-muted">
-              Showing the nearest {results.length} of {totalCount}. Narrow the radius or add a filter to see the rest.
+              Showing {results.length} of {totalCount}. Narrow the radius or add a filter to see the rest.
             </p>
           )}
         </div>

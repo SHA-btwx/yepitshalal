@@ -22,6 +22,7 @@ export default async function LondonAreasPage() {
   const total = areas.reduce((n, a) => n + a.listed, 0);
   const fully = areas.reduce((n, a) => n + a.fully_halal, 0);
   const options = areas.reduce((n, a) => n + a.halal_options, 0);
+  const notChecked = areas.reduce((n, a) => n + a.not_checked, 0);
 
   return (
     <div className="mx-auto max-w-3xl px-5 pb-16 pt-10 sm:px-6 sm:pt-14">
@@ -31,7 +32,8 @@ export default async function LondonAreasPage() {
       <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
         {total.toLocaleString('en-GB')} places with evidence of halal food, including{' '}
         {fully.toLocaleString('en-GB')} Fully Halal and {options.toLocaleString('en-GB')} with Halal
-        Options. Pick a borough, or{' '}
+        Options, plus {notChecked.toLocaleString('en-GB')} places we haven&apos;t checked yet. Pick a
+        borough, or{' '}
         <Link href="/" className="font-semibold text-accent-ink hover:underline">
           search by postcode
         </Link>

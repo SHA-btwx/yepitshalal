@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import { HalalFullMark, HalalPartialMark, HalalUnknownMark } from './icons';
-import type { HalalClassification } from '@/lib/types';
+import { HalalFullMark, HalalNotCheckedMark, HalalPartialMark, HalalUnknownMark } from './icons';
+import type { HalalStatus } from '@/lib/types';
 
 // Two jobs, two shapes.
 //
@@ -13,10 +13,10 @@ import type { HalalClassification } from '@/lib/types';
 // against a photograph or act as a page-level headline.
 //
 // The mark does the semantic work in both: filled-with-a-tick / half-filled /
-// dashed-and-empty survives greyscale and colour blindness, where three
+// dashed-and-empty / ring-with-a-bar survives greyscale and colour blindness, where three
 // coloured dots did not.
 const CONFIG: Record<
-  HalalClassification,
+  HalalStatus,
   { label: string; hint: string; Mark: typeof HalalFullMark; text: string; bg: string; ring: string }
 > = {
   fully_halal: {
@@ -37,11 +37,19 @@ const CONFIG: Record<
   },
   unverified: {
     label: 'Unverified',
-    hint: "We haven't checked yet",
+    hint: 'Signs of halal, not confirmed',
     Mark: HalalUnknownMark,
     text: 'text-halal-unverifiedInk',
     bg: 'bg-halal-unverifiedSoft',
     ring: 'ring-halal-unverified/20',
+  },
+  unknown: {
+    label: 'Not checked yet',
+    hint: "We don't know yet",
+    Mark: HalalNotCheckedMark,
+    text: 'text-subtle',
+    bg: 'bg-white',
+    ring: 'ring-black/10',
   },
 };
 
@@ -50,7 +58,7 @@ export function HalalBadge({
   size = 'md',
   variant = 'inline',
 }: {
-  classification: HalalClassification;
+  classification: HalalStatus;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'inline' | 'solid';
 }) {
@@ -94,10 +102,10 @@ export function HalalBadge({
   );
 }
 
-export function halalLabel(classification: HalalClassification): string {
+export function halalLabel(classification: HalalStatus): string {
   return CONFIG[classification].label;
 }
 
-export function halalHint(classification: HalalClassification): string {
+export function halalHint(classification: HalalStatus): string {
   return CONFIG[classification].hint;
 }

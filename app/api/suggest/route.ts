@@ -3,7 +3,7 @@ import { createServerSupabase } from '@/lib/supabase/server';
 import { isInLondon } from '@/lib/geocode';
 import { matchBoroughs } from '@/lib/londonBoroughs';
 import { cleanRestaurantName } from '@/lib/restaurantName';
-import type { HalalClassification } from '@/lib/types';
+import type { HalalStatus } from '@/lib/types';
 
 // Autocomplete for the one search box. Every source is free and keyless, so
 // typing carries no per-keystroke billing risk:
@@ -36,7 +36,7 @@ export interface RestaurantSuggestion {
   slug: string;
   label: string;
   sublabel: string;
-  halal_classification: HalalClassification;
+  halal_status: HalalStatus;
   branchCount: number;
 }
 
@@ -280,7 +280,7 @@ interface SuggestRow {
   branch_label: string | null;
   address: string;
   postcode: string | null;
-  halal_classification: HalalClassification;
+  halal_status: HalalStatus;
   cuisines: string[] | null;
   brand_branch_count: number;
 }
@@ -306,7 +306,7 @@ export async function GET(request: Request) {
 
   const [{ locations, usedOsm }, { data: rows }] = await Promise.all([
     getLocations(query),
-    supabase.rpc('suggest_restaurants', { p_query: query, p_limit: 8 }),
+    supabase.rpc('suggest_restaurants', { p_query: query, p_limit: 8, p_include_candidates: true }),
   ]);
 
   const seen = new Set<string>();
@@ -330,7 +330,7 @@ export async function GET(request: Request) {
       slug: row.slug,
       label,
       sublabel,
-      halal_classification: row.halal_classification,
+      halal_status: row.halal_status,
       branchCount: row.brand_branch_count,
     });
     if (restaurants.length >= 5) break;

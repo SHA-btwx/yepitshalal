@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { HalalBadge } from './HalalBadge';
 import { MapPinIcon, MapIcon, NavigationIcon, SearchIcon, ForkKnifeIcon } from './icons';
-import type { HalalClassification } from '@/lib/types';
+import type { HalalStatus } from '@/lib/types';
 
 export interface LocationItem {
   kind: 'postcode' | 'outcode' | 'place' | 'borough' | 'street' | 'station' | 'landmark';
@@ -21,7 +21,7 @@ export interface RestaurantItem {
   slug: string;
   label: string;
   sublabel: string;
-  halal_classification: HalalClassification;
+  halal_status: HalalStatus;
   branchCount: number;
 }
 
@@ -170,7 +170,7 @@ export function SuggestionPanel({
                     )}
                   </span>
                   <span className="mt-0.5 flex min-w-0 items-center gap-2">
-                    <HalalBadge classification={item.halal_classification} size="sm" />
+                    <HalalBadge classification={item.halal_status} size="sm" />
                     <span className="truncate text-xs text-muted">{item.sublabel}</span>
                   </span>
                 </span>

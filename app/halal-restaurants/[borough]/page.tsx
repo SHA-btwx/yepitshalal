@@ -104,6 +104,13 @@ export default async function AreaPage({ params }: { params: { borough: string }
       <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
         {area.listed} places in {area.borough} with evidence that they serve halal food. Each one
         shows its label, what the label is based on, and when it was checked.
+        {area.not_checked > 0 && (
+          <>
+            {' '}
+            There are also {area.not_checked.toLocaleString('en-GB')} places here we haven&apos;t checked
+            yet, on the map.
+          </>
+        )}
       </p>
 
       <dl className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">

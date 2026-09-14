@@ -4,9 +4,10 @@ import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HalalBadge } from './HalalBadge';
-import { ForkKnifeIcon, XIcon } from './icons';
+import { XIcon } from './icons';
 import { displayName } from './RestaurantCard';
-import { isStockPhoto, type SearchResultRestaurant } from '@/lib/types';
+import { coverFor } from '@/lib/representativeImages';
+import { isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
 
 export function RestaurantPreviewCard({
   restaurant,
@@ -17,7 +18,8 @@ export function RestaurantPreviewCard({
 }) {
   const miles = (restaurant.distance_meters / 1609.34).toFixed(1);
   const linkRef = useRef<HTMLAnchorElement>(null);
-  const photo = restaurant.primary_photo_path && !isStockPhoto(restaurant.primary_photo_path) ? restaurant.primary_photo_path : null;
+  const cover = coverFor(restaurant, (url) => !isStockPhoto(url));
+  const status = statusOf(restaurant);
   const title = displayName(restaurant);
 
   // Selecting a pin is a pointer action, but the card that appears is where the
@@ -39,18 +41,11 @@ export function RestaurantPreviewCard({
         className="flex gap-3 rounded-2xl bg-white p-3 shadow-xl ring-1 ring-black/10"
       >
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft">
-          {photo ? (
-            <Image
-              src={photo}
-              alt=""
-              fill
-              sizes="64px"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-halal-unverified">
-              <ForkKnifeIcon className="h-6 w-6" />
-            </div>
+          <Image src={cover.src} alt="" fill sizes="64px" className="object-cover" />
+          {!cover.own && (
+            <span className="absolute inset-x-0 bottom-0 bg-black/50 py-[2px] text-center text-[8px] font-medium leading-none text-white">
+              Example dish
+            </span>
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -59,11 +54,11 @@ export function RestaurantPreviewCard({
             {miles} mi away{restaurant.branch_label ? ` · ${restaurant.branch_label}` : ''}
           </p>
           <div className="mt-1.5">
-            <HalalBadge classification={restaurant.halal_classification} size="sm" />
+            <HalalBadge classification={status} size="sm" />
           </div>
-          {restaurant.halal_summary && (
-            <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted">{restaurant.halal_summary}</p>
-          )}
+          <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted">
+            {restaurant.halal_summary ?? (status === 'unknown' ? "We don't know yet if the food is halal." : null)}
+          </p>
         </div>
       </Link>
       <button

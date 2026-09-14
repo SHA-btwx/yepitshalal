@@ -27,6 +27,8 @@ export interface AreaSummary {
   anchor_lat: number;
   anchor_lng: number;
   last_checked_at: string | null;
+  /** Places in the borough nobody has checked yet. */
+  not_checked: number;
 }
 
 export interface AreaListing {

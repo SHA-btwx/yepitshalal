@@ -3,7 +3,7 @@ import { createServerSupabase } from '@/lib/supabase/server';
 import { FREE_RADIUS_METERS } from '@/lib/types';
 
 // Suggestions for a search that found nothing: the nearest areas that do have
-// listings. See nearby_listing_areas() for why this suggests other searches
+// places, including ones not checked yet. See nearby_listing_areas() for why this suggests other searches
 // rather than widening the current one.
 
 export interface NearbyArea {
@@ -56,6 +56,7 @@ export async function GET(request: Request) {
     // Where each suggestion leads: a place search, which opens at this radius.
     p_destination_radius_meters: FREE_RADIUS_METERS.searched_location,
     p_limit: 3,
+    p_include_candidates: true,
   });
 
   if (error) {

@@ -43,6 +43,10 @@ const LABELS = [
     classification: 'unverified' as const,
     body: "There are signs of halal food, but it hasn't been confirmed. It never means not halal.",
   },
+  {
+    classification: 'unknown' as const,
+    body: "Nobody has checked yet. We show it because it serves a kind of food that's often halal, so it's worth asking.",
+  },
 ];
 
 export default async function HomePage() {
@@ -162,8 +166,8 @@ export default async function HomePage() {
         </dl>
 
         <p className="mt-4 text-center text-sm leading-relaxed text-muted">
-          &ldquo;Unverified&rdquo; never means a place isn&apos;t halal. It only means we
-          haven&apos;t checked it yet.
+          Neither &ldquo;Unverified&rdquo; nor &ldquo;Not checked yet&rdquo; means a place isn&apos;t
+          halal. If it matters to you, ask the restaurant.
         </p>
       </section>
 

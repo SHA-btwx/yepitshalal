@@ -11,6 +11,7 @@ interface Counts {
   fully_halal: number;
   halal_options: number;
   unverified: number;
+  not_checked: number;
   no_evidence: number;
 }
 
@@ -47,9 +48,10 @@ function sum<T extends Counts>(rows: T[]): Counts {
       fully_halal: a.fully_halal + r.fully_halal,
       halal_options: a.halal_options + r.halal_options,
       unverified: a.unverified + r.unverified,
+      not_checked: a.not_checked + r.not_checked,
       no_evidence: a.no_evidence + r.no_evidence,
     }),
-    { total: 0, listed: 0, fully_halal: 0, halal_options: 0, unverified: 0, no_evidence: 0 }
+    { total: 0, listed: 0, fully_halal: 0, halal_options: 0, unverified: 0, not_checked: 0, no_evidence: 0 }
   );
 }
 
@@ -60,6 +62,7 @@ function LabelCells({ r }: { r: Counts }) {
       <td className="px-3 py-2.5 tabular-nums text-halal-fullInk">{r.fully_halal}</td>
       <td className="px-3 py-2.5 tabular-nums text-halal-partialInk">{r.halal_options}</td>
       <td className="px-3 py-2.5 tabular-nums text-muted">{r.unverified}</td>
+      <td className="px-3 py-2.5 tabular-nums text-muted">{r.not_checked}</td>
       <td className="px-3 py-2.5 tabular-nums text-subtle">{r.no_evidence}</td>
     </>
   );
@@ -105,16 +108,17 @@ export default async function AdminCoveragePage() {
     <AdminPage
       title="Catalogue coverage"
       width="lg"
-      description={`${totals.listed.toLocaleString()} places listed in search, out of ${totals.total.toLocaleString()} records. Use it to see where the gaps are before looking for more places.`}
+      description={`${(totals.listed + totals.not_checked).toLocaleString()} places in search (${totals.listed.toLocaleString()} with evidence), out of ${totals.total.toLocaleString()} records. Use it to see where the gaps are before looking for more places.`}
     >
       <div className="space-y-5">
-        <Panel title="Listed, by label">
-          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-4">
+        <Panel title="In search, by label">
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-5">
             {[
               ['Fully Halal', totals.fully_halal],
               ['Halal Options', totals.halal_options],
               ['Unverified', totals.unverified],
-              ['No evidence (hidden)', totals.no_evidence],
+              ['Not checked yet', totals.not_checked],
+              ['Hidden', totals.no_evidence],
             ].map(([label, n]) => (
               <div key={label} className="rounded-xl border border-line px-3.5 py-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-subtle">{label}</p>
@@ -151,7 +155,8 @@ export default async function AdminCoveragePage() {
                   <th className={HEAD}>Fully Halal</th>
                   <th className={HEAD}>Options</th>
                   <th className={HEAD}>Unverified</th>
-                  <th className={HEAD}>No evidence</th>
+                  <th className={HEAD}>Not checked</th>
+                  <th className={HEAD}>Hidden</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -181,7 +186,8 @@ export default async function AdminCoveragePage() {
                   <th className={HEAD}>Fully Halal</th>
                   <th className={HEAD}>Options</th>
                   <th className={HEAD}>Unverified</th>
-                  <th className={HEAD}>No evidence</th>
+                  <th className={HEAD}>Not checked</th>
+                  <th className={HEAD}>Hidden</th>
                   <th className={HEAD}>Needs review</th>
                   <th className={HEAD}>Closed</th>
                 </tr>
@@ -205,8 +211,8 @@ export default async function AdminCoveragePage() {
 
         <p className="flex items-start gap-2 px-1 text-xs leading-relaxed text-muted">
           <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
-          Listed means shown in search: active, not merged, and with at least some evidence of
-          halal food. No evidence counts active records we hold but do not show. Districts come
+          Listed means shown in search with at least some evidence of halal food. Not checked counts
+          places shown as Not checked yet. Hidden counts active records we hold but do not show. Districts come
           from each record&apos;s postcode, so records without one group under ??.
         </p>
       </div>

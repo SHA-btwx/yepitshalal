@@ -304,3 +304,14 @@ export function HalalUnknownMark({ className = 'h-4 w-4' }: { className?: string
     </svg>
   );
 }
+
+// Not checked yet: an empty ring with a short bar, "no reading". Distinct from
+// the dashed Unverified ring, which means there are signs but no confirmation.
+export function HalalNotCheckedMark({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} aria-hidden="true" focusable="false">
+      <circle cx="10" cy="10" r="8.6" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.7" />
+      <path d="M6.6 10h6.8" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  );
+}

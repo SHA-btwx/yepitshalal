@@ -50,6 +50,11 @@ export function SiteFooter() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/image-credits" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Image credits
+                  </Link>
+                </li>
+                <li>
                   <Link href="/discover" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
                     Discover
                   </Link>

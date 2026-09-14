@@ -13,16 +13,24 @@ import type { TierCount } from '@/lib/types';
 /** Largest radius the message will talk about: past this it stops being "near". */
 const MESSAGE_MAX_METERS = 16093;
 
+export interface Unlock {
+  tier: TierCount;
+  shown: number;
+  extra: number;
+  /** Of the extra places, how many have halal evidence. */
+  extraWithEvidence: number;
+}
+
 export function pickUnlockTier(
   tierCounts: TierCount[],
   accessibleMeters: number,
   preferredMiles: number | null
-): { tier: TierCount; shown: number; extra: number } | null {
+): Unlock | null {
   const here = tierCounts.find((t) => t.meters === accessibleMeters);
   if (!here) return null;
   const locked = tierCounts
     .filter((t) => t.meters > accessibleMeters && t.meters <= MESSAGE_MAX_METERS)
-    .map((t) => ({ tier: t, shown: here.places, extra: t.places - here.places }))
+    .map((t) => ({ tier: t, shown: here.places, extra: t.places - here.places, extraWithEvidence: t.withEvidence - here.withEvidence }))
     .filter((o) => o.extra > 0);
   if (!locked.length) return null;
 
@@ -40,11 +48,11 @@ export function RadiusUnlockBanner({
   previewing,
   onPreview,
 }: {
-  unlock: { tier: TierCount; shown: number; extra: number };
+  unlock: Unlock;
   previewing: boolean;
   onPreview: (miles: number) => void;
 }) {
-  const { tier, shown, extra } = unlock;
+  const { tier, shown, extra, extraWithEvidence } = unlock;
   const miles = `${tier.miles} ${tier.miles === 1 ? 'mile' : 'miles'}`;
   const placeWord = extra === 1 ? 'place' : 'places';
 
@@ -53,18 +61,15 @@ export function RadiusUnlockBanner({
       <p className="flex items-start gap-2.5 text-sm">
         <LockIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent-onDark" />
         <span>
-          {shown > 0 ? (
-            <>
-              You&apos;re seeing {shown}.{' '}
-              <span className="font-semibold">
-                Unlock {extra} more halal {placeWord} within {miles}.
-              </span>
-            </>
-          ) : (
-            <span className="font-semibold">
-              Unlock {extra} halal {placeWord} within {miles}.
-            </span>
-          )}
+          {shown > 0 && <>You&apos;re seeing {shown}. </>}
+          <span className="font-semibold">
+            Unlock {extra} {shown > 0 ? 'more ' : ''}{placeWord} within {miles}
+            {extraWithEvidence > 0 && extraWithEvidence < extra
+              ? `, ${extraWithEvidence} with halal evidence.`
+              : extraWithEvidence === extra
+                ? ', all with halal evidence.'
+                : '.'}
+          </span>
         </span>
       </p>
       <div className="flex shrink-0 items-center gap-2 pl-[26px] sm:pl-0">

@@ -5,7 +5,7 @@ import { HalalBadge } from '@/components/HalalBadge';
 export const metadata: Metadata = {
   title: 'How we label halal places',
   description:
-    'What Fully Halal, Halal Options and Unverified mean on YepItsHalal, where the evidence comes from, and what we do not know.',
+    'What Fully Halal, Halal Options, Unverified and Not checked yet mean on YepItsHalal, where the evidence comes from, and what we do not know.',
   alternates: { canonical: '/how-we-check' },
 };
 
@@ -24,6 +24,11 @@ const LABELS = [
     classification: 'unverified' as const,
     needs: 'There are signs of halal food, but not enough to say more.',
     examples: 'A mention of halal on its website, "halal" in its name, a community tag on OpenStreetMap, or a halal category in public place data.',
+  },
+  {
+    classification: 'unknown' as const,
+    needs: 'No evidence either way, yet.',
+    examples: 'A place that serves a kind of food often halal in London (a kebab shop, a Pakistani grill, a peri peri chicken shop), which nobody has checked. It is a reason to ask, not an answer. Places that say they are not halal are never shown.',
   },
 ];
 
@@ -48,7 +53,7 @@ export default function HowWeCheckPage() {
       </p>
 
       <section className="mt-10">
-        <h2 className="font-display text-xl font-semibold text-ink">The three labels</h2>
+        <h2 className="font-display text-xl font-semibold text-ink">What each label means</h2>
         <dl className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
           {LABELS.map(({ classification, needs, examples }) => (
             <div key={classification} className="px-5 py-4">
@@ -63,8 +68,8 @@ export default function HowWeCheckPage() {
           ))}
         </dl>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Unverified never means a place isn&apos;t halal. And if we have no evidence at all that a
-          place serves halal food, we don&apos;t list it.
+          Unverified and Not checked yet never mean a place isn&apos;t halal. When a restaurant, or a
+          person who mapped it, says it doesn&apos;t serve halal food, we don&apos;t show it at all.
         </p>
       </section>
 
@@ -78,6 +83,19 @@ export default function HowWeCheckPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold text-ink">Photos</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          When a restaurant hasn&apos;t sent us its own photos, we show a picture of the kind of food it
+          serves, marked as an example. It is never the restaurant&apos;s own dish. Who took each one,
+          and its licence, is on the{' '}
+          <Link href="/image-credits" className="font-semibold text-accent-ink hover:underline">
+            image credits
+          </Link>{' '}
+          page.
+        </p>
       </section>
 
       <section className="mt-10">

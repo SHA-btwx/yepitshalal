@@ -7,6 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SearchResultRestaurant } from '@/lib/types';
 import { circleBounds, circlePolygon } from '@/lib/geo';
 import { HALAL_DOT_COLOR, HALAL_PIN_LABEL } from './halalColors';
+import { statusOf } from '@/lib/types';
 
 // The only thing this component knows is "MapLibre + a style URL." Swapping
 // tile providers later is a change to NEXT_PUBLIC_MAP_STYLE_URL, nothing here.
@@ -389,7 +390,14 @@ function renderMarkers(
     dot.style.borderRadius = '50%';
     dot.style.border = '2.5px solid white';
     dot.style.boxShadow = isSelected ? '0 2px 8px rgba(0,0,0,.45)' : '0 1px 4px rgba(0,0,0,.35)';
-    dot.style.background = HALAL_DOT_COLOR[restaurant.halal_classification];
+    const status = statusOf(restaurant);
+    // A place not checked yet is a ring, so the eye finds places with evidence first.
+    if (status === 'unknown') {
+      dot.style.background = '#fff';
+      dot.style.border = `3px solid ${HALAL_DOT_COLOR.unknown}`;
+    } else {
+      dot.style.background = HALAL_DOT_COLOR[status];
+    }
     dot.style.transition = 'width 150ms ease, height 150ms ease';
     el.appendChild(dot);
 
@@ -399,7 +407,7 @@ function renderMarkers(
     });
 
     const marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
-    el.setAttribute('aria-label', `${restaurant.name}, ${HALAL_PIN_LABEL[restaurant.halal_classification]}`);
+    el.setAttribute('aria-label', `${restaurant.name}, ${HALAL_PIN_LABEL[statusOf(restaurant)]}`);
     markersRef.current.push(marker);
   }
 }

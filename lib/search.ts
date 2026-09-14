@@ -4,7 +4,7 @@ import {
   RADIUS_OPTIONS_MILES,
   effectiveRadiusMeters,
   milesToMeters,
-  type HalalClassification,
+  type HalalStatus,
   type SearchMode,
   type SearchResultRestaurant,
   type TierCount,
@@ -17,6 +17,10 @@ import {
 // Behind it, in the database, search_restaurants() and search_radius_counts()
 // both call search_candidates(). That is why the list, the count, the map ring
 // and "Unlock N more" always agree: they are one definition of a match.
+//
+// Search includes places nobody has checked yet ("Not checked yet"), alongside
+// places with halal evidence. Each result carries halal_status to tell them apart,
+// and each radius count says how many of its places have evidence.
 
 /** Every radius the selector offers, smallest first, including the free caps. */
 export const TIER_MILES: number[] = [...new Set([0.5, ...RADIUS_OPTIONS_MILES])].sort((a, b) => a - b);
@@ -26,7 +30,7 @@ export interface SearchParams {
   lng: number;
   mode: SearchMode;
   radiusMiles?: number | null;
-  classification?: HalalClassification[] | null;
+  classification?: HalalStatus[] | null;
   query?: string | null;
   sort?: 'distance' | 'evidence';
 }
@@ -57,6 +61,7 @@ export async function runSearch(params: SearchParams): Promise<SearchResponse> {
       p_limit: 500,
       p_offset: 0,
       p_sort: params.sort ?? 'distance',
+      p_include_candidates: true,
     }),
     supabase.rpc('search_radius_counts', {
       p_lat: params.lat,
@@ -65,6 +70,7 @@ export async function runSearch(params: SearchParams): Promise<SearchResponse> {
       p_classification: classification,
       p_cuisine_ids: null,
       p_query: query,
+      p_include_candidates: true,
     }),
     supabase.rpc('is_current_user_yep_plus'),
   ]);
@@ -73,12 +79,13 @@ export async function runSearch(params: SearchParams): Promise<SearchResponse> {
 
   const results = (data ?? []) as SearchResultRestaurant[];
   const yep = Boolean(isYepPlus);
-  const byMeters = new Map(((counts ?? []) as { radius_meters: number; places: number }[]).map((c) => [c.radius_meters, Number(c.places)]));
-  const tierCounts: TierCount[] = TIER_MILES.map((miles) => ({
-    miles,
-    meters: milesToMeters(miles),
-    places: byMeters.get(milesToMeters(miles)) ?? 0,
-  }));
+  const byMeters = new Map(
+    ((counts ?? []) as { radius_meters: number; places: number; with_evidence: number }[]).map((c) => [c.radius_meters, c])
+  );
+  const tierCounts: TierCount[] = TIER_MILES.map((miles) => {
+    const c = byMeters.get(milesToMeters(miles));
+    return { miles, meters: milesToMeters(miles), places: Number(c?.places ?? 0), withEvidence: Number(c?.with_evidence ?? 0) };
+  });
 
   // The server reports the radius it actually used on every row. With no rows,
   // the same clamp the database applies gives the same answer.

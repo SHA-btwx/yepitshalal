@@ -20,7 +20,7 @@ export default async function SearchPage({
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) redirect('/');
 
   const mode = searchParams.mode === 'searched_location' ? 'searched_location' : 'current_location';
-  const initial = await runSearch({ lat, lng, mode });
+  const initial = await runSearch({ lat, lng, mode, sort: 'evidence' });
 
   return (
     <SearchView
