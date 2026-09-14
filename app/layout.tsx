@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: '%s | YepItsHalal',
   },
   description:
-    'Discover halal restaurants in London. Clear, verified halal information, not guesswork.',
+    'Find halal restaurants in London, with the evidence behind every label and the date it was checked.',
   openGraph: {
     type: 'website',
     siteName: 'YepItsHalal',

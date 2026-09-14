@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Yep+',
   description:
     'Yep+ removes the distance limit on halal restaurant search across London and unlocks member-only deals. From £4.99/month.',
+  alternates: { canonical: '/yep-plus' },
 };
 
 const FREE_FEATURES = [
@@ -34,7 +35,7 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
           role="alert"
           className="mb-6 rounded-xl bg-halal-partialSoft px-4 py-3 text-sm font-medium text-halal-partialInk ring-1 ring-halal-partial/20"
         >
-          Yep+ payments aren&apos;t switched on yet — please check back soon.
+          Yep+ payments aren&apos;t switched on yet. Please check back soon.
         </p>
       )}
 
@@ -107,14 +108,14 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
               value="annual"
               className="w-full rounded-full bg-white px-4 py-3 text-sm font-semibold text-ink transition hover:bg-white/90 active:scale-[0.98]"
             >
-              Get Yep+ annual — £39.99/year
+              Get Yep+ annual: £39.99/year
             </button>
             <button
               name="plan"
               value="monthly"
               className="w-full rounded-full border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
             >
-              Get Yep+ monthly — £4.99/month
+              Get Yep+ monthly: £4.99/month
             </button>
           </form>
           <p className="mt-3 text-center text-xs text-white/60">Cancel any time.</p>

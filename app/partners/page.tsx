@@ -5,7 +5,8 @@ import { SparkleIcon, CheckIcon, SealCheckIcon } from '@/components/icons';
 export const metadata: Metadata = {
   title: 'For restaurants',
   description:
-    'How reels work on YepItsHalal — every restaurant gets one free, partners get more room to show what they serve.',
+    'How reels work on YepItsHalal. Every restaurant gets one free, and partners get more room to show what they serve.',
+  alternates: { canonical: '/partners' },
 };
 
 const FREE = [
@@ -16,7 +17,7 @@ const FREE = [
 ];
 
 const PARTNER = [
-  'More reels — signature dishes, prep, atmosphere, new menu items',
+  'More reels: signature dishes, prep, atmosphere, new menu items',
   'Every reel is independently eligible for Discovery',
   'A "Latest from you" section on your restaurant page',
   'Seasonal and promotional content, swapped whenever you like',
@@ -35,7 +36,7 @@ export default function PartnersPage() {
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-pretty text-[15px] leading-relaxed text-muted sm:text-base">
           A photo tells someone a restaurant exists. A reel shows them the food coming out of your
-          kitchen — which is what people are really deciding on.
+          kitchen, which is what people are really deciding on.
         </p>
       </div>
 
@@ -82,7 +83,7 @@ export default function PartnersPage() {
           It has no effect on your halal classification, on whether you get verified, or on how
           quickly your verification is reviewed. Those work the same way for every restaurant on
           the platform, paying or not. Reels are reviewed before they go live either way. Paying
-          buys room to market yourself — nothing about how we describe your food.
+          buys room to market yourself, and nothing about how we describe your food.
         </p>
       </div>
 

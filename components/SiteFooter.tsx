@@ -7,7 +7,7 @@ import { HeartHandIcon } from './icons';
 
 // Hidden on the two routes that own the full viewport: the Discover feed is a
 // snap-scrolling column, and admin has its own chrome.
-const HIDDEN_ON = ['/discover', '/admin'];
+const HIDDEN_ON = ['/admin'];
 
 export function SiteFooter() {
   const pathname = usePathname() ?? '/';
@@ -37,6 +37,16 @@ export function SiteFooter() {
                 <li>
                   <Link href="/" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
                     Search
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/halal-restaurants" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Browse by borough
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/how-we-check" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    How we label places
                   </Link>
                 </li>
                 <li>
