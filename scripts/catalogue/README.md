@@ -50,10 +50,26 @@ registers (no published reuse terms; ask them for permission first).
 4. `node import-catalogue.mjs` prints the plan. Add `--apply` to write it. It is
    safe to re-run: pipeline evidence is replaced, and evidence added by admins or
    submissions is never touched.
-5. `node dedupe-listed.mjs` finds the same restaurant listed twice, and listed
+   It also lists places "Not checked yet": places whose name or cuisine makes
+   them worth checking (a kebab shop, a Pakistani grill), with whatever details
+   the sources have, even none. The rule is in `candidates.mjs`. They are never
+   given a halal label, and anything that says it is not halal is left out.
+5. `node dedupe-listed.mjs` finds the same restaurant shown twice in search, and
    places whose pin is more than 500 m from their own postcode. Add `--apply` to
    merge duplicates and send misplaced pins to review. Merged rows are hidden
    from search, not deleted.
+
+## Representative images
+
+Places without their own photo show a picture of the kind of food they serve,
+marked as an example on the site and credited on /image-credits.
+
+1. `node find-representative-images.mjs` proposes openly licensed photos per kind
+   of food from Wikimedia Commons (`.cache/image-candidates.json`).
+2. A person looks at every one and records the keepers in `.cache/image-chosen.json`.
+3. `node publish-representative-images.mjs` resizes the keepers, stores them in
+   the `restaurant-photos` bucket under `representative/`, and writes
+   `lib/representative-images.json` for the app.
 
 ## Human review
 
