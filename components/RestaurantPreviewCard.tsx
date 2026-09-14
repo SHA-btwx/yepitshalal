@@ -5,7 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { HalalBadge } from './HalalBadge';
 import { ForkKnifeIcon, XIcon } from './icons';
-import type { SearchResultRestaurant } from '@/lib/types';
+import { displayName } from './RestaurantCard';
+import { isStockPhoto, type SearchResultRestaurant } from '@/lib/types';
 
 export function RestaurantPreviewCard({
   restaurant,
@@ -16,9 +17,11 @@ export function RestaurantPreviewCard({
 }) {
   const miles = (restaurant.distance_meters / 1609.34).toFixed(1);
   const linkRef = useRef<HTMLAnchorElement>(null);
+  const photo = restaurant.primary_photo_path && !isStockPhoto(restaurant.primary_photo_path) ? restaurant.primary_photo_path : null;
+  const title = displayName(restaurant);
 
   // Selecting a pin is a pointer action, but the card that appears is where the
-  // next action lives — so focus follows it, and Escape (handled by the parent)
+  // next action lives, so focus follows it, and Escape (handled by the parent)
   // dismisses it.
   useEffect(() => {
     linkRef.current?.focus({ preventScroll: true });
@@ -27,7 +30,7 @@ export function RestaurantPreviewCard({
   return (
     <div
       role="dialog"
-      aria-label={`${restaurant.name} — preview`}
+      aria-label={`${title} preview`}
       className="absolute inset-x-3 bottom-3 z-20 animate-sheet-up sm:inset-x-auto sm:bottom-4 sm:left-4 sm:w-80"
     >
       <Link
@@ -36,9 +39,9 @@ export function RestaurantPreviewCard({
         className="flex gap-3 rounded-2xl bg-white p-3 shadow-xl ring-1 ring-black/10"
       >
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft">
-          {restaurant.primary_photo_path ? (
+          {photo ? (
             <Image
-              src={restaurant.primary_photo_path}
+              src={photo}
               alt=""
               fill
               sizes="64px"
@@ -51,11 +54,16 @@ export function RestaurantPreviewCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-sm font-semibold text-ink">{restaurant.name}</p>
-          <p className="text-xs text-muted">{miles} mi away</p>
+          <p className="truncate font-display text-sm font-semibold text-ink">{title}</p>
+          <p className="truncate text-xs text-muted">
+            {miles} mi away{restaurant.branch_label ? ` · ${restaurant.branch_label}` : ''}
+          </p>
           <div className="mt-1.5">
             <HalalBadge classification={restaurant.halal_classification} size="sm" />
           </div>
+          {restaurant.halal_summary && (
+            <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted">{restaurant.halal_summary}</p>
+          )}
         </div>
       </Link>
       <button
