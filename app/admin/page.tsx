@@ -5,15 +5,22 @@ import {
   SparkleIcon,
   UserIcon,
   ArrowRightIcon,
+  PlusIcon,
 } from '@/components/icons';
 import { AdminPage } from '@/components/admin/ui';
 
 const SECTIONS = [
   {
+    href: '/admin/submissions',
+    Icon: PlusIcon,
+    title: 'Submissions',
+    body: 'Restaurants sent in by owners and customers, waiting for review.',
+  },
+  {
     href: '/admin/queue',
     Icon: SealCheckIcon,
     title: 'Verification queue',
-    body: 'Free and priority requests — assign, review, publish.',
+    body: 'Free and priority requests: assign, review, publish.',
   },
   {
     href: '/admin/restaurants',

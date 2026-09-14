@@ -3,8 +3,12 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { addRestaurantPhoto } from '@/lib/admin-actions';
 import { PlusIcon } from './icons';
 
+// Admin only. The browser no longer writes to storage or the photos table on
+// its own authority: the server issues a signed upload URL after checking the
+// admin, and records the photo in a server action.
 export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -14,31 +18,28 @@ export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
   async function handleFile(file: File) {
     setUploading(true);
     setError(null);
-    const supabase = createClient();
-    const path = `${restaurantId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
+    try {
+      const res = await fetch('/api/admin/photo-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurantId, contentType: file.type, fileName: file.name, size: file.size }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Could not start the upload.');
 
-    const { error: uploadError } = await supabase.storage
-      .from('restaurant-photos')
-      .upload(path, file);
-    if (uploadError) {
+      const supabase = createClient();
+      const { error: uploadError } = await supabase.storage
+        .from('restaurant-photos')
+        .uploadToSignedUrl(json.path, json.token, file, { contentType: file.type });
+      if (uploadError) throw new Error(uploadError.message);
+
+      await addRestaurantPhoto(restaurantId, json.path);
+      router.refresh();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
       setUploading(false);
-      setError(uploadError.message);
-      return;
     }
-
-    const { data } = supabase.storage.from('restaurant-photos').getPublicUrl(path);
-    const { error: insertError } = await supabase.from('restaurant_photos').insert({
-      restaurant_id: restaurantId,
-      storage_path: data.publicUrl,
-      type: 'food',
-    });
-
-    setUploading(false);
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-    router.refresh();
   }
 
   return (
@@ -46,7 +47,7 @@ export function PhotoUploader({ restaurantId }: { restaurantId: string }) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];

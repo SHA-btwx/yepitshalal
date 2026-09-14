@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // Admin is behind an auth check, but a stray crawler following a leaked link
 // should still be told not to index it.
 export const metadata: Metadata = {
-  title: { default: 'Admin', template: '%s — Admin' },
+  title: { default: 'Admin', template: '%s | Admin' },
   robots: { index: false, follow: false },
 };
 
