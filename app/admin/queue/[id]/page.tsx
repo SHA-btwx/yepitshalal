@@ -109,7 +109,7 @@ export default async function ReviewVerificationPage({ params }: { params: { id:
             <div className="px-5 py-4">
               <p className="flex items-start gap-2 text-xs leading-relaxed text-muted">
                 <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
-                What the owner told us. Not evidence — check it, don&apos;t copy it.
+                What the owner told us. Not evidence: check it, don&apos;t copy it.
               </p>
               <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
                 {[
@@ -178,10 +178,38 @@ export default async function ReviewVerificationPage({ params }: { params: { id:
                 />
               </Field>
 
+              <Field label="How did you check?" htmlFor="method">
+                <select id="method" name="method" required className={FIELD} defaultValue="">
+                  <option value="" disabled>
+                    Choose one
+                  </option>
+                  <option value="visit">Visited in person</option>
+                  <option value="phone">Spoke to the restaurant</option>
+                  <option value="documents">Saw documents (certificate, supplier invoices)</option>
+                  <option value="certifier_register">Found it on the certifier&apos;s own register</option>
+                </select>
+              </Field>
+
+              <Field
+                label="What you found, for the public"
+                htmlFor="public_summary"
+                hint="One or two plain sentences shown on the restaurant page as the evidence. No private details."
+              >
+                <input id="public_summary" name="public_summary" maxLength={280} required className={FIELD} />
+              </Field>
+
+              <Field
+                label="Source link"
+                htmlFor="source_url"
+                hint="Optional. For example the certifier's register page for this outlet."
+              >
+                <input id="source_url" name="source_url" type="url" className={FIELD} />
+              </Field>
+
               <Field
                 label="Internal notes"
                 htmlFor="notes"
-                hint="Never shown publicly — what you checked and how."
+                hint="Never shown publicly. What you checked and how."
               >
                 <textarea id="notes" name="notes" rows={3} className={FIELD} />
               </Field>
@@ -189,7 +217,7 @@ export default async function ReviewVerificationPage({ params }: { params: { id:
               <Field
                 label="Classification"
                 htmlFor="classification"
-                hint="This is the label the public sees. Unverified means we could not confirm — never that a place isn't halal."
+                hint="This is the label the public sees. Unable to verify records the attempt and changes nothing public."
               >
                 <select id="classification" name="classification" required className={FIELD}>
                   <option value="fully_halal">Fully Halal</option>

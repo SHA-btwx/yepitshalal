@@ -2,6 +2,34 @@ export type HalalClassification = 'fully_halal' | 'halal_options' | 'unverified'
 
 export type TriState = boolean | null;
 
+/** What kind of source an evidence record comes from. See migration 0023. */
+export type EvidenceKind =
+  | 'yepitshalal_check'
+  | 'certification'
+  | 'first_party_statement'
+  | 'certification_claim'
+  | 'business_name'
+  | 'community_tag'
+  | 'directory_category'
+  | 'owner_submission'
+  | 'public_submission';
+
+export type EvidenceClaim = 'fully_halal' | 'halal_options' | 'halal_mentioned' | 'not_halal';
+
+export type EvidenceStrength = 'strong' | 'moderate' | 'weak';
+
+export interface HalalEvidence {
+  id: string;
+  kind: EvidenceKind;
+  claim: EvidenceClaim;
+  strength: EvidenceStrength;
+  source_name: string;
+  source_url: string | null;
+  excerpt: string | null;
+  notes: string | null;
+  checked_at: string;
+}
+
 export interface SearchResultRestaurant {
   id: string;
   name: string;
@@ -19,6 +47,20 @@ export interface SearchResultRestaurant {
   brand_name: string | null;
   /** The neighbourhood or street that distinguishes this branch. */
   branch_label: string | null;
+  halal_evidence_strength: EvidenceStrength | null;
+  /** One line saying why the label is what it is, derived from evidence. */
+  halal_summary: string | null;
+  cuisine_label: string | null;
+  opening_hours: OpeningHour[] | null;
+  /** Every match within the searched radius, not just the rows returned. */
+  total_count: number;
+}
+
+/** How many places the same search finds at one radius tier. */
+export interface TierCount {
+  miles: number;
+  meters: number;
+  places: number;
 }
 
 export interface RestaurantDetail {
@@ -123,7 +165,7 @@ export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'
 
 // Real uploads live in Supabase Storage; any Unsplash URL is a licensed
 // cuisine-representative placeholder we assigned, not the restaurant's own
-// photo — flagged in the UI so it's never mistaken for one.
+// photo, flagged in the UI so it's never mistaken for one.
 export function isStockPhoto(url: string): boolean {
   return url.includes('images.unsplash.com');
 }

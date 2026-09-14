@@ -30,7 +30,7 @@ export function PhotoGallery({
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-halal-unverifiedSoft sm:aspect-[16/9]">
         <Image
           src={photos[active].storage_path}
-          alt={`${restaurantName} — photo ${active + 1} of ${photos.length}`}
+          alt={`${restaurantName}, photo ${active + 1} of ${photos.length}`}
           fill
           priority
           sizes="(max-width: 896px) 100vw, 896px"

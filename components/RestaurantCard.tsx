@@ -1,8 +1,12 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { HalalBadge } from './HalalBadge';
 import { ForkKnifeIcon, ArrowRightIcon } from './icons';
-import type { SearchResultRestaurant } from '@/lib/types';
+import { cleanRestaurantName } from '@/lib/restaurantName';
+import { getOpenStatus } from '@/lib/openingStatus';
+import { isStockPhoto, type SearchResultRestaurant } from '@/lib/types';
 
 function formatDistance(meters: number): string {
   const miles = meters / 1609.34;
@@ -11,23 +15,20 @@ function formatDistance(meters: number): string {
 }
 
 /**
- * A branch descriptor used to live inside the name — "Morley's Chicken (Acton)".
- * Now that brand and branch are separate columns, the card can show the brand
- * once and put the location on its own line, so two nearby branches read as two
- * places rather than as the same name twice.
- *
- * Falls back to the stored name when a record has no brand, and strips a
- * trailing "(Area)" left over from the old convention so it never doubles up
- * with the branch line beneath it.
+ * A branch descriptor used to live inside the name ("Morley's Chicken (Acton)").
+ * With brand and branch as separate columns the card shows the brand once and
+ * puts the location on its own line, so two nearby branches read as two places.
+ * Registration names ("X Ltd t/a Y") are shown as the name on the door.
  */
-export function displayName(r: {
-  name: string;
-  brand_name?: string | null;
-  branch_label?: string | null;
-}): string {
-  if (r.brand_name) return r.brand_name;
-  return r.name.replace(/\s*\([^)]*\)\s*$/, '').trim() || r.name;
+export function displayName(r: { name: string; brand_name?: string | null; branch_label?: string | null }): string {
+  return cleanRestaurantName(r.brand_name ?? r.name);
 }
+
+const OPEN_TONE: Record<string, string> = {
+  open: 'text-halal-fullInk',
+  closing_soon: 'text-halal-partialInk',
+  closed: 'text-subtle',
+};
 
 export function RestaurantCard({
   restaurant,
@@ -37,9 +38,13 @@ export function RestaurantCard({
   /** Set on the first few rows: one of them is the LCP element. */
   priority?: boolean;
 }) {
-  const cuisines = restaurant.cuisines?.slice(0, 2).join(' · ') || 'Restaurant';
+  const cuisine = restaurant.cuisines?.slice(0, 2).join(' · ') || restaurant.cuisine_label || null;
   const title = displayName(restaurant);
   const distance = formatDistance(restaurant.distance_meters);
+  const status = restaurant.opening_hours?.length ? getOpenStatus(restaurant.opening_hours) : null;
+  // Only the restaurant's own photos. A stock picture of a curry beside a
+  // restaurant's name reads as its food, whatever the label says.
+  const photo = restaurant.primary_photo_path && !isStockPhoto(restaurant.primary_photo_path) ? restaurant.primary_photo_path : null;
 
   return (
     <Link
@@ -47,9 +52,9 @@ export function RestaurantCard({
       className="group flex items-center gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3"
     >
       <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft sm:h-[92px] sm:w-[92px]">
-        {restaurant.primary_photo_path ? (
+        {photo ? (
           <Image
-            src={restaurant.primary_photo_path}
+            src={photo}
             alt=""
             fill
             sizes="(max-width: 640px) 76px, 92px"
@@ -63,44 +68,41 @@ export function RestaurantCard({
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="truncate font-display text-[15px] font-semibold leading-snug text-ink sm:text-base">
-          {title}
-        </h3>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <h3 className="truncate font-display text-[15px] font-semibold leading-snug text-ink sm:text-base">{title}</h3>
 
-        {/* Location line. For a chain this is what tells one branch from
-            another, so it leads with the branch and keeps distance beside it. */}
         <p className="truncate text-[13px] text-muted">
+          <span className="font-medium text-ink/75">{distance}</span>
           {restaurant.branch_label && (
             <>
-              <span className="font-medium text-ink/75">{restaurant.branch_label}</span>
-              <span className="mx-1.5 text-subtle" aria-hidden="true">
-                ·
-              </span>
+              <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
+              {restaurant.branch_label}
             </>
           )}
-          <span className={restaurant.branch_label ? '' : 'font-medium text-ink/75'}>
-            {distance}
-          </span>
-          {!restaurant.branch_label && (
+          {cuisine && (
             <>
-              <span className="mx-1.5 text-subtle" aria-hidden="true">
-                ·
-              </span>
-              {cuisines}
+              <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
+              {cuisine}
+            </>
+          )}
+          {status && status.state !== 'unknown' && (
+            <>
+              <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
+              <span suppressHydrationWarning className={`font-medium ${OPEN_TONE[status.state]}`}>{status.label}</span>
             </>
           )}
         </p>
 
-        {restaurant.branch_label && (
-          <p className="truncate text-xs text-subtle">{cuisines}</p>
-        )}
-
-        {/* Wrapped so the pill hugs its label — a bare flex child would stretch
-            to the column width and read as a banner, not a badge. */}
-        <span className="self-start">
-          <HalalBadge classification={restaurant.halal_classification} size="sm" />
-        </span>
+        {/* The label and, beside it, the reason for it: a label alone is the
+            thing this site exists to improve on. */}
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0">
+            <HalalBadge classification={restaurant.halal_classification} size="sm" />
+          </span>
+          {restaurant.halal_summary && (
+            <span className="truncate text-xs text-muted">{restaurant.halal_summary}</span>
+          )}
+        </div>
       </div>
 
       <ArrowRightIcon className="mr-1 hidden h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink sm:block" />

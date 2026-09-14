@@ -4,8 +4,24 @@ import { revalidatePath } from 'next/cache';
 import { createAdminSupabase } from './supabase/admin';
 import { requireAdmin } from './require-admin';
 
+const METHOD_LABEL: Record<string, string> = {
+  visit: 'Visited in person',
+  phone: 'Spoke to the restaurant',
+  documents: 'Saw certificates or supplier documents',
+  certifier_register: "Found on the certifier's register",
+};
+
+/**
+ * Publish the outcome of a verification.
+ *
+ * A check we actually carried out becomes a strong evidence record, and the
+ * public label is derived from evidence by refresh_halal_status(). This never
+ * writes a classification directly. "Unable to verify" records the attempt and
+ * leaves everything public untouched: failing to confirm is not a finding that
+ * a place is not halal.
+ */
 export async function publishVerification(requestId: string, formData: FormData) {
-  await requireAdmin();
+  const adminUser = await requireAdmin();
   const supabase = createAdminSupabase();
 
   const { data: request } = await supabase
@@ -16,8 +32,14 @@ export async function publishVerification(requestId: string, formData: FormData)
   if (!request) throw new Error('Verification request not found.');
 
   const classification = String(formData.get('classification'));
+  const method = String(formData.get('method') ?? '');
+  const publicSummary = String(formData.get('public_summary') ?? '').trim().slice(0, 280);
+  const sourceUrl = String(formData.get('source_url') ?? '').trim() || null;
   const notes = String(formData.get('notes') ?? '');
-  const outcome = classification === 'unverified' ? 'unable_to_verify' : 'verified';
+  const verified = classification === 'fully_halal' || classification === 'halal_options';
+  if (verified && (!METHOD_LABEL[method] || !publicSummary)) {
+    throw new Error('Say how you checked and what you found before publishing a result.');
+  }
 
   function tri(name: string): boolean | null {
     const v = formData.get(name);
@@ -26,6 +48,8 @@ export async function publishVerification(requestId: string, formData: FormData)
     return null;
   }
 
+  const now = new Date().toISOString();
+  const certificationBody = String(formData.get('certification_body') ?? '').trim() || null;
   const facts = {
     restaurant_id: request.restaurant_id,
     all_meat_halal: tri('all_meat_halal'),
@@ -33,39 +57,104 @@ export async function publishVerification(requestId: string, formData: FormData)
     serves_pork: tri('serves_pork'),
     serves_alcohol: tri('serves_alcohol'),
     has_certification: tri('has_certification'),
-    certification_body: String(formData.get('certification_body') ?? '') || null,
+    certification_body: certificationBody,
     verification_notes: notes || null,
-    verified_at: new Date().toISOString(),
-    last_verified_at: new Date().toISOString(),
+    verified_at: now,
+    last_verified_at: now,
     next_review_due_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    last_outcome: outcome,
+    last_outcome: verified ? 'verified' : 'unable_to_verify',
   };
 
-  await supabase.from('restaurant_halal_facts').upsert(facts, { onConflict: 'restaurant_id' });
+  if (verified) {
+    await supabase.from('restaurant_halal_facts').upsert(facts, { onConflict: 'restaurant_id' });
 
-  await supabase
-    .from('restaurants')
-    .update({ halal_classification: classification })
-    .eq('id', request.restaurant_id);
+    // A newer check replaces an older one rather than stacking beside it.
+    await supabase
+      .from('restaurant_halal_evidence')
+      .update({ is_current: false })
+      .eq('restaurant_id', request.restaurant_id)
+      .in('kind', ['yepitshalal_check', 'certification'])
+      .eq('is_current', true);
+
+    const evidence: Record<string, string | null>[] = [
+      {
+        restaurant_id: request.restaurant_id,
+        kind: 'yepitshalal_check',
+        claim: classification,
+        strength: 'strong',
+        source_name: 'YepItsHalal',
+        source_url: null,
+        excerpt: publicSummary,
+        notes: METHOD_LABEL[method],
+        checked_at: now,
+        checked_by: `admin:${adminUser.id}`,
+      },
+    ];
+    // Certification is only recorded as confirmed when it was confirmed with
+    // the certifier, not when a restaurant showed us a logo.
+    if (facts.has_certification === true && certificationBody && method === 'certifier_register') {
+      evidence.push({
+        restaurant_id: request.restaurant_id,
+        kind: 'certification',
+        claim: classification,
+        strength: 'strong',
+        source_name: certificationBody,
+        source_url: sourceUrl,
+        excerpt: `Listed on ${certificationBody}'s register of certified outlets.`,
+        notes: null,
+        checked_at: now,
+        checked_by: `admin:${adminUser.id}`,
+      });
+    }
+    await supabase.from('restaurant_halal_evidence').insert(evidence);
+  }
 
   await supabase.from('verification_history').insert({
     restaurant_id: request.restaurant_id,
     verification_request_id: request.id,
     classification_result: classification,
-    facts_snapshot: facts,
+    facts_snapshot: { ...facts, method, public_summary: publicSummary, source_url: sourceUrl },
   });
 
   await supabase
     .from('verification_requests')
     .update({
-      status: classification === 'unverified' ? 'unable_to_verify' : 'completed',
+      status: verified ? 'completed' : 'unable_to_verify',
       outcome_classification: classification,
-      completed_at: new Date().toISOString(),
+      completed_at: now,
     })
     .eq('id', requestId);
 
   revalidatePath('/admin/queue');
   revalidatePath(`/admin/queue/${requestId}`);
+}
+
+/** Records a photo that was just uploaded through a signed URL. */
+export async function addRestaurantPhoto(restaurantId: string, storagePath: string) {
+  await requireAdmin();
+  if (!storagePath.startsWith(`${restaurantId}/`)) throw new Error('That upload belongs to a different restaurant.');
+  const supabase = createAdminSupabase();
+  const { data } = supabase.storage.from('restaurant-photos').getPublicUrl(storagePath);
+  const { count } = await supabase
+    .from('restaurant_photos')
+    .select('id', { count: 'exact', head: true })
+    .eq('restaurant_id', restaurantId)
+    .not('storage_path', 'ilike', '%images.unsplash.com%');
+  await supabase.from('restaurant_photos').insert({
+    restaurant_id: restaurantId,
+    storage_path: data.publicUrl,
+    type: 'food',
+    // The first real photo replaces a representative stock image as primary.
+    is_primary: (count ?? 0) === 0,
+  });
+  if ((count ?? 0) === 0) {
+    await supabase
+      .from('restaurant_photos')
+      .update({ is_primary: false })
+      .eq('restaurant_id', restaurantId)
+      .ilike('storage_path', '%images.unsplash.com%');
+  }
+  revalidatePath(`/admin/restaurants/${restaurantId}`);
 }
 
 export async function deleteRestaurant(restaurantId: string) {
