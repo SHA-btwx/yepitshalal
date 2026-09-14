@@ -19,7 +19,7 @@ export function DiscoverFeed({ items }: { items: DiscoverItem[] }) {
       <div className={`flex ${CARD_HEIGHT} flex-col items-center justify-center px-6 text-center`}>
         <ForkKnifeIcon className="h-10 w-10 text-subtle" />
         <p className="mt-3 text-sm text-muted">
-          No restaurants to show right now — check back soon.
+          No restaurants to show right now. Check back soon.
         </p>
         <Link
           href="/"

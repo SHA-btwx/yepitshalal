@@ -11,8 +11,11 @@ export async function POST(request: Request) {
     contactEmail?: string;
   };
 
-  if (!restaurantId || !queueType) {
+  if (!restaurantId || (queueType !== 'free' && queueType !== 'priority')) {
     return NextResponse.json({ error: 'restaurantId and queueType are required.' }, { status: 400 });
+  }
+  if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+    return NextResponse.json({ error: 'Please check the email address.' }, { status: 400 });
   }
 
   let supabase;
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
     }
 
     // The verification_requests row is created by the webhook on
-    // checkout.session.completed, not here — payment purchases queue
+    // checkout.session.completed, not here: payment purchases queue
     // priority only, never a favourable classification (§16).
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -64,6 +67,11 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ checkoutUrl: session.url });
+  }
+
+  const { data: exists } = await supabase.from('restaurants').select('id').eq('id', restaurantId).maybeSingle();
+  if (!exists) {
+    return NextResponse.json({ error: 'Restaurant not found.' }, { status: 404 });
   }
 
   // Free queue: hard cap of 3 new entries/day, platform-wide.

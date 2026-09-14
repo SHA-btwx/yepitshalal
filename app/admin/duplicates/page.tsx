@@ -62,13 +62,13 @@ export default async function AdminDuplicatesPage() {
     <AdminPage
       title="Duplicate review"
       width="lg"
-      description="Pairs that look like the same physical place. Nothing here has been merged — the queue exists so a person decides, because wrongly merging two real restaurants is far worse than carrying a duplicate for a week."
+      description="Pairs that look like the same physical place. Nothing here has been merged. The queue exists so a person decides, because wrongly merging two real restaurants is far worse than carrying a duplicate for a week."
     >
       <div className="space-y-5">
         <p className="flex items-start gap-2 rounded-2xl border border-line bg-white px-5 py-3.5 text-sm leading-relaxed text-muted shadow-sm">
           <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
           Two branches of one chain are not duplicates. Morley&apos;s Peckham and Morley&apos;s
-          Brixton share a name and a brand and are two different places — if that is what you are
+          Brixton share a name and a brand and are two different places. If that is what you are
           looking at, choose <strong className="font-semibold text-ink">Different places</strong>.
         </p>
 

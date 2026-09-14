@@ -16,7 +16,7 @@ export async function SiteHeader() {
         <Link
           href="/"
           className="inline-flex min-h-[40px] items-center rounded-full"
-          aria-label="YepItsHalal — home"
+          aria-label="YepItsHalal home"
         >
           <LogoLockup />
         </Link>

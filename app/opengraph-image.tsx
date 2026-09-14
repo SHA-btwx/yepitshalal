@@ -40,7 +40,7 @@ export default async function OpengraphImage() {
           </div>
         </div>
         <div style={{ display: 'flex', marginTop: 28, fontSize: 34, color: 'rgba(255,255,255,0.75)' }}>
-          Find halal food near you — no guessing.
+          Find halal food near you, and see how we know.
         </div>
       </div>
     ),

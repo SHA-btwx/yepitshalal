@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LocationSearchBar } from '@/components/LocationSearchBar';
@@ -9,7 +10,9 @@ import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 
 // Hand-picked London neighbourhoods with dense halal high streets. Linking
 // straight to coordinates removes the "what do I even type?" beat for a first
-// visit — the hardest moment in a location-first product.
+// visit, the hardest moment in a location-first product.
+export const metadata: Metadata = { alternates: { canonical: '/' } };
+
 const POPULAR_AREAS = [
   { label: 'Whitechapel', lat: 51.5195, lng: -0.0596 },
   { label: 'Edgware Road', lat: 51.5203, lng: -0.167 },
@@ -30,15 +33,15 @@ const HERO_PHOTOS = [
 const LABELS = [
   {
     classification: 'fully_halal' as const,
-    body: 'We checked it ourselves. Everything on the menu is halal.',
+    body: 'Strong evidence that all the meat is halal, such as certification or the restaurant saying so clearly.',
   },
   {
     classification: 'halal_options' as const,
-    body: 'Halal food is on the menu, but the kitchen also serves other things.',
+    body: 'Halal food is served here, alongside food that is not halal.',
   },
   {
     classification: 'unverified' as const,
-    body: "We haven't checked this one yet. That's all it means.",
+    body: "There are signs of halal food, but it hasn't been confirmed. It never means not halal.",
   },
 ];
 
@@ -50,7 +53,7 @@ export default async function HomePage() {
       {/* ATTENTION. A sign in a window is a claim; this page's entire pitch is
           that we don't stop there. The headline names the customer's actual
           state (guessing, whether they'd admit it or not) rather than
-          describing the product — curiosity comes from being seen, not from
+          describing the product: curiosity comes from being seen, not from
           being told what a directory does. The search bar is Action available
           immediately, for the visitor who already knows what they want; the
           rest of the page is for everyone else, who needs Interest and Desire
@@ -101,7 +104,7 @@ export default async function HomePage() {
           </div>
 
           {/* Decorative: the same dishes are shown for real, with names and halal
-              status, a screen further down. Hidden below lg rather than shrunk —
+              status, a screen further down. Hidden below lg rather than shrunk:
               on a phone the search field should own the first screen. */}
           <ul aria-hidden="true" className="hidden gap-3 lg:grid lg:grid-cols-2">
             {HERO_PHOTOS.map((photo, i) => (
@@ -139,9 +142,8 @@ export default async function HomePage() {
             A &ldquo;halal&rdquo; sign only tells you so much
           </h2>
           <p className="mx-auto mt-2.5 max-w-lg text-pretty text-[15px] leading-relaxed text-muted">
-            It doesn&apos;t say who checked, what they checked, or when. So every
-            restaurant here carries a different kind of label, one that answers all
-            three.
+            It doesn&apos;t say who said so, or when. So every place here shows its
+            label, the evidence behind it, and the date it was checked.
           </p>
         </div>
 
@@ -166,7 +168,7 @@ export default async function HomePage() {
       </section>
 
       {/* DESIRE, beat one: proof, not a promise. Deliberately still rather
-          than autoplaying — the brief rules that out, and it would fight the
+          than autoplaying: the brief rules that out, and it would fight the
           search field for attention if it sat any higher on the page. */}
       <HomeReelStrip reels={featuredReels} />
 
@@ -179,13 +181,13 @@ export default async function HomePage() {
             {[
               {
                 Icon: MapIcon,
-                step: 'Discover',
-                body: 'Search your area, or scroll the feed until something looks good.',
+                step: 'Search',
+                body: 'Type a postcode, an area, a street or a restaurant name.',
               },
               {
                 Icon: SealCheckIcon,
                 step: 'Check',
-                body: 'See the halal status, what we verified, and when we last looked.',
+                body: 'See the halal status, where it came from, and when it was checked.',
               },
               {
                 Icon: ForkKnifeIcon,
@@ -221,17 +223,16 @@ export default async function HomePage() {
           Ready to stop guessing?
         </h2>
         <p className="mx-auto mt-2.5 max-w-md text-pretty text-[15px] leading-relaxed text-muted">
-          Open Discover and scroll through real kitchens, real labels, real answers, one
-          at a time. Or head back up and search your street directly.
+          Search your area. Every place shows its halal label and the evidence behind it.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/discover" className={ctaPrimary}>
-            Open Discover
+          <a href="#search" className={ctaPrimary}>
+            Search your area
             <ArrowRightIcon className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
-          </Link>
-          <a href="#search" className={ctaSecondary}>
-            Search your street
           </a>
+          <Link href="/how-we-check" className={ctaSecondary}>
+            How we label places
+          </Link>
         </div>
       </section>
 

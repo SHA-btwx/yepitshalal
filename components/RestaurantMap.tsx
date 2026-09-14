@@ -357,7 +357,7 @@ function renderMarkers(
       // MapLibre stamps its own generic 'Map marker' label on the element it is
       // handed, so ours has to be written back afterwards — otherwise every pin
       // and cluster on the map announces the identical name.
-      el.setAttribute('aria-label', `${count} restaurants — zoom in to see them`);
+      el.setAttribute('aria-label', `${count} restaurants. Zoom in to see them`);
       markersRef.current.push(marker);
       continue;
     }
@@ -399,7 +399,7 @@ function renderMarkers(
     });
 
     const marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
-    el.setAttribute('aria-label', `${restaurant.name} — ${HALAL_PIN_LABEL[restaurant.halal_classification]}`);
+    el.setAttribute('aria-label', `${restaurant.name}, ${HALAL_PIN_LABEL[restaurant.halal_classification]}`);
     markersRef.current.push(marker);
   }
 }

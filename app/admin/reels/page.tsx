@@ -46,7 +46,7 @@ export default async function AdminReelsPage() {
       description={
         <>
           Every reel is reviewed before it goes live. A paying partner gets more slots, never a
-          faster or softer review — and never a bearing on halal classification.
+          faster or softer review, and never a bearing on halal classification.
         </>
       }
     >
@@ -140,7 +140,7 @@ export default async function AdminReelsPage() {
                   <span className="shrink-0 text-xs text-subtle">
                     {reel.published_at
                       ? new Date(reel.published_at).toLocaleDateString('en-GB')
-                      : '—'}
+                      : 'None'}
                   </span>
                 </Row>
               );

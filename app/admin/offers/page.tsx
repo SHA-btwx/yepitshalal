@@ -37,7 +37,7 @@ export default async function AdminOffersPage() {
       title="Yep+ offers"
       description={
         <>
-          The basic concept only — no redemption or payment system. Voucher codes are hidden
+          The basic concept only: no redemption or payment system. Voucher codes are hidden
           from non-Yep+ users automatically via <code className="rounded bg-black/[0.06] px-1 py-0.5 font-mono text-[0.8em]">offers_public</code>.
         </>
       }

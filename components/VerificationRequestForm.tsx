@@ -43,8 +43,8 @@ export function VerificationRequestForm({
       ok: true,
       message:
         json.status === 'queued'
-          ? "You're in today's free verification queue — no guaranteed timeframe, but we'll be in touch."
-          : "Today's 3 free verification slots are full — you're first in line for tomorrow, no need to resubmit.",
+          ? "You're in today's free queue. There's no set timeframe, but we'll be in touch."
+          : "Today's 3 free slots are full, so you're first in line for tomorrow. No need to send it again.",
     });
   }
 
@@ -86,8 +86,8 @@ export function VerificationRequestForm({
         <div className="flex flex-col rounded-2xl border border-line bg-white p-4">
           <h3 className="text-sm font-semibold text-ink">Free verification</h3>
           <p className="mt-1 flex-1 text-xs leading-relaxed text-muted">
-            Joins the normal queue. No guaranteed timeframe — we process roughly 3 free
-            verifications a day.
+            Joins the normal queue. There&apos;s no set timeframe: we take on about 3 free
+            checks a day.
           </p>
           <button
             type="button"
@@ -102,7 +102,7 @@ export function VerificationRequestForm({
         <div className="flex flex-col rounded-2xl border-2 border-ink bg-ink/[0.03] p-4">
           <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
             <SealCheckIcon className="h-4 w-4 text-accent-ink" />
-            Priority Verification — £30
+            Priority Verification, £30
           </h3>
           <p className="mt-1 flex-1 text-xs leading-relaxed text-muted">
             Moves you ahead of the free queue. Target: reviewed within 48 working hours. Payment

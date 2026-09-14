@@ -37,7 +37,7 @@ export default async function AdminSubscriptionsPage() {
                   {s.users?.email ?? 'Unknown user'}
                 </p>
                 <p className="truncate text-xs text-muted">
-                  {s.plan === 'annual' ? 'Annual' : s.plan === 'monthly' ? 'Monthly' : '—'}
+                  {s.plan === 'annual' ? 'Annual' : s.plan === 'monthly' ? 'Monthly' : 'None'}
                   {s.current_period_end &&
                     ` · until ${new Date(s.current_period_end).toLocaleDateString('en-GB')}`}
                 </p>

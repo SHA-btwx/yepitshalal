@@ -68,7 +68,7 @@ export function SignInForm() {
       </button>
       {status === 'error' && (
         <p role="alert" className="text-sm font-medium text-halal-partialInk">
-          Something went wrong — please try again.
+          Something went wrong. Please try again.
         </p>
       )}
     </form>

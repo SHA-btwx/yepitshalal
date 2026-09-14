@@ -126,7 +126,7 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
             <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
             <span>
               Your free reel appears on your page and can show up in Discovery, same as anyone
-              else&apos;s. A partnership adds more slots — each extra reel is another chance to be
+              else&apos;s. A partnership adds more slots, and each extra reel is another chance to be
               found by someone deciding where to eat tonight.{' '}
               <Link href="/partners" className="font-semibold text-accent-ink hover:underline">
                 How partnerships work
@@ -151,7 +151,7 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
       <ul className="mt-5 space-y-3">
         {reels.length === 0 && (
           <li className="rounded-2xl border border-dashed border-black/10 px-6 py-10 text-center text-sm text-muted">
-            No reels yet. Your first one is free — a 15-second clip of your signature dish is
+            No reels yet. Your first one is free. A 15-second clip of your signature dish is
             usually the one that works.
           </li>
         )}

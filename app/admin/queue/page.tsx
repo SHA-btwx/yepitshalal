@@ -37,7 +37,7 @@ export default async function AdminQueuePage() {
   return (
     <AdminPage
       title="Verification queue"
-      description={`${all.length} open request${all.length === 1 ? '' : 's'} — priority first, then oldest.`}
+      description={`${all.length} open request${all.length === 1 ? '' : 's'}, priority first, then oldest.`}
       width="lg"
     >
       <div className="space-y-5">

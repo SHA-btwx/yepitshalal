@@ -58,7 +58,7 @@ export async function OwnershipCta({
             >
               Sign in
             </Link>{' '}
-            to claim it and post a reel — the first one is free.
+            to claim it and post a reel. The first one is free.
           </span>
         </p>
       </div>
@@ -76,7 +76,7 @@ export async function OwnershipCta({
   if (existing?.status === 'pending') {
     return (
       <p className="rounded-2xl border border-dashed border-black/15 p-5 text-sm leading-relaxed text-muted">
-        Your claim for this restaurant is with us — we&apos;ll email you once it&apos;s reviewed.
+        Your claim for this restaurant is with us. We&apos;ll email you once it&apos;s reviewed.
       </p>
     );
   }

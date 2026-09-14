@@ -15,27 +15,9 @@ import type { FeaturedReel } from '@/lib/reels';
  * through: the moving version lives on Discover, which is what the link is for.
  */
 export function HomeReelStrip({ reels }: { reels: FeaturedReel[] }) {
-  if (reels.length === 0) {
-    // No published reels yet. Say so plainly rather than filling the row with
-    // stock photography pretending to be restaurant content.
-    return (
-      <section className="mx-auto max-w-5xl px-5 pb-4 pt-12 sm:px-6 sm:pt-16">
-        <div className="rounded-2xl border border-dashed border-black/12 px-6 py-8 text-center">
-          <h2 className="text-balance font-display text-xl font-semibold text-ink sm:text-2xl">
-            See what they&apos;re actually serving
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-pretty text-sm leading-relaxed text-muted">
-            Restaurants are just starting to add short clips of their food. Until then, Discover
-            is the quickest way to browse places one at a time.
-          </p>
-          <Link href="/discover" className={`${ctaSecondarySm} mt-4`}>
-            Open Discover
-            <ArrowRightIcon className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-    );
-  }
+  // No published reels yet. Nothing is shown rather than a promise of content
+  // that does not exist, or a pointer to a Discover page that is not live.
+  if (reels.length === 0) return null;
 
   return (
     <section className="mx-auto max-w-6xl px-5 pt-12 sm:px-6 sm:pt-16">
