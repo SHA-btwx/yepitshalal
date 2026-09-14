@@ -16,7 +16,9 @@
 //   5. Pipeline evidence is replaced wholesale for every place it covers, so
 //      re-running is safe. Evidence added by admins or submissions is never
 //      touched. The database derives each label from the evidence.
-//   6. Opening hours come from OpenStreetMap only where they parse cleanly.
+//   6. Places whose name or cuisine makes them worth checking are listed as
+//      "Not checked yet" (candidates.mjs), with whatever details exist.
+//   7. Opening hours come from OpenStreetMap only where they parse cleanly.
 //
 // Nothing here writes a halal classification directly.
 
@@ -26,6 +28,7 @@ import {
   cachePath, cellKey, metersBetween, nameSimilarity, neighbourKeys, normaliseName, splitTradingNames,
   parseOsmOpeningHours, readJsonl,
 } from './lib.mjs';
+import { isCandidate, rowIsCandidate } from './candidates.mjs';
 
 const APPLY = process.argv.includes('--apply');
 const NOW = new Date().toISOString();
@@ -69,7 +72,7 @@ async function fetchAll(table, columns) {
 
 const existing = await fetchAll(
   'restaurants_with_coords',
-  'id, slug, name, address, source_reference_id, data_source, brand_id, branch_label, catalogue_status, merged_into, lat, lng, postcode, phone, website_url, socials, borough, created_at'
+  'id, slug, name, address, source_reference_id, data_source, brand_id, branch_label, catalogue_status, merged_into, lat, lng, postcode, phone, website_url, socials, borough, cuisine_label, created_at'
 );
 const cuisines = await fetchAll('cuisines', 'id, name');
 log(`existing listings: ${existing.length}, entities: ${entities.length}, places with evidence: ${evidenceByKey.size}`);
@@ -86,8 +89,10 @@ for (const e of entities) {
 
 const matchOf = new Map(); // existing id -> entity key
 const unmatched = [];
+// Places already represented by a merged duplicate: that listing exists (under
+// its keeper), so the place must not come back as a new one.
+const mergedPlaceKeys = new Set();
 for (const r of existing) {
-  if (r.merged_into) continue;
   const nr = normaliseName(r.name);
   let best = null;
   // Ties go to the nearer place: a listing created by an earlier import sits
@@ -107,6 +112,10 @@ for (const r of existing) {
       const sim = nr ? nameSimilarity(nr, normaliseName(e.name)) : r.name.trim() === String(e.name).trim() && d <= 10 ? 1 : 0;
       if (sim >= 0.8 && better({ e, sim, d }, best)) best = { e, sim, d };
     }
+  }
+  if (r.merged_into) {
+    if (best) mergedPlaceKeys.add(best.e.key);
+    continue;
   }
   if (best) matchOf.set(r.id, best.e.key);
   else unmatched.push(r);
@@ -231,7 +240,7 @@ const matchedKeys = new Set(matchOf.values());
 const attachedTo = new Map(); // entity key -> existing listing row
 const newPlaces = [];
 for (const [key, evidence] of evidenceByKey) {
-  if (matchedKeys.has(key)) continue;
+  if (matchedKeys.has(key) || mergedPlaceKeys.has(key)) continue;
   if (predict(evidence) === 'not_listed') continue;
   const shared = listingTradingAs(entityByKey.get(key));
   if (shared) {
@@ -240,6 +249,43 @@ for (const [key, evidence] of evidenceByKey) {
     continue;
   }
   newPlaces.push(entityByKey.get(key));
+}
+
+// --- 4b. Places not checked yet ----------------------------------------------------------------------
+// Places whose name or cuisine makes them worth checking (candidates.mjs). They
+// are listed as "Not checked yet" with whatever details the sources have, even
+// none, and never as halal. A listing already in the database keeps the rule
+// the site's first listings were chosen by.
+const newPlaceKeys = new Set(newPlaces.map((p) => p.key));
+const existingByKey = new Map([...keeperOf, ...attachedTo]);
+const matchedRowIds = new Set([...existingByKey.values()].map((r) => r.id));
+
+function existingNear(e) {
+  const ne = normaliseName(e.name);
+  for (const r of neighbourKeys(e.lat, e.lng).flatMap((k) => listingGrid.get(k) || [])) {
+    if (metersBetween(r.lat, r.lng, e.lat, e.lng) > 40) continue;
+    const rn = normaliseName(r.name);
+    if (ne && rn && nameSimilarity(ne, rn) >= 0.6) return r;
+    if (ne && splitTradingNames(r.name).some((n) => nameSimilarity(normaliseName(n), ne) >= 0.85)) return r;
+  }
+  return null;
+}
+
+const candidateRowIds = new Set();
+const candidateKeysForNewPlaces = new Set();
+const newCandidates = [];
+for (const e of entities) {
+  if (!e.borough || mergedPlaceKeys.has(e.key) || !isCandidate(e, evidenceByKey.get(e.key) || [])) continue;
+  const row = existingByKey.get(e.key);
+  if (row) { candidateRowIds.add(row.id); continue; }
+  if (newPlaceKeys.has(e.key)) { candidateKeysForNewPlaces.add(e.key); continue; }
+  const near = existingNear(e);
+  if (near) { if (!matchedRowIds.has(near.id)) candidateRowIds.add(near.id); continue; }
+  newCandidates.push(e);
+}
+for (const r of existing) {
+  if (r.merged_into || mergeLosers.has(r.id) || matchedRowIds.has(r.id)) continue;
+  if (rowIsCandidate(r)) candidateRowIds.add(r.id);
 }
 
 // --- Plan ------------------------------------------------------------------------------------------
@@ -269,6 +315,9 @@ const plan = {
   existingUnconfirmedToNeedsReview: unconfirmed.length,
   duplicateMerges: merges.length,
   newListings: newPlaces.length,
+  notCheckedExistingRows: candidateRowIds.size,
+  notCheckedNewPlaces: newCandidates.length,
+  notCheckedNewWithoutContactDetails: newCandidates.filter((e) => !e.phone && !e.website).length,
   predictedLabels: labels,
   listedTotal: listedKeys.length,
   boroughs: Object.fromEntries(Object.entries(boroughs).sort((a, b) => b[1] - a[1])),
@@ -297,7 +346,7 @@ async function must(promise, what) {
 
 // Cuisines we map to but do not have yet.
 const cuisineIdByName = new Map(cuisines.map((c) => [c.name.toLowerCase(), c.id]));
-const neededCuisines = [...new Set([...evidenceByKey.keys()].map((k) => cuisineFor(entityByKey.get(k))).filter(Boolean))]
+const neededCuisines = [...new Set([...evidenceByKey.keys(), ...newCandidates.map((e) => e.key)].map((k) => cuisineFor(entityByKey.get(k))).filter(Boolean))]
   .filter((n) => !cuisineIdByName.has(n.toLowerCase()));
 if (neededCuisines.length) {
   const added = await must(sb.from('cuisines').insert(neededCuisines.map((name) => ({ name }))).select('id, name'), 'cuisines');
@@ -321,8 +370,7 @@ const restaurantIdByKey = new Map();
 for (const [key, row] of keeperOf) restaurantIdByKey.set(key, row.id);
 for (const [key, row] of attachedTo) restaurantIdByKey.set(key, row.id);
 
-for (const batch of chunk(newPlaces, 400)) {
-  const rows = batch.map((e) => {
+function rowFor(e) {
     const postcode = e.postcode || null;
     const address = e.address
       ? postcode && !e.address.toUpperCase().includes(postcode) ? `${e.address}, ${postcode}` : e.address
@@ -350,11 +398,29 @@ for (const batch of chunk(newPlaces, 400)) {
       halal_classification: 'unverified',
       last_checked_at: NOW,
     };
-  });
-  const inserted = await must(sb.from('restaurants').insert(rows).select('id, slug'), 'insert restaurants');
-  inserted.forEach((r, i) => restaurantIdByKey.set(batch[i].key, r.id));
 }
-log(`inserted new listings: ${newPlaces.length}`);
+
+const newRowIds = new Map(); // entity key -> new row id
+for (const batch of chunk([...newPlaces, ...newCandidates], 400)) {
+  const inserted = await must(sb.from('restaurants').insert(batch.map(rowFor)).select('id, slug'), 'insert restaurants');
+  inserted.forEach((r, i) => {
+    restaurantIdByKey.set(batch[i].key, r.id);
+    newRowIds.set(batch[i].key, r.id);
+  });
+}
+log(`inserted new listings: ${newPlaces.length} with evidence, ${newCandidates.length} not checked yet`);
+
+// Not checked yet: set the flag on every row, so a place that stops qualifying loses it.
+for (const key of [...candidateKeysForNewPlaces, ...newCandidates.map((e) => e.key)]) candidateRowIds.add(newRowIds.get(key));
+const allRowIds = [...existing.filter((r) => !r.merged_into).map((r) => r.id), ...newRowIds.values()];
+const notCandidates = allRowIds.filter((id) => !candidateRowIds.has(id));
+for (const ids of chunk([...candidateRowIds].filter(Boolean), 200)) {
+  await must(sb.from('restaurants').update({ is_candidate: true }).in('id', ids), 'is_candidate true');
+}
+for (const ids of chunk(notCandidates, 200)) {
+  await must(sb.from('restaurants').update({ is_candidate: false }).in('id', ids), 'is_candidate false');
+}
+log(`not checked yet: ${candidateRowIds.size} flagged, ${notCandidates.length} not`);
 
 // Existing listings: fill gaps only, never overwrite.
 for (const [key, row] of keeperOf) {
@@ -365,7 +431,8 @@ for (const [key, row] of keeperOf) {
   if ((!row.socials || !row.socials.length) && e.socials?.length) patch.socials = e.socials.slice(0, 5);
   const c = cuisineFor(e);
   if (c) patch.cuisine_label = c;
-  if (row.catalogue_status === 'needs_review') patch.catalogue_status = 'active';
+  // A listing someone sent to review (a misplaced pin, say) stays there until a
+  // person clears it: re-running the import does not bring it back.
   await must(sb.from('restaurants').update(patch).eq('id', row.id), 'update existing');
 }
 log(`updated existing listings: ${keeperOf.size}`);

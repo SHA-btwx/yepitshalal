@@ -1,4 +1,6 @@
 // Step 5: the same restaurant listed twice, and pins in the wrong place.
+// Runs over everything search can show: places with evidence and places not
+// checked yet.
 //
 //   node dedupe-listed.mjs            dry run: prints what it would change
 //   node dedupe-listed.mjs --apply    applies it
@@ -50,7 +52,7 @@ for (let from = 0; ; from += 1000) {
   const { data, error } = await sb
     .from('restaurants_with_coords')
     .select('id, name, address, postcode, website_url, phone, lat, lng, created_at, data_source, source_reference_id, halal_evidence_strength, brand_id, branch_label')
-    .eq('is_listed', true)
+    .eq('is_searchable', true)
     .range(from, from + 999);
   if (error) throw new Error(error.message);
   rows.push(...data);
@@ -86,7 +88,9 @@ function closeDuplicate(a, b) {
   const sharedPhone = [...a.phones].some((p) => b.phones.has(p));
   if (!sharedHost && !sharedPhone) return false;
   if (!numbersAgree(a, b)) return false;
-  if (sharedHost && sharedPhone && a.numbers.size && b.numbers.size) return true;
+  // Only when the website plausibly belongs to both: shops inside Harrods share
+  // Harrods' website and switchboard without being one restaurant.
+  if (sharedHost && sharedPhone && a.numbers.size && b.numbers.size && hostMatchesName(a.host, [a.name]) && hostMatchesName(b.host, [b.name])) return true;
   if (!a.norm || !b.norm) return false;
   if (nameSimilarity(a.norm, b.norm) >= 0.85) return true;
   const [short, long] = a.norm.length <= b.norm.length ? [a.norm, b.norm] : [b.norm, a.norm];
@@ -154,7 +158,7 @@ for (const group of byPostcode.values()) {
 const merged = new Set(pairs.map(([l]) => l.id));
 const misplaced = rows.filter((r) => !merged.has(r.id) && (r.outsideLondon || (r.pinError !== null && r.pinError > PIN_TOLERANCE_M)));
 
-console.log(`listed: ${rows.length}, duplicates: ${pairs.length}, misplaced pins: ${misplaced.length}`);
+console.log(`searchable: ${rows.length}, duplicates: ${pairs.length}, misplaced pins: ${misplaced.length}`);
 for (const [l, k, why] of pairs) {
   console.log(`  [${why}] ${l.name}, ${l.address} (pin ${l.pinError ?? '?'} m off)\n    -> ${k.name}, ${k.address} (pin ${k.pinError ?? '?'} m off)`);
 }
