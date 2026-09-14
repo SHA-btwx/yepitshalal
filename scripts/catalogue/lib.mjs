@@ -234,6 +234,31 @@ export function hostMatchesName(host, names) {
   return false;
 }
 
+/**
+ * Centre point of each UK postcode, from postcodes.io (ONS data, OGL), looked up
+ * 100 at a time. Keys are postcodes without spaces, upper case; unknown
+ * postcodes map to null.
+ */
+export async function postcodeCentroids(postcodes) {
+  const keys = [...new Set(postcodes.filter(Boolean).map((p) => String(p).toUpperCase().replace(/\s+/g, '')))];
+  const out = new Map();
+  for (let i = 0; i < keys.length; i += 100) {
+    const res = await fetch('https://api.postcodes.io/postcodes', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'user-agent': 'YepItsHalalBot/1.0 (+https://yepitshalal.com)' },
+      body: JSON.stringify({ postcodes: keys.slice(i, i + 100) }),
+    });
+    if (!res.ok) throw new Error(`postcodes.io ${res.status}`);
+    for (const r of (await res.json()).result) {
+      const key = r.query.toUpperCase().replace(/\s+/g, '');
+      out.set(key, r.result ? { lat: r.result.latitude, lng: r.result.longitude, region: r.result.region } : null);
+    }
+  }
+  return out;
+}
+
+export const postcodeKey = (p) => (p ? String(p).toUpperCase().replace(/\s+/g, '') : null);
+
 export function websiteUrl(raw) {
   const host = websiteHost(raw);
   if (!host) return null;

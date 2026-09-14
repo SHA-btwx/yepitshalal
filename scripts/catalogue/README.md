@@ -50,8 +50,10 @@ registers (no published reuse terms; ask them for permission first).
 4. `node import-catalogue.mjs` prints the plan. Add `--apply` to write it. It is
    safe to re-run: pipeline evidence is replaced, and evidence added by admins or
    submissions is never touched.
-5. `node dedupe-listed.mjs` finds the same restaurant listed twice. Add `--apply`
-   to merge. Merged rows are hidden from search, not deleted.
+5. `node dedupe-listed.mjs` finds the same restaurant listed twice, and listed
+   places whose pin is more than 500 m from their own postcode. Add `--apply` to
+   merge duplicates and send misplaced pins to review. Merged rows are hidden
+   from search, not deleted.
 
 ## Human review
 
