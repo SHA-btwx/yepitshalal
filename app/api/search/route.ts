@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { runSearch } from '@/lib/search';
 import { HALAL_STATUSES, type HalalStatus } from '@/lib/types';
 
-// A thin pass-through to runSearch(). Radius entitlement is enforced inside the
-// database function, keyed off the caller's real subscription, never here.
+// A thin pass-through to runSearch(). Search is the same for everyone: no
+// entitlement check here or in the database function behind it.
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase/server';
-import { FREE_RADIUS_METERS } from '@/lib/types';
+import { DEFAULT_RADIUS_METERS } from '@/lib/types';
 
 // Suggestions for a search that found nothing: the nearest areas that do have
 // places, including ones not checked yet. See nearby_listing_areas() for why this suggests other searches
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     p_lng: lng,
     p_exclude_radius_meters: Math.round(radius),
     // Where each suggestion leads: a place search, which opens at this radius.
-    p_destination_radius_meters: FREE_RADIUS_METERS.searched_location,
+    p_destination_radius_meters: DEFAULT_RADIUS_METERS,
     p_limit: 3,
     p_include_candidates: true,
   });

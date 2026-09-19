@@ -1,6 +1,6 @@
 import { createServerSupabase } from './supabase/server';
 import {
-  FREE_RADIUS_METERS,
+  DEFAULT_RADIUS_METERS,
   RADIUS_OPTIONS_MILES,
   effectiveRadiusMeters,
   milesToMeters,
@@ -15,15 +15,18 @@ import {
 // first paint and every refresh are the same query.
 //
 // Behind it, in the database, search_restaurants() and search_radius_counts()
-// both call search_candidates(). That is why the list, the count, the map ring
-// and "Unlock N more" always agree: they are one definition of a match.
+// both call search_candidates(). That is why the list, the count and the map
+// ring always agree: they are one definition of a match.
+//
+// Search is the same for everyone. There is no radius entitlement: anybody can
+// look anywhere in London, signed in or not. See migration 0033.
 //
 // Search includes places nobody has checked yet ("Not checked yet"), alongside
 // places with halal evidence. Each result carries halal_status to tell them apart,
 // and each radius count says how many of its places have evidence.
 
-/** Every radius the selector offers, smallest first, including the free caps. */
-export const TIER_MILES: number[] = [...new Set([0.5, ...RADIUS_OPTIONS_MILES])].sort((a, b) => a - b);
+/** Every radius the selector offers, smallest first. */
+export const TIER_MILES: number[] = [...RADIUS_OPTIONS_MILES].sort((a, b) => a - b);
 
 export interface SearchParams {
   lat: number;
@@ -38,7 +41,6 @@ export interface SearchParams {
 export interface SearchResponse {
   results: SearchResultRestaurant[];
   totalCount: number;
-  isYepPlus: boolean;
   effectiveRadiusMeters: number;
   tierCounts: TierCount[];
 }
@@ -47,9 +49,9 @@ export async function runSearch(params: SearchParams): Promise<SearchResponse> {
   const supabase = createServerSupabase();
   const classification = params.classification?.length ? params.classification : null;
   const query = params.query?.trim() ? params.query.trim().slice(0, 80) : null;
-  const requested = params.radiusMiles ? milesToMeters(params.radiusMiles) : FREE_RADIUS_METERS[params.mode];
+  const requested = params.radiusMiles ? milesToMeters(params.radiusMiles) : DEFAULT_RADIUS_METERS;
 
-  const [{ data, error }, { data: counts }, { data: isYepPlus }] = await Promise.all([
+  const [{ data, error }, { data: counts }] = await Promise.all([
     supabase.rpc('search_restaurants', {
       p_lat: params.lat,
       p_lng: params.lng,
@@ -72,13 +74,11 @@ export async function runSearch(params: SearchParams): Promise<SearchResponse> {
       p_query: query,
       p_include_candidates: true,
     }),
-    supabase.rpc('is_current_user_yep_plus'),
   ]);
 
   if (error) throw new Error(error.message);
 
   const results = (data ?? []) as SearchResultRestaurant[];
-  const yep = Boolean(isYepPlus);
   const byMeters = new Map(
     ((counts ?? []) as { radius_meters: number; places: number; with_evidence: number }[]).map((c) => [c.radius_meters, c])
   );
@@ -89,20 +89,11 @@ export async function runSearch(params: SearchParams): Promise<SearchResponse> {
 
   // The server reports the radius it actually used on every row. With no rows,
   // the same clamp the database applies gives the same answer.
-  // requestedMiles must be what the query was actually asked for: with no radius
-  // given that is the mode's default, not "the maximum".
-  const radius =
-    results[0]?.effective_radius_meters ??
-    effectiveRadiusMeters({
-      requestedMiles: params.radiusMiles ?? FREE_RADIUS_METERS[params.mode] / 1609.34,
-      mode: params.mode,
-      isYepPlus: yep,
-    });
+  const radius = results[0]?.effective_radius_meters ?? effectiveRadiusMeters(params.radiusMiles ?? null);
 
   return {
     results,
     totalCount: Number(results[0]?.total_count ?? 0),
-    isYepPlus: yep,
     effectiveRadiusMeters: radius,
     tierCounts,
   };

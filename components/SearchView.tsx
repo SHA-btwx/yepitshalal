@@ -8,7 +8,6 @@ import { RestaurantCard } from './RestaurantCard';
 import { RestaurantCardSkeleton } from './RestaurantCardSkeleton';
 import { RadiusSelector } from './RadiusSelector';
 import { RestaurantPreviewCard } from './RestaurantPreviewCard';
-import { RadiusUnlockBanner, pickUnlockTier } from './RadiusUnlockBanner';
 import {
   ArrowRightIcon,
   ListIcon,
@@ -21,7 +20,7 @@ import {
   HalalNotCheckedMark,
   InfoIcon,
 } from './icons';
-import { effectiveRadiusMeters, formatRadiusMiles } from '@/lib/types';
+import { DEFAULT_RADIUS_MILES, effectiveRadiusMeters, formatRadiusMiles } from '@/lib/types';
 import type { HalalStatus, SearchResultRestaurant, TierCount } from '@/lib/types';
 import type { SearchResponse } from '@/lib/search';
 import type { NearbyArea } from '@/app/api/nearby-areas/route';
@@ -56,12 +55,11 @@ const CLASSIFICATION_FILTERS: {
 const PAGE = 30;
 
 export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) {
-  const freeCapMiles = mode === 'current_location' ? 1 : 0.5;
   const [results, setResults] = useState<SearchResultRestaurant[]>(initial.results);
   const [totalCount, setTotalCount] = useState(initial.totalCount);
   const [tierCounts, setTierCounts] = useState<TierCount[]>(initial.tierCounts);
-  const [isYepPlus, setIsYepPlus] = useState(initial.isYepPlus);
-  const [radiusMiles, setRadiusMiles] = useState(freeCapMiles);
+  // One mile to start: near enough to walk to, and the chip for it is selected.
+  const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS_MILES);
   const [classifications, setClassifications] = useState<HalalStatus[]>([]);
   const [queryInput, setQueryInput] = useState('');
   const [query, setQuery] = useState('');
@@ -76,21 +74,12 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   // The radius the server reports it actually used. Null while a search is in
   // flight, when the locally derived value (same clamp) is the honest answer.
   const [serverRadiusMeters, setServerRadiusMeters] = useState<number | null>(initial.effectiveRadiusMeters);
-  // A locked tier being previewed. Never touches the query, only the map.
-  const [previewMiles, setPreviewMiles] = useState<number | null>(null);
   const [nearbyAreas, setNearbyAreas] = useState<NearbyArea[] | null>(null);
   // Set when the radius was widened automatically, so the page can say so.
   const [expandedFrom, setExpandedFrom] = useState<number | null>(null);
   const userChoseRadius = useRef(false);
 
-  const coverageMeters =
-    serverRadiusMeters ?? effectiveRadiusMeters({ requestedMiles: radiusMiles, mode, isYepPlus });
-
-  // What a locked tier would cover with Yep+. Capped the same way, so
-  // "Anywhere" previews 50 miles rather than 999.
-  const rawPreviewMeters =
-    previewMiles === null ? null : effectiveRadiusMeters({ requestedMiles: previewMiles, mode, isYepPlus: true });
-  const previewMeters = rawPreviewMeters && rawPreviewMeters > coverageMeters ? rawPreviewMeters : null;
+  const coverageMeters = serverRadiusMeters ?? effectiveRadiusMeters(radiusMiles);
 
   const filtered = classifications.length > 0 || query.length > 0;
 
@@ -109,7 +98,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
         setResults(json.results);
         setTotalCount(json.totalCount);
         setTierCounts(json.tierCounts);
-        setIsYepPlus(json.isYepPlus);
         setServerRadiusMeters(json.effectiveRadiusMeters);
         setVisible(PAGE);
       } catch {
@@ -139,17 +127,16 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
     return () => clearTimeout(t);
   }, [queryInput]);
 
-  // Thin area, Yep+ only: widen to the nearest radius that has something, and
-  // say so. Free visitors are not widened past their radius (that is the paid
-  // feature); they see what a wider radius would add, and nearby areas.
+  // Thin area: widen to the nearest radius that has something, and say so.
+  // Nobody gets an empty page when there is food a mile further out.
   useEffect(() => {
-    if (loading || !isYepPlus || userChoseRadius.current || filtered || totalCount > 0) return;
+    if (loading || userChoseRadius.current || filtered || totalCount > 0) return;
     const next = tierCounts.find((t) => t.meters > coverageMeters && t.places > 0);
     if (!next) return;
     setExpandedFrom(radiusMiles);
     setRadiusMiles(next.miles);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, isYepPlus, totalCount, tierCounts]);
+  }, [loading, totalCount, tierCounts]);
 
   // Nearby areas for a search that found nothing and was not narrowed by filters.
   const emptyAndUnfiltered = !loading && totalCount === 0 && !filtered;
@@ -189,7 +176,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   }
 
   const radiusLabel = formatRadiusMiles(coverageMeters);
-  const unlock = !isYepPlus && !loading ? pickUnlockTier(tierCounts, coverageMeters, previewMiles) : null;
   const skeletonCount = Math.min(Math.max(results.length, 3), 6);
   // Of the places in range, how many have halal evidence. Same query as the count.
   const withEvidenceHere = tierCounts.find((t) => t.meters === coverageMeters)?.withEvidence ?? null;
@@ -236,17 +222,12 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
 
         <div className="mt-3">
           <RadiusSelector
-            isYepPlus={isYepPlus}
-            freeCapMiles={freeCapMiles}
             selectedMiles={radiusMiles}
-            previewMiles={previewMiles}
             onSelect={(miles) => {
               userChoseRadius.current = true;
               setExpandedFrom(null);
               setRadiusMiles(miles);
-              setPreviewMiles(null);
             }}
-            onLockedSelect={(miles) => setPreviewMiles(miles)}
           />
         </div>
 
@@ -284,21 +265,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           </label>
         </div>
       </div>
-
-      {/* The value of the wider radius, before anyone has to scroll through a
-          short list to discover it. */}
-      {unlock && (
-        <div className="px-4 pt-3 sm:px-0">
-          <RadiusUnlockBanner
-            unlock={unlock}
-            previewing={previewMiles === unlock.tier.miles}
-            onPreview={(miles) => {
-              setPreviewMiles(miles);
-              setMobileView('map');
-            }}
-          />
-        </div>
-      )}
 
       {expandedFrom !== null && (
         <p className="mx-4 mt-3 flex items-start gap-2 rounded-xl bg-accent-soft px-3.5 py-2.5 text-sm text-accent-ink sm:mx-0">
@@ -359,7 +325,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
                 {query ? `Nothing matching “${query}” within ${radiusLabel}` : 'No matches for these filters'}
               </p>
               <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
-                {isYepPlus ? 'Clear the filters, or try a wider radius.' : 'Clear the filters to see everything here.'}
+                Clear the filters, or try a wider radius.
               </p>
               <div className="mt-4 flex justify-center">
                 <button
@@ -464,7 +430,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             onSelect={setSelected}
             resizeSignal={resizeSignal}
             coverageRadiusMeters={coverageMeters}
-            previewRadiusMeters={previewMeters}
           />
 
           {/* One overlay, not two. The coverage line answers "what am I looking
@@ -475,21 +440,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
               <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-halal-full bg-halal-full/15" />
               Search area · {radiusLabel}
             </p>
-            {/* Only ever an outline, and never any pins: nothing inside this ring
-                is in the results, and it must not look like there is. */}
-            {previewMeters && (
-              <p className="pointer-events-auto mt-1.5 flex items-center gap-2 whitespace-nowrap text-ink/70">
-                <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-dashed border-ink/50" />
-                Yep+ would reach {formatRadiusMiles(previewMeters)}
-                <button
-                  type="button"
-                  onClick={() => setPreviewMiles(null)}
-                  className="ml-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold text-accent-ink underline underline-offset-2 transition hover:bg-black/[0.04]"
-                >
-                  Hide
-                </button>
-              </p>
-            )}
             <ul className="mt-2 space-y-1 border-t border-line pt-2">
               {CLASSIFICATION_FILTERS.map((f) => (
                 <li key={f.value} className="flex items-center gap-1.5">

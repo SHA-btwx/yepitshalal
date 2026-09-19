@@ -27,11 +27,6 @@ interface RestaurantMapProps {
    * query used, so the ring can never claim a different area to the results.
    */
   coverageRadiusMeters: number;
-  /**
-   * A locked tier the user is inspecting, drawn as an unfilled dashed outline.
-   * Deliberately carries no pins: nothing inside this ring is in their results.
-   */
-  previewRadiusMeters?: number | null;
 }
 
 type ClusterProps = { restaurant?: SearchResultRestaurant };
@@ -39,26 +34,9 @@ type ClusterProps = { restaurant?: SearchResultRestaurant };
 // Sits under the HTML markers either way (those are DOM overlays), so the ring
 // never competes with a pin for a tap.
 const COVERAGE_SRC = 'search-coverage';
-const PREVIEW_SRC = 'search-preview';
 const CENTER_SRC = 'search-center';
 
-// Filled green is "yours". Unfilled and dashed is "not yours, yet": the missing
-// fill is the load-bearing difference, with hue and dash reinforcing it.
 function addCoverageLayers(map: MapLibreMap) {
-  if (!map.getSource(PREVIEW_SRC)) {
-    map.addSource(PREVIEW_SRC, { type: 'geojson', data: emptyCollection() });
-    map.addLayer({
-      id: `${PREVIEW_SRC}-line`,
-      type: 'line',
-      source: PREVIEW_SRC,
-      paint: {
-        'line-color': '#14181A',
-        'line-width': 1.75,
-        'line-opacity': 0.5,
-        'line-dasharray': [3, 2],
-      },
-    });
-  }
 
   if (!map.getSource(COVERAGE_SRC)) {
     map.addSource(COVERAGE_SRC, { type: 'geojson', data: emptyCollection() });
@@ -108,7 +86,6 @@ export function RestaurantMap({
   onSelect,
   resizeSignal = 0,
   coverageRadiusMeters,
-  previewRadiusMeters = null,
 }: RestaurantMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -122,8 +99,8 @@ export function RestaurantMap({
 
   // Read by the 'load' handler, which is registered once and would otherwise
   // close over the first render's radius forever.
-  const coverageRef = useRef({ center, coverageRadiusMeters, previewRadiusMeters });
-  coverageRef.current = { center, coverageRadiusMeters, previewRadiusMeters };
+  const coverageRef = useRef({ center, coverageRadiusMeters });
+  coverageRef.current = { center, coverageRadiusMeters };
 
   // Refitting is keyed rather than run on every render so a user who has panned
   // away keeps their view until they actually change something.
@@ -184,22 +161,19 @@ export function RestaurantMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    applyCoverage(map, { center, coverageRadiusMeters, previewRadiusMeters });
+    applyCoverage(map, { center, coverageRadiusMeters });
     // `center` itself is a fresh object each render; its two numbers fully
     // determine it, so depending on those avoids resyncing on every paint.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center.lat, center.lng, coverageRadiusMeters, previewRadiusMeters]);
+  }, [center.lat, center.lng, coverageRadiusMeters]);
 
-  // Fit to whichever ring is the subject right now: the preview when one is
-  // open (the point is to see how much further it reaches), the real coverage
-  // otherwise. resizeSignal is part of the key because a map revealed from
-  // display:none has only just learned its true size.
+  // Fit to the searched area. resizeSignal is part of the key because a map
+  // revealed from display:none has only just learned its true size.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    const target = previewRadiusMeters ?? coverageRadiusMeters;
-    const key = `${center.lat},${center.lng},${target},${resizeSignal}`;
+    const key = `${center.lat},${center.lng},${coverageRadiusMeters},${resizeSignal}`;
     if (key === lastFitRef.current) return;
 
     // A map still inside a display:none column measures zero and would fit to
@@ -221,13 +195,13 @@ export function RestaurantMap({
     // legend sits over its top-left corner, so even padding would tuck the ring
     // under both. Desktop has neither problem.
     const narrow = window.innerWidth < 640;
-    map.fitBounds(circleBounds(center, target), {
+    map.fitBounds(circleBounds(center, coverageRadiusMeters), {
       padding: narrow ? { top: 56, bottom: 92, left: 24, right: 24 } : 56,
       duration: map.loaded() && !reduceMotion ? 500 : 0,
       maxZoom: 16,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center.lat, center.lng, coverageRadiusMeters, previewRadiusMeters, resizeSignal]);
+  }, [center.lat, center.lng, coverageRadiusMeters, resizeSignal]);
 
   // MapLibre measures its container once, at construction. On mobile the map
   // starts inside a display:none column, so it comes up with a zero-height
@@ -265,12 +239,11 @@ function applyCoverage(
   state: {
     center: { lat: number; lng: number };
     coverageRadiusMeters: number;
-    previewRadiusMeters: number | null;
   }
 ): void {
   try {
     addCoverageLayers(map);
-    syncCoverage(map, state.center, state.coverageRadiusMeters, state.previewRadiusMeters);
+    syncCoverage(map, state.center, state.coverageRadiusMeters);
   } catch {
     // Style not applied yet. Retried on the next 'styledata'.
   }
@@ -279,8 +252,7 @@ function applyCoverage(
 function syncCoverage(
   map: MapLibreMap,
   center: { lat: number; lng: number },
-  coverageRadiusMeters: number,
-  previewRadiusMeters: number | null
+  coverageRadiusMeters: number
 ) {
   setData(map, COVERAGE_SRC, circlePolygon(center, coverageRadiusMeters));
   setData(map, CENTER_SRC, {
@@ -288,11 +260,6 @@ function syncCoverage(
     properties: {},
     geometry: { type: 'Point', coordinates: [center.lng, center.lat] },
   });
-  setData(
-    map,
-    PREVIEW_SRC,
-    previewRadiusMeters ? circlePolygon(center, previewRadiusMeters) : emptyCollection()
-  );
 }
 
 function renderMarkers(
