@@ -1,21 +1,18 @@
 import { ImageResponse } from 'next/og';
+import { brandMarkSvg } from '@/lib/brandMark';
 
-// 96, not 32. Google will not show a favicon smaller than 48px, and asks for a
-// multiple of 48, so a 32px icon is the reason a search result has a blank
-// square where the mark should be. app/favicon.ico covers the crawler that
-// looks for the file at the root instead of reading the link tag.
+// 96, not 32. Google will not show a favicon smaller than 48px and asks for a
+// multiple of 48, which is why a search result had a blank square where the
+// mark should be. app/favicon.ico covers the crawler that looks for a file at
+// the root instead of reading the link tag, and both draw the same mark.
 export const size = { width: 96, height: 96 };
 export const contentType = 'image/png';
 
 // satori (what ImageResponse renders through) doesn't support raw <svg>/<path>
 // elements as JSX children -- only a constrained HTML-like subset (div, img,
-// etc). The pin mark is rendered as an <img> pointing at a data-URI-encoded
-// SVG instead, which satori treats like any other image.
-const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-  <path d="M12 2c-3.6 0-6.5 2.8-6.5 6.4C5.5 13 12 21 12 21s6.5-8 6.5-12.6C18.5 4.8 15.6 2 12 2Z" fill="#1C9A4B"/>
-  <path d="M9 8.6l2.1 2.2L15.3 6.4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-</svg>`;
-const MARK_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(MARK_SVG).toString('base64')}`;
+// etc). The mark is rendered as an <img> pointing at a data-URI-encoded SVG
+// instead, which satori treats like any other image.
+const MARK_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(brandMarkSvg(96)).toString('base64')}`;
 
 export default function Icon() {
   return new ImageResponse(
