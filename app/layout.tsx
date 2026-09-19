@@ -31,6 +31,26 @@ export const metadata: Metadata = {
   },
   description:
     'Find halal restaurants in London, with the evidence behind every label and the date it was checked.',
+  // Declared by hand, as static files, for two reasons Google cares about.
+  //
+  // Next's generated icon routes hang a content hash off the URL
+  // (/icon?c22bee58af459c4e), so the favicon's address changed with every
+  // deploy that touched it, and a crawler that caches favicons by URL was
+  // never looking at the same one twice. These paths never change.
+  //
+  // And the sizes here are the sizes of the files. The generated favicon.ico
+  // was declared 32x32, which is below the 48px Google will use, so the one
+  // icon sitting at the root of the domain was advertising itself as too small
+  // to show.
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+      { url: '/icon-96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon.ico'],
+  },
   openGraph: {
     type: 'website',
     siteName: 'YepItsHalal',
