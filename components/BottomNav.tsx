@@ -25,7 +25,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper/95 pb-safe backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-sand-line bg-sand-soft/95 pb-safe backdrop-blur sm:hidden"
     >
       <ul className="mx-auto flex max-w-lg items-stretch">
         {TABS.map(({ href, label, Icon, match }) => {

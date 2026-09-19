@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogoMark } from './Logo';
 import { HeartHandIcon } from './icons';
+import { FeedbackBox } from './FeedbackBox';
 
 // Hidden on the two routes that own the full viewport: the Discover feed is a
 // snap-scrolling column, and admin has its own chrome.
@@ -14,8 +15,14 @@ export function SiteFooter() {
   if (HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
 
   return (
-    <footer className="mt-16 border-t border-line bg-white/60">
+    <footer className="mt-16 border-t border-sand-line bg-sand-soft">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        {/* Before the sitemap, not after it: the moment somebody notices
+            something wrong is the moment they will say so. */}
+        <div className="mb-10">
+          <FeedbackBox />
+        </div>
+
         <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
           <div className="max-w-xs">
             <span className="inline-flex items-center gap-1.5">

@@ -118,7 +118,7 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
 
       {/* INTEREST. Free is easy to say and expensive to do; this is the cost,
           in the concrete terms of the actual work. */}
-      <div className="mt-6 rounded-2xl bg-paper p-6 ring-1 ring-line">
+      <div className="mt-6 rounded-2xl bg-sand p-6 ring-1 ring-sand-line">
         <h2 className="font-display text-lg font-semibold text-ink">What your money actually does</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink/80">
           Checking a restaurant is slow work: reading what a place says about its meat, phoning to

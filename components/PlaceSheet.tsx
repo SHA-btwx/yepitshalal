@@ -245,7 +245,7 @@ export function PlaceSheet({
           {detail && detail.evidence_count > 0 && (
             <Link
               href={`/restaurant/${restaurant.slug}#halal-status`}
-              className="mt-2.5 flex items-start gap-2 rounded-xl bg-paper px-3 py-2.5 text-[13px] leading-relaxed text-ink/80 transition hover:bg-black/[0.05]"
+              className="mt-2.5 flex items-start gap-2 rounded-xl bg-sand px-3 py-2.5 text-[13px] leading-relaxed text-ink/80 transition hover:bg-black/[0.05]"
             >
               <SealCheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent-ink" aria-hidden="true" />
               <span className="min-w-0 flex-1">

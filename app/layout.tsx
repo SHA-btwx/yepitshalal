@@ -60,7 +60,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: '#FAF9F6',
+  themeColor: '#FBF7F0',
   // Explicitly leaves pinch-zoom enabled — locking it out is an accessibility
   // failure for anyone who needs to magnify a menu photo or address.
   width: 'device-width',
@@ -70,7 +70,7 @@ export const viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-GB" className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-paper font-sans text-ink antialiased">
+      <body className="min-h-screen bg-sand-soft font-sans text-ink antialiased">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"

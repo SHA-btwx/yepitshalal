@@ -125,7 +125,7 @@ export function HalalEvidencePanel({
           We don&apos;t know yet whether this place serves halal food. Nobody has checked, and we
           haven&apos;t found anything it or anyone else has said about it.
         </p>
-        <div className="mt-4 rounded-xl bg-paper p-4 text-sm leading-relaxed text-ink/80">
+        <div className="mt-4 rounded-xl bg-sand p-4 text-sm leading-relaxed text-ink/80">
           <h3 className="font-semibold text-ink">Why it&apos;s on YepItsHalal</h3>
           <p className="mt-1">
             {cuisine
@@ -181,7 +181,7 @@ export function HalalEvidencePanel({
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">{LABEL_MEANING[classification]}</p>
 
-      <div className="mt-4 rounded-xl bg-paper p-4">
+      <div className="mt-4 rounded-xl bg-sand p-4">
         <h3 className="text-sm font-semibold text-ink">Why we say this</h3>
         {summary && <p className="mt-1 text-sm text-ink/80">{summary}.</p>}
         {lead && (
@@ -204,7 +204,7 @@ export function HalalEvidencePanel({
           above comes from what this restaurant publishes or what open data
           records; none of it is a visit. */}
       {!checkedByUs && (
-        <p className="mt-3 rounded-xl bg-paper px-3.5 py-2.5 text-xs leading-relaxed text-muted">
+        <p className="mt-3 rounded-xl bg-sand px-3.5 py-2.5 text-xs leading-relaxed text-muted">
           <span className="font-semibold text-ink/80">Nobody from YepItsHalal has been here.</span>{' '}
           We have not visited, phoned or seen a certificate for this place. When we do, this page
           says so and the listing carries our badge.

@@ -14,7 +14,9 @@
   }
 
   body {
-    background: #faf9f6;
+    /* Warm off-white rather than cool. The difference is two points of hue and
+       it is most of why the site read as clinical. */
+    background: #fbf7f0;
     color: #14181a;
     /* iOS Safari: stop form controls inflating text on focus. */
     -webkit-text-size-adjust: 100%;

@@ -26,7 +26,7 @@ export function NearestPrayerSpace({ spaces, placeName }: { spaces: PrayerSpace[
         a rough idea.
       </p>
 
-      <div className="mt-4 rounded-xl bg-paper p-4">
+      <div className="mt-4 rounded-xl bg-sand p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <p className="font-display text-base font-semibold text-ink">{nearest.name}</p>
           <p className="text-sm font-semibold text-accent-ink">

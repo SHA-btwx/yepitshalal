@@ -110,14 +110,18 @@ export default async function HomePage() {
           rest of the page is for everyone else, who needs Interest and Desire
           first. Photos sit in square frames rather than a stretched banner
           crop, so contrast on the text never has to fight a scrim. */}
-      <section className="relative overflow-hidden bg-ink">
+      <section className="relative overflow-hidden bg-forest-deep">
+        {/* Three lights rather than one: green from the top right, a deeper
+            green from the bottom left, and a warm ember between them. The old
+            near-black ground with a single green wash read as careful and also
+            as empty. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(120%_90%_at_80%_0%,rgba(28,154,75,0.35),transparent_60%),radial-gradient(90%_80%_at_0%_100%,rgba(15,94,46,0.45),transparent_65%)]"
+          className="absolute inset-0 bg-[radial-gradient(120%_90%_at_82%_-10%,rgba(52,197,107,0.38),transparent_58%),radial-gradient(95%_85%_at_-5%_105%,rgba(11,61,34,0.95),transparent_62%),radial-gradient(70%_60%_at_15%_15%,rgba(194,84,43,0.22),transparent_60%)]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-paper"
+          className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-sand-soft"
         />
 
         <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
@@ -254,9 +258,9 @@ export default async function HomePage() {
 
       {/* DESIRE, beat two: the journey is short, which is itself part of the
           pitch. Genuinely a sequence, so it earns the step markers. */}
-      <section className="border-b border-line bg-white/60">
+      <section className="border-y border-sand-line bg-sand">
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6 sm:py-14">
-          <h2 className="text-sm font-semibold text-subtle">How it works</h2>
+          <h2 className="text-sm font-semibold text-spice-ink">How it works</h2>
           <ol className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
             {[
               {
@@ -276,7 +280,11 @@ export default async function HomePage() {
               },
             ].map(({ Icon, step, body }, i) => (
               <li key={step} className="flex gap-3.5 sm:flex-col sm:gap-0">
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
+                <span
+                  className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                    i === 1 ? 'bg-spice-soft text-spice-ink' : 'bg-accent-soft text-accent-ink'
+                  }`}
+                >
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="sm:mt-3">
@@ -298,7 +306,7 @@ export default async function HomePage() {
           useful if it offers the question a reader is actually asking, and that
           question is usually a kind of food rather than a postcode. */}
       {topCuisines.length > 0 && (
-        <section className="border-b border-line bg-paper">
+        <section className="border-b border-sand-line bg-sand-soft">
           <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6 sm:py-14">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <h2 className="font-display text-2xl font-semibold text-ink">What do you fancy?</h2>
@@ -314,7 +322,7 @@ export default async function HomePage() {
                 <li key={c.slug}>
                   <Link
                     href={`/halal-restaurants/cuisine/${c.slug}`}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-white px-4 text-[15px] font-medium text-ink transition hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-sm"
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-spice/20 bg-white px-4 text-[15px] font-medium text-ink transition hover:-translate-y-0.5 hover:border-spice/45 hover:bg-spice-soft hover:shadow-sm"
                   >
                     Halal {c.cuisine.toLowerCase()}
                     <span className="text-[13px] text-subtle">{c.listed}</span>

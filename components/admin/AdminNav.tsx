@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { SealCheckIcon, ForkKnifeIcon, SparkleIcon, UserIcon, MapIcon, MapPinIcon, ListIcon, PlusIcon } from '../icons';
+import { SealCheckIcon, ForkKnifeIcon, SparkleIcon, UserIcon, MapIcon, MapPinIcon, ListIcon, PlusIcon, InfoIcon } from '../icons';
 
 // There was no way to move between admin sections: every hop went back through
 // /admin. This is that missing layer, and it doubles as the "you are in the
@@ -19,6 +19,7 @@ const SECTIONS = [
   { href: '/admin/claims', label: 'Claims', Icon: UserIcon },
   { href: '/admin/offers', label: 'Offers', Icon: SparkleIcon },
   { href: '/admin/subscriptions', label: 'Subscriptions', Icon: UserIcon },
+  { href: '/admin/feedback', label: 'Feedback', Icon: InfoIcon },
 ];
 
 export function AdminNav() {

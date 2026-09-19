@@ -24,6 +24,34 @@ const config: Config = {
           // Green that still reads on the ink surface (7.95:1) — #1C9A4B only manages 4.91:1.
           onDark: '#34C56B',
         },
+        // Warmth, and nothing that carries meaning.
+        //
+        // The site was all cream and one green, which read as careful and also
+        // as empty. These are decorative only: a terracotta for emphasis, a
+        // sand for surfaces that want to be warmer than white, and a deep
+        // forest for large dark grounds.
+        //
+        // Terracotta specifically because the obvious warm choice, gold, is
+        // already spoken for: halal.partial is amber and means "Halal Options".
+        // A second gold anywhere near a listing would read as that label.
+        spice: {
+          DEFAULT: '#C2542B',
+          // 6.43:1 on paper, 6.77:1 on white, 5.91:1 on sand. Safe for text.
+          // The DEFAULT below is 4.34:1 on paper, so it is for fills and marks,
+          // never for small text.
+          ink: '#9A3F1D',
+          soft: '#FBEDE6',
+          onDark: '#F0956D',
+        },
+        sand: {
+          DEFAULT: '#F5EFE4',
+          soft: '#FBF7F0',
+          line: 'rgba(120,85,45,0.12)',
+        },
+        forest: {
+          DEFAULT: '#0B3D22',
+          deep: '#072A17',
+        },
         halal: {
           full: '#1F7A45',
           fullInk: '#166534',

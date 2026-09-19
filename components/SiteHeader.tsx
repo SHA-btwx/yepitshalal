@@ -11,7 +11,7 @@ export async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-paper/85 backdrop-blur supports-[backdrop-filter]:bg-paper/70">
+    <header className="sticky top-0 z-30 border-b border-sand-line bg-sand-soft/85 backdrop-blur supports-[backdrop-filter]:bg-sand-soft/70">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link
           href="/"

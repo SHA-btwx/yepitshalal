@@ -288,7 +288,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
     <div className="mx-auto max-w-6xl sm:px-6 sm:py-4">
       {/* Two rows on a phone: where, and how far. Everything else is one tap
           away in the sheet, because results matter more than controls. */}
-      <div className="sticky top-14 z-20 border-b border-line bg-paper/95 px-4 py-2.5 backdrop-blur sm:static sm:rounded-2xl sm:border sm:px-5 sm:py-3.5">
+      <div className="sticky top-14 z-20 border-b border-sand-line bg-sand-soft/95 px-4 py-2.5 backdrop-blur sm:static sm:rounded-2xl sm:border sm:px-5 sm:py-3.5">
         <div className="flex items-center gap-2">
           <Link
             href="/"
