@@ -64,6 +64,7 @@ export function RestaurantCard({
           alt={cover.own ? title : ''}
           sizes="(max-width: 640px) 104px, 120px"
           priority={priority}
+          thumb
           className={logo ? '' : 'transition duration-300 group-hover:scale-105'}
         />
         {/* Never the restaurant's own food unless it is their picture, and the

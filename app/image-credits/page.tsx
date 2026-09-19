@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { allRepresentativeImages } from '@/lib/representativeImages';
+import { isOwnStorage, thumbUrl } from '@/lib/imageUrl';
 
 export const metadata: Metadata = {
   title: 'Image credits',
@@ -72,7 +73,7 @@ export default function ImageCreditsPage() {
             {images.map((img) => (
               <li key={img.src} className="flex gap-3 rounded-xl border border-line bg-white p-2.5">
                 <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-halal-unverifiedSoft">
-                  <Image src={img.src} alt="" fill sizes="80px" className="object-cover" />
+                  <Image src={thumbUrl(img.src)} alt="" fill sizes="80px" unoptimized={isOwnStorage(img.src)} className="object-cover" />
                 </div>
                 <div className="min-w-0 text-xs leading-relaxed text-muted">
                   {img.source === 'wikimedia' ? (

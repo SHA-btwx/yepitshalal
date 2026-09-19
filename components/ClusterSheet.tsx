@@ -58,7 +58,7 @@ export function ClusterSheet({
                   className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition hover:bg-black/[0.035] active:bg-black/[0.06]"
                 >
                   <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-halal-unverifiedSoft">
-                    <CoverImage src={cover.src} alt="" sizes="48px" />
+                    <CoverImage src={cover.src} alt="" sizes="48px" thumb />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-ink">{displayName(r)}</span>

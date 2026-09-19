@@ -17,6 +17,7 @@ import { RestaurantCard } from '@/components/RestaurantCard';
 import { ShareButton } from '@/components/ShareButton';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { jsonLdHtml } from '@/lib/jsonLd';
+import { isOwnStorage } from '@/lib/imageUrl';
 import { halalAnswerFor } from '@/lib/halalAnswer';
 import { SITE_URL } from '@/lib/site';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
@@ -245,6 +246,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
             fill
             priority
             sizes="(max-width: 640px) 100vw, 896px"
+            unoptimized={isOwnStorage(heroSrc)}
             className={heroPhoto?.is_logo ? 'bg-white object-contain p-6' : 'object-cover'}
           />
         </div>

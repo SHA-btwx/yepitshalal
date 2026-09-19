@@ -5,6 +5,7 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { ForkKnifeIcon } from './icons';
 import { isBusinessLogo } from '@/lib/types';
+import { isOwnStorage, thumbUrl } from '@/lib/imageUrl';
 
 // Every picture on this site is one of three things: the restaurant's own photo,
 // the restaurant's own logo taken from its website, or a labelled example of
@@ -13,6 +14,9 @@ import { isBusinessLogo } from '@/lib/types';
 // result is the broken-image glyph in the middle of a card, which looks like
 // the site is broken rather than one file, so a failure falls back to a plain
 // tinted tile instead.
+//
+// A picture we store is served at the size it is shown and never sent through
+// the image optimiser: see lib/imageUrl.ts for why that matters.
 //
 // A logo is never cropped to fill. Cropping a wordmark to a square makes it
 // read as a photograph of the food, which it is not.
@@ -23,12 +27,15 @@ export function CoverImage({
   sizes,
   priority = false,
   className,
+  /** Set on a small, list-sized box: uses the stored thumbnail. */
+  thumb = false,
 }: {
   src: string;
   alt: string;
   sizes: string;
   priority?: boolean;
   className?: string;
+  thumb?: boolean;
 }) {
   // A phone on a patchy connection drops image requests all the time, and a
   // card that gave up on the first drop stays a grey tile for the rest of the
@@ -36,6 +43,8 @@ export function CoverImage({
   const [attempt, setAttempt] = useState(0);
   const failed = attempt > 1;
   const logo = isBusinessLogo(src);
+  const ours = isOwnStorage(src);
+  const chosen = thumb && ours ? thumbUrl(src) : src;
 
   if (failed) {
     return (
@@ -48,11 +57,12 @@ export function CoverImage({
   return (
     <Image
       key={attempt}
-      src={attempt === 0 ? src : `${src}${src.includes('?') ? '&' : '?'}retry=1`}
+      src={attempt === 0 ? chosen : `${chosen}${chosen.includes('?') ? '&' : '?'}retry=1`}
       alt={alt}
       fill
       sizes={sizes}
       priority={priority}
+      unoptimized={ours}
       onError={() => setAttempt((n) => n + 1)}
       className={clsx(logo ? 'bg-white object-contain p-2' : 'object-cover', className)}
     />
