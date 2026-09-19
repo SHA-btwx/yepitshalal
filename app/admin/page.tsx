@@ -23,6 +23,12 @@ const SECTIONS = [
     body: 'Free and priority requests: assign, review, publish.',
   },
   {
+    href: '/admin/verify',
+    Icon: SealCheckIcon,
+    title: 'What to check next',
+    body: 'The call sheet, ordered by how many listings one conversation would settle.',
+  },
+  {
     href: '/admin/certification',
     Icon: SealCheckIcon,
     title: 'Certification claims',
