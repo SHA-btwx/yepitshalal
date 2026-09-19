@@ -95,6 +95,22 @@ export function bucketFor(place: { name: string; cuisine_label?: string | null; 
   return null;
 }
 
+/**
+ * Our own copies first.
+ *
+ * A third of the library is still hotlinked from Unsplash, and those are the
+ * ones that fail: Vercel's image optimiser fetching them from its own address
+ * sometimes gets back something no browser can decode, which put a broken
+ * picture in the middle of the results. The Commons photos we resized into our
+ * own storage never do that. So a bucket that has both only offers its own,
+ * and Unsplash is left to the four kinds of food we have nothing else for.
+ */
+function poolFor(bucket: string | null, h: number): RepresentativeImage[] {
+  const all = (bucket && LIBRARY[bucket]?.length ? LIBRARY[bucket] : null) ?? LIBRARY[GENERAL[h % GENERAL.length]];
+  const hosted = all.filter((i) => i.source !== 'unsplash');
+  return hosted.length ? hosted : all;
+}
+
 export function representativeImageFor(place: {
   id: string;
   name: string;
@@ -103,8 +119,7 @@ export function representativeImageFor(place: {
   brand_name?: string | null;
 }): RepresentativeImage {
   const h = hash(place.id);
-  const bucket = bucketFor(place);
-  const pool = (bucket && LIBRARY[bucket]?.length ? LIBRARY[bucket] : null) ?? LIBRARY[GENERAL[h % GENERAL.length]];
+  const pool = poolFor(bucketFor(place), h);
   return pool[Math.floor(h / 7) % pool.length];
 }
 
