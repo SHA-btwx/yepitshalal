@@ -30,7 +30,11 @@ export function CoverImage({
   priority?: boolean;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  // A phone on a patchy connection drops image requests all the time, and a
+  // card that gave up on the first drop stays a grey tile for the rest of the
+  // session. One retry costs nothing and recovers most of them.
+  const [attempt, setAttempt] = useState(0);
+  const failed = attempt > 1;
   const logo = isBusinessLogo(src);
 
   if (failed) {
@@ -43,12 +47,13 @@ export function CoverImage({
 
   return (
     <Image
-      src={src}
+      key={attempt}
+      src={attempt === 0 ? src : `${src}${src.includes('?') ? '&' : '?'}retry=1`}
       alt={alt}
       fill
       sizes={sizes}
       priority={priority}
-      onError={() => setFailed(true)}
+      onError={() => setAttempt((n) => n + 1)}
       className={clsx(logo ? 'bg-white object-contain p-2' : 'object-cover', className)}
     />
   );
