@@ -118,6 +118,11 @@ export interface RestaurantPhoto {
   storage_path: string;
   type: 'exterior' | 'interior' | 'food' | 'menu';
   is_primary: boolean;
+  /** The business's own mark rather than a photograph. Shown whole, not cropped. */
+  is_logo?: boolean;
+  /** The page it was published on, for credit and for takedown requests. */
+  source_url?: string | null;
+  source_site?: string | null;
 }
 
 export interface RestaurantVideo {
@@ -187,4 +192,12 @@ export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'
 // photo, and the UI says so wherever one is shown.
 export function isStockPhoto(url: string): boolean {
   return url.includes('images.unsplash.com') || url.includes('/representative/');
+}
+
+// A business's own mark, taken from its website. Shown whole on a plain
+// background: cropping a logo to fill a card makes it look like a photograph
+// of the food, which it is not. The prefix is set by
+// scripts/catalogue/publish-business-images.mjs.
+export function isBusinessLogo(url: string): boolean {
+  return url.includes('/business-logo/');
 }

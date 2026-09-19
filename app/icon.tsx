@@ -1,6 +1,10 @@
 import { ImageResponse } from 'next/og';
 
-export const size = { width: 32, height: 32 };
+// 96, not 32. Google will not show a favicon smaller than 48px, and asks for a
+// multiple of 48, so a 32px icon is the reason a search result has a blank
+// square where the mark should be. app/favicon.ico covers the crawler that
+// looks for the file at the root instead of reading the link tag.
+export const size = { width: 96, height: 96 };
 export const contentType = 'image/png';
 
 // satori (what ImageResponse renders through) doesn't support raw <svg>/<path>
@@ -18,7 +22,7 @@ export default function Icon() {
     (
       <div style={{ width: '100%', height: '100%', display: 'flex' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={MARK_DATA_URI} width={32} height={32} alt="" />
+        <img src={MARK_DATA_URI} width={96} height={96} alt="" />
       </div>
     ),
     { ...size, fonts: [] }

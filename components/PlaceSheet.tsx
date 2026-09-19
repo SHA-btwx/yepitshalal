@@ -180,10 +180,16 @@ export function PlaceSheet({
           <div className="relative h-32 w-full overflow-hidden bg-halal-unverifiedSoft sm:h-36">
             <CoverImage src={cover.src} alt={cover.own ? title : ''} sizes="(max-width: 640px) 100vw, 360px" />
             <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/65 to-transparent" />
-            {!cover.own && (
+            {!cover.own ? (
               <span className="absolute bottom-2 left-3 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
                 Example dish, not this restaurant
               </span>
+            ) : (
+              detail?.photo_source_site && (
+                <span className="absolute bottom-2 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                  From {detail.photo_source_site}
+                </span>
+              )
             )}
           </div>
           <button

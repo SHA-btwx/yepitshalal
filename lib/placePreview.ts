@@ -30,6 +30,9 @@ export interface PlacePreview {
   /** The single most direct one, for a one-line "because". */
   lead_evidence: { kind: string; excerpt: string | null; source_name: string } | null;
   opening_hours: OpeningHour[];
+  /** Set when the listing photo came from the restaurant's own website. */
+  photo_source_site: string | null;
+  photo_source_url: string | null;
 }
 
 const KIND_ORDER: Record<string, number> = {
@@ -58,7 +61,7 @@ export async function getPlacePreview(slug: string): Promise<PlacePreview | null
 
   if (!place) return null;
 
-  const [{ data: hours }, { data: evidence }] = await Promise.all([
+  const [{ data: hours }, { data: evidence }, { data: photo }] = await Promise.all([
     supabase
       .from('opening_hours')
       .select('day_of_week, open_time, close_time, is_closed')
@@ -70,6 +73,14 @@ export async function getPlacePreview(slug: string): Promise<PlacePreview | null
       .select('kind, excerpt, source_name, claim')
       .eq('restaurant_id', place.id)
       .eq('is_current', true),
+    supabase
+      .from('restaurant_photos')
+      .select('source_site, source_url')
+      .eq('restaurant_id', place.id)
+      .eq('is_primary', true)
+      .not('source_site', 'is', null)
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const positive = ((evidence ?? []) as { kind: string; excerpt: string | null; source_name: string; claim: string }[])
@@ -93,5 +104,7 @@ export async function getPlacePreview(slug: string): Promise<PlacePreview | null
       ? { kind: positive[0].kind, excerpt: positive[0].excerpt, source_name: positive[0].source_name }
       : null,
     opening_hours: (hours ?? []) as OpeningHour[],
+    photo_source_site: photo?.source_site ?? null,
+    photo_source_url: photo?.source_url ?? null,
   };
 }

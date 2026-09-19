@@ -30,9 +30,29 @@ export default function ImageCreditsPage() {
         of food it serves, marked as an example. None of them shows a particular restaurant&apos;s
         food. Thank you to everyone who shared them.
       </p>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-        Photos from Wikimedia Commons are resized and used under the licence shown, which links to
-        its terms; follow the title for the original. Photos from Unsplash are used under the{' '}
+      <div className="mt-6 max-w-2xl rounded-2xl border border-line bg-white p-5">
+        <h2 className="font-display text-lg font-semibold text-ink">Photos of the restaurants themselves</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">
+          A listing shows the restaurant&apos;s own picture when it publishes one: the image it puts
+          in its website&apos;s preview tag, the same one that appears when somebody shares a link to
+          it. Those are credited on the listing with a link back to the site they came from, and we
+          only ever take them from a restaurant&apos;s own website, never from Google, Tripadvisor or
+          a delivery app.
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          If you own one of those pictures and would rather we did not show it, tell us and it comes
+          down the same day.{' '}
+          <Link href="/submit-restaurant" className="font-semibold text-accent-ink hover:underline">
+            Send us a message
+          </Link>
+          , or send a better photo and we will use that instead.
+        </p>
+      </div>
+
+      <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted">
+        The example photos below are used when a restaurant publishes nothing of its own. Those from
+        Wikimedia Commons are resized and used under the licence shown, which links to its terms;
+        follow the title for the original. Photos from Unsplash are used under the{' '}
         <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent-ink hover:underline">
           Unsplash licence
         </a>

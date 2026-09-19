@@ -7,7 +7,7 @@ import { ArrowRightIcon } from './icons';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { getOpenStatus } from '@/lib/openingStatus';
 import { coverFor } from '@/lib/representativeImages';
-import { isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
+import { isBusinessLogo, isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
 
 function formatDistance(meters: number): string {
   const miles = meters / 1609.34;
@@ -45,6 +45,7 @@ export function RestaurantCard({
   const status = statusOf(restaurant);
   const open = restaurant.opening_hours?.length ? getOpenStatus(restaurant.opening_hours) : null;
   const cover = coverFor(restaurant, (url) => !isStockPhoto(url));
+  const logo = cover.own && isBusinessLogo(cover.src);
   // The reason line: what the label rests on, or for a place not checked yet,
   // that nobody has confirmed anything.
   const reason = restaurant.halal_summary ?? (status === 'unknown' ? "We don't know yet if the food is halal" : null);
@@ -52,20 +53,21 @@ export function RestaurantCard({
   return (
     <Link
       href={`/restaurant/${restaurant.slug}`}
-      className="group flex items-center gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition duration-200 active:scale-[0.99] active:bg-black/[0.02] hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3"
+      className="group flex items-center gap-3.5 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-black/5 transition duration-200 active:scale-[0.99] active:bg-black/[0.02] hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3.5"
     >
-      <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft sm:h-[92px] sm:w-[92px]">
+      {/* Bigger than it was. At 76px a photo of a dinner was a thumbnail you
+          squinted at; this is the thing that makes a row identifiable before
+          you have read a word of it. */}
+      <div className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft sm:h-[120px] sm:w-[120px]">
         <CoverImage
           src={cover.src}
           alt={cover.own ? title : ''}
-          sizes="(max-width: 640px) 76px, 92px"
+          sizes="(max-width: 640px) 104px, 120px"
           priority={priority}
-          className="transition duration-300 group-hover:scale-105"
+          className={logo ? '' : 'transition duration-300 group-hover:scale-105'}
         />
-        {/* Never the restaurant's own food unless it sent us a photo, and the
-            card says so rather than let a stock biryani pass as theirs. A corner
-            chip rather than a bar across the picture: the same honesty, without
-            a black band down every row of the list. */}
+        {/* Never the restaurant's own food unless it is their picture, and the
+            card says so rather than let a stock biryani pass as theirs. */}
         {!cover.own && (
           <span className="absolute bottom-1 left-1 rounded-md bg-black/55 px-1.5 py-[2px] text-[9px] font-medium leading-none tracking-wide text-white backdrop-blur-[2px]">
             Example
@@ -73,11 +75,11 @@ export function RestaurantCard({
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h3 className="truncate font-display text-[15px] font-semibold leading-snug text-ink sm:text-base">{title}</h3>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <h3 className="line-clamp-2 font-display text-[17px] font-semibold leading-tight text-ink sm:text-lg">{title}</h3>
 
         <p className="truncate text-[13px] text-muted">
-          <span className="font-medium text-ink/75">{distance}</span>
+          <span className="font-semibold text-ink/80">{distance}</span>
           {restaurant.branch_label && (
             <>
               <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
@@ -93,24 +95,22 @@ export function RestaurantCard({
           {open && open.state !== 'unknown' && (
             <>
               <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
-              <span suppressHydrationWarning className={`font-medium ${OPEN_TONE[open.state]}`}>{open.label}</span>
+              <span suppressHydrationWarning className={`font-semibold ${OPEN_TONE[open.state]}`}>{open.label}</span>
             </>
           )}
         </p>
 
-        {/* The label and, beside it, the reason for it: a label alone is the
-            thing this site exists to improve on. On a phone the reason wraps to
-            a second line rather than being cut to "The restaurant says all i…",
-            which told nobody anything. */}
-        <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
+        {/* The label and, under it, the reason for it: a label alone is the
+            thing this site exists to improve on. */}
+        <div className="flex min-w-0 flex-col gap-1">
           <span className="shrink-0">
             <HalalBadge classification={status} size="sm" />
           </span>
-          {reason && <span className="line-clamp-2 text-xs leading-snug text-muted sm:truncate">{reason}</span>}
+          {reason && <span className="line-clamp-2 text-xs leading-snug text-muted">{reason}</span>}
         </div>
       </div>
 
-      <ArrowRightIcon className="mr-1 hidden h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink sm:block" />
+      <ArrowRightIcon className="mr-0.5 hidden h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink sm:block" aria-hidden="true" />
     </Link>
   );
 }

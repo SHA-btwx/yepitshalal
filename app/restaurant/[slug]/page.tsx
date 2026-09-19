@@ -119,7 +119,8 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
         cuisines: restaurant.cuisines,
         brand_name: restaurant.brandName,
       });
-  const heroSrc = realPhotos[0]?.storage_path ?? representative!.src;
+  const heroPhoto = realPhotos[0] ?? null;
+  const heroSrc = heroPhoto?.storage_path ?? representative!.src;
 
   // Facts about the place only. Schema.org has no halal property, and a
   // structured claim a search engine would repeat without our caveats is the
@@ -176,19 +177,33 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
         <div className="relative aspect-[16/9] sm:aspect-[21/8]">
           <Image
             src={heroSrc}
-            alt={representative ? '' : `${title}`}
+            alt={representative ? '' : title}
             fill
             priority
             sizes="(max-width: 640px) 100vw, 896px"
-            className="object-cover"
+            className={heroPhoto?.is_logo ? 'bg-white object-contain p-6' : 'object-cover'}
           />
         </div>
-        {representative && (
+        {representative ? (
           <figcaption className="absolute bottom-2 right-2 max-w-[calc(100%-1rem)] rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
             <Link href="/image-credits" className="block truncate hover:underline">
               Example of the food, not this restaurant&apos;s own · {creditLine(representative)}
             </Link>
           </figcaption>
+        ) : (
+          /* Their picture, from their own website, credited to them. */
+          heroPhoto?.source_site && (
+            <figcaption className="absolute bottom-2 right-2 max-w-[calc(100%-1rem)] rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+              <a
+                href={heroPhoto.source_url ?? `https://${heroPhoto.source_site}`}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="block truncate hover:underline"
+              >
+                {heroPhoto.is_logo ? 'Logo' : 'Photo'} from {heroPhoto.source_site}
+              </a>
+            </figcaption>
+          )
         )}
       </figure>
 

@@ -101,7 +101,7 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     supabase.from('restaurant_cuisines').select('cuisines(name)').eq('restaurant_id', restaurant.id),
     supabase
       .from('restaurant_photos')
-      .select('id, storage_path, type, is_primary')
+      .select('id, storage_path, type, is_primary, is_logo, source_url, source_site')
       .eq('restaurant_id', restaurant.id)
       .order('is_primary', { ascending: false }),
     supabase.from('restaurant_videos').select('id, provider, embed_url, caption').eq('restaurant_id', restaurant.id),
