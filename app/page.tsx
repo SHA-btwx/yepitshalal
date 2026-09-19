@@ -6,6 +6,7 @@ import { HalalBadge } from '@/components/HalalBadge';
 import { MapPinIcon, SealCheckIcon, MapIcon, ArrowRightIcon, ForkKnifeIcon, HeartHandIcon } from '@/components/icons';
 import { HomeReelStrip } from '@/components/HomeReelStrip';
 import { getFeaturedReels } from '@/lib/reels';
+import { getAreasWithPages } from '@/lib/areas';
 import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
@@ -83,7 +84,11 @@ const SITE_LD = {
 };
 
 export default async function HomePage() {
-  const featuredReels = await getFeaturedReels();
+  const [featuredReels, areas] = await Promise.all([getFeaturedReels(), getAreasWithPages()]);
+  // The borough pages are the indexable half of this site. Every prominent link
+  // on this page went to /search, which is noindexed and disallowed in
+  // robots.txt, so a crawler arriving here had nowhere to go but the footer.
+  const biggestAreas = [...areas].sort((a, b) => b.listed - a.listed).slice(0, 8);
 
   return (
     <div>
@@ -140,6 +145,23 @@ export default async function HomePage() {
                 ))}
               </ul>
             </div>
+            {biggestAreas.length > 0 && (
+              <p className="mt-4 text-sm leading-relaxed text-white/70">
+                Or browse by borough:{' '}
+                {biggestAreas.map((a, i) => (
+                  <span key={a.slug}>
+                    {i > 0 && ', '}
+                    <Link href={`/halal-restaurants/${a.slug}`} className="font-medium text-white underline decoration-white/40 underline-offset-2 hover:decoration-white">
+                      {a.borough}
+                    </Link>
+                  </span>
+                ))}
+                {', '}
+                <Link href="/halal-restaurants" className="font-semibold text-white underline underline-offset-2">
+                  and the rest of London
+                </Link>
+              </p>
+            )}
           </div>
 
           {/* Decorative: the same dishes are shown for real, with names and halal
