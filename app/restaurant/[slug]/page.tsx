@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getNearbyWithEvidence, getRestaurantBySlug } from '@/lib/restaurants';
+import { getNearestPrayerSpaces } from '@/lib/prayerSpaces';
+import { NearestPrayerSpace } from '@/components/NearestPrayerSpace';
 import { getPublishedReels, isActivePartner } from '@/lib/reels';
 import { halalLabel, HalalBadge } from '@/components/HalalBadge';
 import { CheckedByUsBadge } from '@/components/CheckedByUsBadge';
@@ -101,10 +103,11 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
   const restaurant = await getRestaurantBySlug(params.slug);
   if (!restaurant) notFound();
 
-  const [reels, partner, nearby] = await Promise.all([
+  const [reels, partner, nearby, prayerSpaces] = await Promise.all([
     getPublishedReels(restaurant.id),
     isActivePartner(restaurant.id),
     getNearbyWithEvidence(restaurant),
+    getNearestPrayerSpaces(restaurant.lat, restaurant.lng, 3),
   ]);
 
   const title = displayTitle(restaurant);
@@ -337,6 +340,8 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           name={title}
           checkedByUs={hasGenuineCheck}
         />
+
+        <NearestPrayerSpace spaces={prayerSpaces} placeName={title} />
       </div>
 
       {restaurant.description && (

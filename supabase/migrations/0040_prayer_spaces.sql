@@ -1,0 +1,15 @@
+-- Mosques and prayer rooms.
+--
+-- A separate thing from the restaurants, deliberately: it answers a different
+-- question ("where can I pray") and must never be mixed into a halal label.
+-- Nothing in this table affects whether any food is halal. The two meet in one
+-- place only: a restaurant page says how far the nearest one is to walk.
+--
+-- The data is OpenStreetMap, the same ODbL source the catalogue already uses
+-- and already credits, loaded by scripts/catalogue/build-prayer-spaces.mjs.
+-- A facility OSM does not mention is null, which the site shows as "we don't
+-- know", never as "no".
+--
+-- Functions: nearest_prayer_spaces() for a point, prayer_space_boroughs() for
+-- the browse page.
+-- (Applied to the live database.)

@@ -55,6 +55,11 @@ export function SiteFooter() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/prayer-spaces" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Prayer spaces
+                  </Link>
+                </li>
+                <li>
                   <Link href="/image-credits" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
                     Image credits
                   </Link>

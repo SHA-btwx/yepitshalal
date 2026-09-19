@@ -444,6 +444,24 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
         </p>
       )}
 
+      {/* The other half of eating out. It takes the location already in hand,
+          and makes no claim about any of the food above it. */}
+      {!loading && !failed && totalCount > 0 && (
+        <p
+          className={clsx(
+            'mx-4 mt-2.5 text-[13px] text-muted sm:mx-0',
+            mobileView === 'map' && 'hidden sm:block'
+          )}
+        >
+          <Link
+            href={`/prayer-spaces?lat=${lat}&lng=${lng}&label=${encodeURIComponent(label)}`}
+            className="font-semibold text-accent-ink hover:underline"
+          >
+            Somewhere to pray near {label}
+          </Link>
+        </p>
+      )}
+
       <div className="mt-2.5 grid grid-cols-1 gap-4 sm:mt-4 sm:grid-cols-[minmax(0,1fr)_1.1fr]">
         <div
           aria-busy={loading}
