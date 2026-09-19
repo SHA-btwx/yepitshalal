@@ -1,0 +1,11 @@
+-- Browsing by kind of food, the other half of how people look.
+--
+-- The site could already answer "halal near me" and "halal in Tower Hamlets".
+-- It could not answer "halal kebab" or "halal biryani" without typing into a
+-- filter box, which is the way every directory in this category leads.
+-- listing_cuisines() and cuisine_listings() are the borough functions again,
+-- keyed on cuisine instead of place. A cuisine is the tagged one where there is
+-- one and the free-text label otherwise, matched case-insensitively so
+-- "Fried Chicken" and "fried chicken" are one page rather than two.
+--
+-- (Applied to the live database; see 0032 for the borough functions they mirror.)

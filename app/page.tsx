@@ -7,6 +7,7 @@ import { MapPinIcon, SealCheckIcon, MapIcon, ArrowRightIcon, ForkKnifeIcon, Hear
 import { HomeReelStrip } from '@/components/HomeReelStrip';
 import { getFeaturedReels } from '@/lib/reels';
 import { getAreasWithPages } from '@/lib/areas';
+import { getCuisines } from '@/lib/cuisines';
 import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
@@ -84,11 +85,18 @@ const SITE_LD = {
 };
 
 export default async function HomePage() {
-  const [featuredReels, areas] = await Promise.all([getFeaturedReels(), getAreasWithPages()]);
+  const [featuredReels, areas, cuisines] = await Promise.all([
+    getFeaturedReels(),
+    getAreasWithPages(),
+    getCuisines(),
+  ]);
   // The borough pages are the indexable half of this site. Every prominent link
   // on this page went to /search, which is noindexed and disallowed in
   // robots.txt, so a crawler arriving here had nowhere to go but the footer.
   const biggestAreas = [...areas].sort((a, b) => b.listed - a.listed).slice(0, 8);
+  // Most people do not decide by postcode, they decide by what they fancy, so
+  // the kind of food is an entry point rather than a filter buried in a box.
+  const topCuisines = cuisines.slice(0, 10);
 
   return (
     <div>
@@ -285,6 +293,38 @@ export default async function HomePage() {
           </ol>
         </div>
       </section>
+
+      {/* For the visitor who has not decided anything yet. A directory is only
+          useful if it offers the question a reader is actually asking, and that
+          question is usually a kind of food rather than a postcode. */}
+      {topCuisines.length > 0 && (
+        <section className="border-b border-line bg-paper">
+          <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6 sm:py-14">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h2 className="font-display text-2xl font-semibold text-ink">What do you fancy?</h2>
+              <Link href="/halal-restaurants/cuisine" className="text-sm font-semibold text-accent-ink hover:underline">
+                All kinds of food
+              </Link>
+            </div>
+            <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+              Every one of these shows what its halal label is based on, and when it was checked.
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-2.5">
+              {topCuisines.map((c) => (
+                <li key={c.slug}>
+                  <Link
+                    href={`/halal-restaurants/cuisine/${c.slug}`}
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-white px-4 text-[15px] font-medium text-ink transition hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-sm"
+                  >
+                    Halal {c.cuisine.toLowerCase()}
+                    <span className="text-[13px] text-subtle">{c.listed}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* ACTION. One dominant, unambiguous ask. There is nothing to buy on
           this page, so the ask is the thing this site actually runs on:

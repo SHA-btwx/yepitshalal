@@ -50,6 +50,11 @@ export function SiteFooter() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/halal-restaurants/cuisine" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    By kind of food
+                  </Link>
+                </li>
+                <li>
                   <Link href="/image-credits" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
                     Image credits
                   </Link>
