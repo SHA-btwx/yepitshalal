@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { CoverImage } from './CoverImage';
 import { HalalBadge } from './HalalBadge';
 import { ArrowRightIcon } from './icons';
 import { cleanRestaurantName } from '@/lib/restaurantName';
@@ -55,13 +55,12 @@ export function RestaurantCard({
       className="group flex items-center gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition duration-200 active:scale-[0.99] active:bg-black/[0.02] hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3"
     >
       <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft sm:h-[92px] sm:w-[92px]">
-        <Image
+        <CoverImage
           src={cover.src}
-          alt={cover.own ? `${title}` : ''}
-          fill
+          alt={cover.own ? title : ''}
           sizes="(max-width: 640px) 76px, 92px"
           priority={priority}
-          className="object-cover transition duration-300 group-hover:scale-105"
+          className="transition duration-300 group-hover:scale-105"
         />
         {/* Never the restaurant's own food unless it sent us a photo, and the
             card says so rather than let a stock biryani pass as theirs. A corner

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { CoverImage } from './CoverImage';
 import clsx from 'clsx';
 import { HalalBadge } from './HalalBadge';
 import { displayName } from './RestaurantCard';
@@ -178,7 +178,7 @@ export function PlaceSheet({
 
         <div className="relative shrink-0">
           <div className="relative h-32 w-full overflow-hidden bg-halal-unverifiedSoft sm:h-36">
-            <Image src={cover.src} alt={cover.own ? title : ''} fill sizes="(max-width: 640px) 100vw, 360px" className="object-cover" />
+            <CoverImage src={cover.src} alt={cover.own ? title : ''} sizes="(max-width: 640px) 100vw, 360px" />
             <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/65 to-transparent" />
             {!cover.own && (
               <span className="absolute bottom-2 left-3 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">

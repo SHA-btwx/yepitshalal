@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import clsx from 'clsx';
+import { CoverImage } from './CoverImage';
 import { HalalBadge } from './HalalBadge';
 import { displayName } from './RestaurantCard';
 import { coverFor } from '@/lib/representativeImages';
@@ -58,7 +58,7 @@ export function ClusterSheet({
                   className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition hover:bg-black/[0.035] active:bg-black/[0.06]"
                 >
                   <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-halal-unverifiedSoft">
-                    <Image src={cover.src} alt="" fill sizes="48px" className="object-cover" />
+                    <CoverImage src={cover.src} alt="" sizes="48px" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-ink">{displayName(r)}</span>
