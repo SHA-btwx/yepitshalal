@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getNearbyWithEvidence, getRestaurantBySlug } from '@/lib/restaurants';
 import { getPublishedReels, isActivePartner } from '@/lib/reels';
 import { halalLabel, HalalBadge } from '@/components/HalalBadge';
+import { CheckedByUsBadge } from '@/components/CheckedByUsBadge';
 import { HalalFactsPanel } from '@/components/HalalFactsPanel';
 import { HalalEvidencePanel } from '@/components/HalalEvidencePanel';
 import { OpenStatusBadge } from '@/components/OpenStatusBadge';
@@ -291,6 +292,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {status && <HalalBadge classification={status} size="lg" variant="solid" />}
+          {hasGenuineCheck && <CheckedByUsBadge />}
           {!closed && <OpenStatusBadge hours={restaurant.openingHours} />}
         </div>
       </header>
@@ -333,6 +335,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           cuisine={restaurant.cuisines[0] ?? restaurant.cuisineLabel}
           slug={restaurant.slug}
           name={title}
+          checkedByUs={hasGenuineCheck}
         />
       </div>
 

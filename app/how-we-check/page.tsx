@@ -52,6 +52,27 @@ export default function HowWeCheckPage() {
         don&apos;t know something, we say so.
       </p>
 
+      {/* The single most important thing a visitor could misunderstand, at the
+          top of the page that exists to prevent that misunderstanding. */}
+      <div className="mt-6 rounded-2xl border-2 border-halal-unverified/25 bg-halal-unverifiedSoft p-5">
+        <h2 className="font-display text-lg font-semibold text-ink">
+          We haven&apos;t visited any of these restaurants yet
+        </h2>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink/80">
+          Everything on this site so far comes from what restaurants publish about themselves and
+          from open data: their own websites, OpenStreetMap, and the Food Standards Agency&apos;s
+          hygiene register. Nobody from YepItsHalal has walked into a kitchen, rung a manager or
+          read a certificate. We are starting with what can be gathered honestly at scale, and
+          saying exactly where it came from.
+        </p>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink/80">
+          When that changes for a place, you will see it. A listing we have checked ourselves
+          carries a <span className="font-semibold text-accent-ink">Checked by us</span> badge in
+          search results and on its page, with the date and what we did. No badge means no visit,
+          however confident the label above it looks.
+        </p>
+      </div>
+
       <section className="mt-10">
         <h2 className="font-display text-xl font-semibold text-ink">What each label means</h2>
         <dl className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-sm">

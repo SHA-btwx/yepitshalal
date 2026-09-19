@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { CoverImage } from './CoverImage';
 import { HalalBadge } from './HalalBadge';
+import { CheckedByUsBadge } from './CheckedByUsBadge';
 import { ArrowRightIcon } from './icons';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { getOpenStatus } from '@/lib/openingStatus';
@@ -104,8 +105,9 @@ export function RestaurantCard({
         {/* The label and, under it, the reason for it: a label alone is the
             thing this site exists to improve on. */}
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="shrink-0">
+          <span className="flex shrink-0 flex-wrap items-center gap-2">
             <HalalBadge classification={status} size="sm" />
+            {restaurant.checked_by_us && <CheckedByUsBadge size="sm" />}
           </span>
           {reason && <span className="line-clamp-2 text-xs leading-snug text-muted">{reason}</span>}
         </div>

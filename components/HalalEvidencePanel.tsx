@@ -96,6 +96,7 @@ export function HalalEvidencePanel({
   cuisine = null,
   slug,
   name,
+  checkedByUs = false,
 }: {
   classification: HalalClassification;
   strength: EvidenceStrength | null;
@@ -108,6 +109,8 @@ export function HalalEvidencePanel({
   slug: string;
   /** Used in the heading, because "Is X halal?" is what people searched for. */
   name: string;
+  /** Somebody from YepItsHalal went, rang, or read the certificate. */
+  checkedByUs?: boolean;
 }) {
   if (!isListed && isSearchable && !strength) {
     return (
@@ -196,6 +199,17 @@ export function HalalEvidencePanel({
           {classification === 'unverified' && ' Unverified never means not halal.'}
         </span>
       </p>
+
+      {/* The thing a reader is most likely to assume, said plainly. Everything
+          above comes from what this restaurant publishes or what open data
+          records; none of it is a visit. */}
+      {!checkedByUs && (
+        <p className="mt-3 rounded-xl bg-paper px-3.5 py-2.5 text-xs leading-relaxed text-muted">
+          <span className="font-semibold text-ink/80">Nobody from YepItsHalal has been here.</span>{' '}
+          We have not visited, phoned or seen a certificate for this place. When we do, this page
+          says so and the listing carries our badge.
+        </p>
+      )}
 
       {rest.length > 0 && (
         <details className="group mt-4">

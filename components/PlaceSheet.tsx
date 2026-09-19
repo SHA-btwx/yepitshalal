@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CoverImage } from './CoverImage';
 import clsx from 'clsx';
 import { HalalBadge } from './HalalBadge';
+import { CheckedByUsBadge } from './CheckedByUsBadge';
 import { displayName } from './RestaurantCard';
 import { getOpenStatus } from '@/lib/openingStatus';
 import { coverFor } from '@/lib/representativeImages';
@@ -219,6 +220,7 @@ export function PlaceSheet({
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <HalalBadge classification={status} size="sm" variant="solid" />
+            {restaurant.checked_by_us && <CheckedByUsBadge size="sm" />}
             {open && open.state !== 'unknown' && (
               <span
                 suppressHydrationWarning

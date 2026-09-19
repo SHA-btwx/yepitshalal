@@ -71,6 +71,8 @@ export interface SearchResultRestaurant {
   total_count: number;
   halal_status: HalalStatus;
   postcode: string | null;
+  /** Somebody from YepItsHalal visited, phoned, or saw the documents. */
+  checked_by_us: boolean;
 }
 
 /** How many places the same search finds at one radius tier. */

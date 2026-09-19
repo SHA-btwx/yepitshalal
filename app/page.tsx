@@ -204,6 +204,17 @@ export default async function HomePage() {
           Neither &ldquo;Unverified&rdquo; nor &ldquo;Not checked yet&rdquo; means a place isn&apos;t
           halal. If it matters to you, ask the restaurant.
         </p>
+
+        {/* Said here, on the page that explains the labels, because this is
+            where a reader decides how much to trust them. */}
+        <p className="mx-auto mt-4 max-w-lg text-pretty text-center text-sm leading-relaxed text-muted">
+          <span className="font-semibold text-ink">We haven&apos;t visited any of them yet.</span>{' '}
+          Every label so far comes from what a restaurant publishes and from open data. The ones we
+          check ourselves will carry our badge.{' '}
+          <Link href="/how-we-check" className="font-semibold text-accent-ink underline underline-offset-2">
+            How we label places
+          </Link>
+        </p>
       </section>
 
       {/* DESIRE, beat one: proof, not a promise. Deliberately still rather

@@ -422,6 +422,28 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
         )}
       </div>
 
+      {/* The most important sentence on the page while it is still true. Every
+          label here comes from what a restaurant publishes about itself; none
+          of these places has been checked by anybody from YepItsHalal. It
+          disappears on its own, per result set, as that stops being the case. */}
+      {!loading && !failed && totalCount > 0 && !results.some((r) => r.checked_by_us) && (
+        <p
+          className={clsx(
+            'mx-4 mt-2.5 flex items-start gap-2 rounded-xl bg-halal-unverifiedSoft px-3.5 py-2.5 text-[13px] leading-relaxed text-halal-unverifiedInk sm:mx-0',
+            mobileView === 'map' && 'hidden sm:flex'
+          )}
+        >
+          <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>
+            We haven&apos;t checked any of these ourselves yet. Every label comes from what the
+            restaurant publishes or what open data records, never from a visit.{' '}
+            <Link href="/how-we-check" className="font-semibold underline underline-offset-2">
+              How we label places
+            </Link>
+          </span>
+        </p>
+      )}
+
       <div className="mt-2.5 grid grid-cols-1 gap-4 sm:mt-4 sm:grid-cols-[minmax(0,1fr)_1.1fr]">
         <div
           aria-busy={loading}

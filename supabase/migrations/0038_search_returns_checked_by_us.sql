@@ -1,0 +1,5 @@
+-- A result carries whether we checked that place ourselves, so a card can show
+-- the badge and the results page can say, honestly, when none of them have been.
+-- Adding a column to the returned row means dropping and recreating: Postgres
+-- will not change an existing function's row type in place.
+-- (Applied to the live database; see 0033 for the body this extends.)
