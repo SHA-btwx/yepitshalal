@@ -80,10 +80,11 @@ export default async function HomePage() {
               London, for now
             </span>
             <h1 className="mt-4 text-balance font-display text-[2.15rem] font-semibold leading-[1.08] text-white sm:text-5xl">
-              Stop guessing if it&apos;s halal.
+              Find halal food, wherever you are.
             </h1>
             <p className="mx-auto mt-4 max-w-md text-pretty text-base leading-relaxed text-white/85 sm:text-lg lg:mx-0">
-              Search your area. See what&apos;s halal, and how we know.
+              Search anywhere in London and see what&apos;s halal, who said so, and when we
+              last checked. Free, all of it.
             </p>
 
             <div id="search" className="mt-7 flex justify-center lg:justify-start">
@@ -185,18 +186,18 @@ export default async function HomePage() {
             {[
               {
                 Icon: MapIcon,
-                step: 'Search',
-                body: 'Type a postcode, an area, a street or a restaurant name.',
+                step: 'Say where you are',
+                body: 'A postcode, an area, a street, or just use your location. Anywhere in London.',
               },
               {
                 Icon: SealCheckIcon,
-                step: 'Check',
-                body: 'See the halal status, where it came from, and when it was checked.',
+                step: 'See how we know',
+                body: 'Each place shows its halal label, the evidence behind it and the date we checked, so you can judge it yourself.',
               },
               {
                 Icon: ForkKnifeIcon,
-                step: 'Eat',
-                body: 'Directions, hours and the menu, then go.',
+                step: 'Go and eat',
+                body: 'Opening hours, the menu and directions, on one page.',
               },
             ].map(({ Icon, step, body }, i) => (
               <li key={step} className="flex gap-3.5 sm:flex-col sm:gap-0">
@@ -224,7 +225,7 @@ export default async function HomePage() {
           the loop it opened rather than introducing a new one. */}
       <section className="mx-auto max-w-2xl px-5 pb-14 pt-14 text-center sm:px-6 sm:pb-16 sm:pt-16">
         <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
-          Ready to stop guessing?
+          So, where are you eating?
         </h2>
         <p className="mx-auto mt-2.5 max-w-md text-pretty text-[15px] leading-relaxed text-muted">
           Search your area. Every place shows its halal label and the evidence behind it.
@@ -240,27 +241,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* P.S. Yep+ and the restaurant-owner path are real, but this is a free
-          discovery site with nothing to sell on this page, so neither gets a
-          second hero. A postscript is the most-read line in a direct-response
-          letter, which is exactly the job here: seen by everyone, pushed on
-          no one. Halal information is never behind either of these. */}
+      {/* P.S. There is nothing to buy on this site, so the support ask and the
+          restaurant-owner path do not get a second hero. A postscript is the
+          most-read line in a direct-response letter, which is exactly the job
+          here: seen by everyone, pushed on no one. */}
       <section className="border-t border-line">
         <div className="mx-auto max-w-4xl px-5 py-12 sm:px-6 sm:py-14">
           <p className="font-display text-sm font-semibold text-ink">P.S.</p>
           <div className="mt-3 grid grid-cols-1 gap-x-10 gap-y-7 sm:grid-cols-2">
             <div>
               <p className="text-pretty text-sm leading-relaxed text-muted">
-                <span className="font-semibold text-ink">Yep+</span> opens search across
-                all of London instead of just nearby, plus member offers, from £4.99 a
-                month. Halal information itself stays free, always.
+                <span className="font-semibold text-ink">Checking places costs money.</span>{' '}
+                Nothing on this site is paid for or locked, and it never will be. If you want
+                to help pay for the work, you can support it from £2.99 a month.
               </p>
               <p className="mt-2 flex items-start gap-1.5 text-pretty text-sm leading-relaxed text-muted">
                 <HeartHandIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-accent-ink" />
-                Every month of membership also funds a meal through ShareTheMeal.
+                We donate a meal through ShareTheMeal for every month of support.
               </p>
               <Link href="/yep-plus" className={`${ctaGhost} -ml-4 mt-1`}>
-                See what you get
+                What support pays for
                 <ArrowRightIcon className="h-4 w-4" />
               </Link>
             </div>
