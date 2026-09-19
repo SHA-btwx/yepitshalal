@@ -28,6 +28,8 @@ import { DEFAULT_RADIUS_MILES, effectiveRadiusMeters, formatRadiusMiles } from '
 import type { HalalStatus, SearchResultRestaurant, TierCount } from '@/lib/types';
 import type { SearchResponse } from '@/lib/search';
 import type { NearbyArea } from '@/app/api/nearby-areas/route';
+import type { MapPrayerSpace } from './RestaurantMap';
+import { formatMetres, walkingMinutes } from '@/lib/prayerSpaces';
 
 const RestaurantMap = dynamic(() => import('./RestaurantMap').then((m) => m.RestaurantMap), {
   ssr: false,
@@ -83,6 +85,11 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   const [serverRadiusMeters, setServerRadiusMeters] = useState<number | null>(initial.effectiveRadiusMeters);
   const [nearbyAreas, setNearbyAreas] = useState<NearbyArea[] | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
+  // Places to pray, on the same map, off until asked for. They are a different
+  // question from the food and must never look like an answer about it.
+  const [showPrayer, setShowPrayer] = useState(false);
+  const [prayerSpaces, setPrayerSpaces] = useState<MapPrayerSpace[]>([]);
+  const [prayerPick, setPrayerPick] = useState<MapPrayerSpace | null>(null);
   // Set when the radius was widened automatically, so the page can say so.
   const [expandedFrom, setExpandedFrom] = useState<number | null>(null);
   const userChoseRadius = useRef(false);
@@ -163,6 +170,22 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
       cancelled = true;
     };
   }, [emptyAndUnfiltered, lat, lng, coverageMeters]);
+
+  useEffect(() => {
+    if (!showPrayer) {
+      setPrayerSpaces([]);
+      setPrayerPick(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/prayer-spaces?lat=${lat}&lng=${lng}&radius_meters=${Math.round(coverageMeters)}`)
+      .then((res) => res.json())
+      .then((json) => !cancelled && setPrayerSpaces(json.spaces ?? []))
+      .catch(() => !cancelled && setPrayerSpaces([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [showPrayer, lat, lng, coverageMeters]);
 
   // A map that was display:none while MapLibre initialised has a zero-height
   // canvas; it has to re-measure the moment the mobile toggle reveals it.
@@ -590,6 +613,12 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             }}
             resizeSignal={resizeSignal}
             coverageRadiusMeters={coverageMeters}
+            prayerSpaces={showPrayer ? prayerSpaces : []}
+            onSelectPrayerSpace={(space) => {
+              setSelected(null);
+              setCluster(null);
+              setPrayerPick(space);
+            }}
           />
 
           {/* One small pill, not a panel: the map is the content, and the key is
@@ -605,6 +634,29 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
               <span className="truncate">{loading ? 'Searching…' : `${totalCount} within ${radiusLabel}`}</span>
               <span className="shrink-0 font-medium text-subtle">{legendOpen ? 'Hide' : 'Key'}</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setShowPrayer((v) => !v)}
+              aria-pressed={showPrayer}
+              className={clsx(
+                'mt-1.5 flex min-h-[36px] items-center gap-2 rounded-full px-3 text-xs font-semibold shadow-md ring-1 ring-black/5 backdrop-blur transition active:scale-[0.98]',
+                showPrayer ? 'bg-ink text-white' : 'bg-white/95 text-ink'
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={clsx(
+                  'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[4px] text-[9px] font-bold leading-none',
+                  showPrayer ? 'bg-white text-ink' : 'bg-ink text-white'
+                )}
+              >
+                &#1645;
+              </span>
+              Prayer spaces
+              {showPrayer && prayerSpaces.length > 0 && (
+                <span className={showPrayer ? 'text-white/70' : 'text-subtle'}>{prayerSpaces.length}</span>
+              )}
+            </button>
             {legendOpen && (
               <ul className="mt-1.5 w-max rounded-xl bg-white/95 p-2.5 text-xs font-medium text-ink shadow-md ring-1 ring-black/5 backdrop-blur">
                 {CLASSIFICATION_FILTERS.map((f) => (
@@ -618,6 +670,50 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           </div>
 
           {selected && <PlaceSheet restaurant={selected} onClose={() => setSelected(null)} />}
+          {prayerPick && !selected && (
+            <div
+              role="dialog"
+              aria-label={`${prayerPick.name}, a place to pray`}
+              className="absolute inset-x-3 bottom-3 z-30 animate-sheet-up rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/10 sm:inset-x-auto sm:left-4 sm:w-80"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">Somewhere to pray</p>
+                  <p className="mt-0.5 font-display text-base font-semibold text-ink">{prayerPick.name}</p>
+                  <p className="mt-0.5 text-[13px] text-muted">
+                    {formatMetres(prayerPick.distance_meters)} from the middle of this search · about{' '}
+                    {walkingMinutes(prayerPick.distance_meters)} min walk
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPrayerPick(null)}
+                  aria-label="Close"
+                  className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-black/[0.05]"
+                >
+                  <XIcon className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${prayerPick.lat},${prayerPick.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-accent-ink hover:underline"
+                >
+                  Directions
+                </a>
+                <Link href="/prayer-spaces" className="font-medium text-muted hover:text-ink hover:underline">
+                  All prayer spaces
+                </Link>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-subtle">
+                From OpenStreetMap, not checked by us. Nothing about this place says anything about
+                the food nearby.
+              </p>
+            </div>
+          )}
+
           {!selected && cluster && cluster.length > 0 && (
             <ClusterSheet
               places={cluster}

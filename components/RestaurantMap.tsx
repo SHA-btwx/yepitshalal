@@ -15,9 +15,21 @@ import { statusOf } from '@/lib/types';
 const STYLE_URL =
   process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
+/** The little a map needs to know about a place to pray. */
+export interface MapPrayerSpace {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  distance_meters: number;
+}
+
 interface RestaurantMapProps {
   center: { lat: number; lng: number };
   restaurants: SearchResultRestaurant[];
+  /** Mosques and prayer rooms, drawn in their own shape. Empty when hidden. */
+  prayerSpaces?: MapPrayerSpace[];
+  onSelectPrayerSpace?: (space: MapPrayerSpace) => void;
   selectedId: string | null;
   onSelect: (restaurant: SearchResultRestaurant) => void;
   /** Bump to make the map re-measure — e.g. after it is revealed from display:none. */
@@ -87,6 +99,8 @@ function setData(map: MapLibreMap, id: string, data: GeoJSON.GeoJSON) {
 export function RestaurantMap({
   center,
   restaurants,
+  prayerSpaces = [],
+  onSelectPrayerSpace,
   selectedId,
   onSelect,
   resizeSignal = 0,
@@ -97,12 +111,16 @@ export function RestaurantMap({
   const [basemapFailed, setBasemapFailed] = useState(false);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  // Their own list, so a change of restaurants never wipes them and vice versa.
+  const prayerMarkersRef = useRef<Marker[]>([]);
   const onSelectRef = useRef(onSelect);
   const onSelectClusterRef = useRef(onSelectCluster);
+  const onSelectPrayerSpaceRef = useRef(onSelectPrayerSpace);
   const restaurantsRef = useRef(restaurants);
   const selectedIdRef = useRef(selectedId);
   onSelectRef.current = onSelect;
   onSelectClusterRef.current = onSelectCluster;
+  onSelectPrayerSpaceRef.current = onSelectPrayerSpace;
   restaurantsRef.current = restaurants;
   selectedIdRef.current = selectedId;
 
@@ -170,6 +188,8 @@ export function RestaurantMap({
       // holding references to now-orphaned marker elements.
       for (const m of markersRef.current) m.remove();
       markersRef.current = [];
+      for (const m of prayerMarkersRef.current) m.remove();
+      prayerMarkersRef.current = [];
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -244,6 +264,56 @@ export function RestaurantMap({
     if (!map) return;
     renderMarkers(map, restaurants, selectedId, onSelectRef, markersRef, onSelectClusterRef);
   }, [restaurants, selectedId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    for (const m of prayerMarkersRef.current) m.remove();
+    prayerMarkersRef.current = [];
+
+    for (const space of prayerSpaces) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.style.width = '34px';
+      el.style.height = '34px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.background = 'transparent';
+      el.style.border = 'none';
+      el.style.padding = '0';
+      el.style.cursor = 'pointer';
+
+      // A rounded square, not a circle: at a glance it is plainly not one of
+      // the food pins, which is the whole point. Colour alone would not do it.
+      const mark = document.createElement('span');
+      mark.style.width = '20px';
+      mark.style.height = '20px';
+      mark.style.borderRadius = '6px';
+      mark.style.background = '#14181A';
+      mark.style.border = '2px solid #fff';
+      mark.style.boxShadow = '0 1px 4px rgba(0,0,0,.35)';
+      mark.style.display = 'flex';
+      mark.style.alignItems = 'center';
+      mark.style.justifyContent = 'center';
+      mark.style.color = '#fff';
+      mark.style.fontSize = '11px';
+      mark.style.fontWeight = '700';
+      mark.style.lineHeight = '1';
+      mark.textContent = '٭';
+      el.appendChild(mark);
+
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        onSelectPrayerSpaceRef.current?.(space);
+      });
+
+      const marker = new maplibregl.Marker({ element: el }).setLngLat([space.lng, space.lat]).addTo(map);
+      el.setAttribute('aria-label', `${space.name}, a place to pray`);
+      prayerMarkersRef.current.push(marker);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prayerSpaces]);
 
   return (
     <div className="relative h-full w-full">
