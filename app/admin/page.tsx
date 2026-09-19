@@ -31,14 +31,14 @@ const SECTIONS = [
   {
     href: '/admin/offers',
     Icon: SparkleIcon,
-    title: 'Yep+ offers',
-    body: 'Create and manage exclusive member offers.',
+    title: 'Offers',
+    body: 'Deals restaurants want to give, including supporter-only ones.',
   },
   {
     href: '/admin/subscriptions',
     Icon: UserIcon,
     title: 'Subscriptions',
-    body: 'Basic visibility of Yep+ members.',
+    body: 'Who is supporting the site, and on which plan.',
   },
 ];
 

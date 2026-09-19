@@ -44,9 +44,10 @@ export async function POST(request: Request) {
     customer_email: user.email,
     metadata: { yepitshalal_user_id: user.id },
     subscription_data: { metadata: { yepitshalal_user_id: user.id } },
-    // Radius entitlement (search_restaurants) reads the `subscriptions` table,
-    // never Stripe directly — the webhook is what keeps that table in sync.
-    // Nothing in the discovery/search path depends on this session.
+    // Supporter status reads the `subscriptions` table, never Stripe directly:
+    // the webhook is what keeps that table in sync. Nothing anyone can search,
+    // read or see depends on this session; support pays for the site, it does
+    // not unlock any of it.
   });
 
   return NextResponse.redirect(session.url!, { status: 303 });

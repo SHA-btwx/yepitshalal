@@ -33,7 +33,7 @@ export async function SiteHeader() {
           className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-white transition hover:bg-accent-ink active:scale-[0.98]"
         >
           <SparkleIcon className="h-4 w-4" />
-          Yep+
+          Support us
         </Link>
       </div>
     </header>

@@ -61,7 +61,7 @@ export function SiteFooter() {
                 </li>
                 <li>
                   <Link href="/yep-plus" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
-                    Yep+
+                    Support us
                   </Link>
                 </li>
               </ul>
@@ -90,7 +90,7 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} YepItsHalal · Made in London</p>
           <p className="inline-flex items-center gap-1.5">
             <HeartHandIcon className="h-4 w-4 text-accent-ink" />
-            Every Yep+ subscription funds a meal through{' '}
+            We donate a meal for every month of support, through{' '}
             <a
               href="https://sharethemeal.org"
               target="_blank"

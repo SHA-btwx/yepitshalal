@@ -72,10 +72,23 @@ const HEAD = 'px-3 py-2.5 font-medium';
 
 export default async function AdminCoveragePage() {
   const supabase = createAdminSupabase();
-  const [{ data: districtData }, { data: boroughData }] = await Promise.all([
+  const monthStart = new Date();
+  monthStart.setUTCDate(1);
+  const month = monthStart.toISOString().slice(0, 10);
+
+  const [{ data: districtData }, { data: boroughData }, { data: voteData }] = await Promise.all([
     supabase.from('catalogue_coverage').select('*'),
     supabase.from('catalogue_borough_coverage').select('*').order('listed', { ascending: false }),
+    supabase.from('area_votes').select('borough').eq('month', month),
   ]);
+
+  // What supporters asked for this month. Votes are one per person and can be
+  // changed until the month ends, so this is a live standing, not a result.
+  const voteTally = new Map<string, number>();
+  for (const v of (voteData ?? []) as { borough: string }[]) {
+    voteTally.set(v.borough, (voteTally.get(v.borough) ?? 0) + 1);
+  }
+  const votes = [...voteTally.entries()].sort((a, b) => b[1] - a[1]);
 
   const boroughs = (boroughData ?? []) as BoroughRow[];
 
@@ -111,6 +124,36 @@ export default async function AdminCoveragePage() {
       description={`${(totals.listed + totals.not_checked).toLocaleString()} places in search (${totals.listed.toLocaleString()} with evidence), out of ${totals.total.toLocaleString()} records. Use it to see where the gaps are before looking for more places.`}
     >
       <div className="space-y-5">
+        <Panel
+          title="Supporters' vote this month"
+          action={<Tag>{(voteData ?? []).length} {(voteData ?? []).length === 1 ? 'vote' : 'votes'}</Tag>}
+        >
+          {votes.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-muted">
+              No votes yet this month. Supporters vote from their account page.
+            </p>
+          ) : (
+            <ol className="divide-y divide-line">
+              {votes.map(([borough, n], i) => {
+                const b = boroughs.find((r) => r.borough === borough);
+                return (
+                  <li key={borough} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-5 py-3 text-sm">
+                    <span className={i === 0 ? 'font-semibold text-ink' : 'text-ink/80'}>
+                      {i + 1}. {borough}
+                    </span>
+                    <span className="tabular-nums text-muted">{n} {n === 1 ? 'vote' : 'votes'}</span>
+                    {b && (
+                      <span className="ml-auto text-xs text-subtle">
+                        {b.not_checked.toLocaleString()} not checked yet · {b.listed.toLocaleString()} with evidence
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </Panel>
+
         <Panel title="In search, by label">
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-5">
             {[

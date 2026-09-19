@@ -125,6 +125,9 @@ export async function POST(request: Request) {
         status,
         plan,
         current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        // Stripe knows when this started; the upsert must not reset it to now()
+        // every time the subscription renews.
+        created_at: new Date(subscription.created * 1000).toISOString(),
       },
       { onConflict: 'user_id' }
     );

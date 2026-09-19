@@ -23,12 +23,26 @@ function daysWaiting(iso: string): string {
 
 export default async function AdminQueuePage() {
   const supabase = createAdminSupabase();
-  const { data: requests } = await supabase
-    .from('verification_requests')
-    .select('id, queue_type, status, entered_queue_at, contact_email, restaurants(name, slug)')
-    .in('status', ['awaiting_slot', 'queued', 'in_review', 'pending_qc'])
-    .order('queue_type', { ascending: false })
-    .order('entered_queue_at', { ascending: true });
+  const monthStart = new Date();
+  monthStart.setUTCDate(1);
+
+  const [{ data: requests }, { data: voteData }] = await Promise.all([
+    supabase
+      .from('verification_requests')
+      .select('id, queue_type, status, entered_queue_at, contact_email, restaurants(name, slug)')
+      .in('status', ['awaiting_slot', 'queued', 'in_review', 'pending_qc'])
+      .order('queue_type', { ascending: false })
+      .order('entered_queue_at', { ascending: true }),
+    supabase.from('area_votes').select('borough').eq('month', monthStart.toISOString().slice(0, 10)),
+  ]);
+
+  // Supporters were promised the area they vote for goes to the top of the
+  // queue, so whoever works this page has to be able to see it from here.
+  const tally = new Map<string, number>();
+  for (const v of (voteData ?? []) as { borough: string }[]) {
+    tally.set(v.borough, (tally.get(v.borough) ?? 0) + 1);
+  }
+  const leader = [...tally.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
 
   const all = (requests ?? []) as unknown as QueueRequest[];
   const priority = all.filter((r) => r.queue_type === 'priority');
@@ -41,6 +55,15 @@ export default async function AdminQueuePage() {
       width="lg"
     >
       <div className="space-y-5">
+        {leader && (
+          <p className="rounded-xl bg-accent-soft px-4 py-3 text-sm leading-relaxed text-accent-ink">
+            Supporters voted for <span className="font-semibold">{leader[0]}</span> this month
+            ({leader[1]} {leader[1] === 1 ? 'vote' : 'votes'}). Check places there next.{' '}
+            <Link href="/admin/coverage" className="font-semibold underline underline-offset-2">
+              See the standings
+            </Link>
+          </p>
+        )}
         <Section
           title="Priority"
           tone="ink"

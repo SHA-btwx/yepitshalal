@@ -25,7 +25,7 @@ export default async function AdminSubscriptionsPage() {
 
   return (
     <AdminPage
-      title="Yep+ subscriptions"
+      title="Supporters"
       description={`${active.length} active member${active.length === 1 ? '' : 's'} of ${rows.length} total.`}
     >
       <Panel>

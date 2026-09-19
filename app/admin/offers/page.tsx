@@ -6,7 +6,7 @@ import { AdminPage, Panel, List, Row, Field, Tag, FIELD, BUTTON } from '@/compon
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: 'Yep+ offers' };
+export const metadata = { title: 'Offers' };
 
 interface OfferRow {
   id: string;
@@ -34,11 +34,11 @@ export default async function AdminOffersPage() {
 
   return (
     <AdminPage
-      title="Yep+ offers"
+      title="Offers"
       description={
         <>
-          The basic concept only: no redemption or payment system. Voucher codes are hidden
-          from non-Yep+ users automatically via <code className="rounded bg-black/[0.06] px-1 py-0.5 font-mono text-[0.8em]">offers_public</code>.
+          The basic concept only: no redemption or payment system. Voucher codes on a
+          supporters-only offer are hidden from everyone else automatically via <code className="rounded bg-black/[0.06] px-1 py-0.5 font-mono text-[0.8em]">offers_public</code>.
         </>
       }
     >
@@ -88,7 +88,7 @@ export default async function AdminOffersPage() {
                     defaultChecked
                     className="h-4 w-4 accent-accent-ink"
                   />
-                  Yep+ exclusive
+                  Supporters only
                 </label>
                 <label className="inline-flex min-h-[36px] items-center gap-2">
                   <input
@@ -119,7 +119,7 @@ export default async function AdminOffersPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {o.yep_plus_only ? <Tag tone="ink">Yep+ only</Tag> : <Tag>All users</Tag>}
+                  {o.yep_plus_only ? <Tag tone="ink">Supporters only</Tag> : <Tag>Everyone</Tag>}
                   {o.is_early_access && <Tag tone="accent">Early access</Tag>}
                   <form action={deleteOffer.bind(null, o.id)}>
                     <ConfirmSubmitButton
