@@ -59,6 +59,28 @@ registers (no published reuse terms; ask them for permission first).
    merge duplicates and send misplaced pins to review. Merged rows are hidden
    from search, not deleted.
 
+## The restaurants' own pictures
+
+Most places publish a picture of themselves on their own website, in the tag
+that exists so other sites can show it. A listing uses that when it has one, and
+falls back to a representative image when it does not.
+
+1. `node find-business-images.mjs` reads one page per site and records the best
+   image it finds (`.cache/business-images.jsonl`). Same rules as the evidence
+   crawler: robots.txt obeyed, the site has to belong to that restaurant
+   (`hostMatchesName`), and never Google, Tripadvisor, Yelp or a delivery app.
+   Order of preference: og:image, twitter:image, schema.org image, a large
+   `<img>` on the page, then the logo. Stock photos shipped by takeaway website
+   builders are skipped: they are no more that restaurant's food than ours is.
+2. `node publish-business-images.mjs` prints the plan; `--apply` downloads each
+   one, checks its size and shape, resizes it, stores it in our own bucket and
+   attaches it to every listing that shares that website. Logos go under
+   `business-logo/` and are shown whole on white; photographs go under
+   `business/` and are cropped to fill.
+
+Every row records the page the image came from. That credit is shown on the
+listing, and it is what makes a takedown request answerable.
+
 ## Representative images
 
 Places without their own photo show a picture of the kind of food they serve,
