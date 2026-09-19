@@ -7,6 +7,8 @@ import { MapPinIcon, SealCheckIcon, MapIcon, ArrowRightIcon, ForkKnifeIcon, Hear
 import { HomeReelStrip } from '@/components/HomeReelStrip';
 import { getFeaturedReels } from '@/lib/reels';
 import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
+import { jsonLdHtml } from '@/lib/jsonLd';
+import { SITE_URL } from '@/lib/site';
 
 // Hand-picked London neighbourhoods with dense halal high streets. Linking
 // straight to coordinates removes the "what do I even type?" beat for a first
@@ -49,11 +51,43 @@ const LABELS = [
   },
 ];
 
+// What the site is and how to search it, for the engines and assistants that
+// build an entity out of a domain before they decide what any page means.
+const SITE_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: 'YepItsHalal',
+      description:
+        'Halal restaurants in London, each with the evidence behind its label and the date it was checked.',
+      inLanguage: 'en-GB',
+      publisher: { '@id': `${SITE_URL}/#org` },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/search?label={search_term_string}` },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#org`,
+      name: 'YepItsHalal',
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon`,
+      areaServed: { '@type': 'City', name: 'London' },
+    },
+  ],
+};
+
 export default async function HomePage() {
   const featuredReels = await getFeaturedReels();
 
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(SITE_LD) }} />
       {/* ATTENTION. A sign in a window is a claim; this page's entire pitch is
           that we don't stop there. The headline names the customer's actual
           state (guessing, whether they'd admit it or not) rather than
@@ -252,8 +286,9 @@ export default async function HomePage() {
             <div>
               <p className="text-pretty text-sm leading-relaxed text-muted">
                 <span className="font-semibold text-ink">Checking places costs money.</span>{' '}
-                Nothing on this site is paid for or locked, and it never will be. If you want
-                to help pay for the work, you can support it from £2.99 a month.
+                Finding out whether food is halal is free here and always will be: no locked
+                distance, no members-only listing, no paywall on an answer. If you want to help
+                pay for that work, you can support it from £2.99 a month.
               </p>
               <p className="mt-2 flex items-start gap-1.5 text-pretty text-sm leading-relaxed text-muted">
                 <HeartHandIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-accent-ink" />

@@ -207,7 +207,15 @@ export function SubmitRestaurantForm({
           className={`${FIELD_CLASS} uppercase sm:max-w-[12rem]`}
         />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Phone" name="phone" type="tel" autoComplete="tel" defaultValue={existing?.phone} />
+          <Field
+            label="Phone"
+            name="phone"
+            type="tel"
+            required
+            autoComplete="tel"
+            hint="How we check: we ring and ask."
+            defaultValue={existing?.phone}
+          />
           <div>
             <label htmlFor={cuisineId} className={LABEL_CLASS}>
               Cuisine
@@ -271,14 +279,15 @@ export function SubmitRestaurantForm({
           ]}
         />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Your name" name="contact_name" autoComplete="name" maxLength={100} />
+          <Field label="Your name" name="contact_name" required autoComplete="name" minLength={2} maxLength={100} />
           <Field
             label="Your email"
             name="contact_email"
             type="email"
+            required
             autoComplete="email"
             maxLength={200}
-            hint="Only used to ask about this listing."
+            hint="Only used to ask about this listing. Never published, never sold."
           />
         </div>
         <div>

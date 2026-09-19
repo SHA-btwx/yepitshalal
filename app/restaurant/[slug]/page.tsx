@@ -17,6 +17,7 @@ import { RestaurantCard } from '@/components/RestaurantCard';
 import { ShareButton } from '@/components/ShareButton';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { jsonLdHtml } from '@/lib/jsonLd';
+import { halalAnswerFor } from '@/lib/halalAnswer';
 import { SITE_URL } from '@/lib/site';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
 import { creditLine, representativeImageFor } from '@/lib/representativeImages';
@@ -72,12 +73,20 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const cuisine = restaurant.cuisines[0] ?? restaurant.cuisineLabel;
   // Only a listed place makes a halal statement, and that statement is the
   // label plus the reason for it, never the label alone.
+  // "is X halal" is the question people actually type, so it is the question
+  // the title asks and the description answers, in the site's own words.
+  const answer = halalAnswerFor({
+    name: title,
+    status: statusFor(restaurant),
+    summary: restaurant.halal_summary,
+    checkedAt: restaurant.halal_checked_at,
+  });
   const description = listed
-    ? `${title} in ${where}. Halal status: ${halalLabel(restaurant.halal_classification)}. ${restaurant.halal_summary ?? ''}.`.replace(/\.\./g, '.')
+    ? `${answer.sentence} See the evidence, the address and today's hours.`.slice(0, 300)
     : `${title}${cuisine ? `, ${cuisine}` : ''} in ${where}. We haven't checked whether this place serves halal food yet.`;
 
   return {
-    title: listed ? `${title} (${halalLabel(restaurant.halal_classification)})` : `${title}, ${where}`,
+    title: listed ? `Is ${title} halal? ${halalLabel(restaurant.halal_classification)}, ${where}` : `${title}, ${where}`,
     description,
     alternates: { canonical: `/restaurant/${restaurant.slug}` },
     // Only places with evidence are sent to search engines: a page that can
@@ -158,10 +167,65 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
     ...(hoursSpec.length ? { openingHoursSpecification: hoursSpec } : {}),
   };
 
+  // The question this page exists to answer, marked up as a question. Google
+  // stopped showing FAQ rich results in May 2026, but the assistants people now
+  // ask still read FAQPage when they extract an answer, and this is the answer
+  // we want them to give: ours, with its caveats attached.
+  const answer = halalAnswerFor({
+    name: title,
+    status,
+    summary: restaurant.halal_summary,
+    checkedAt: restaurant.halal_checked_at,
+  });
+  const sources = [...new Set(restaurant.evidence.map((e) => e.source_name))].slice(0, 3).join(', ');
+  const alcohol = restaurant.halalFacts?.serves_alcohol;
+  const pork = restaurant.halalFacts?.serves_pork;
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `Is ${title} halal?`,
+        acceptedAnswer: { '@type': 'Answer', text: answer.sentence },
+      },
+      ...(restaurant.evidence.length
+        ? [
+            {
+              '@type': 'Question',
+              name: `How do you know whether ${title} is halal?`,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: `From ${restaurant.evidence.length === 1 ? 'one source' : restaurant.evidence.length + ' sources'} listed on this page, each with the date it was checked: ${sources}. We never label a place from its name or its cuisine alone.`,
+              },
+            },
+          ]
+        : []),
+      ...(alcohol !== undefined || pork !== undefined
+        ? [
+            {
+              '@type': 'Question',
+              name: `Does ${title} serve alcohol or pork?`,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: [
+                  alcohol === true ? 'Alcohol is served.' : alcohol === false ? 'No alcohol is served.' : 'We have not confirmed whether alcohol is served.',
+                  pork === true ? 'Pork is served.' : pork === false ? 'No pork is served.' : 'We have not confirmed whether pork is served.',
+                ].join(' '),
+              },
+            },
+          ]
+        : []),
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-8">
       {restaurant.isListed && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
+        <>
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }} />
+        </>
       )}
 
       {closed && (
@@ -266,6 +330,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           isSearchable={restaurant.isSearchable}
           cuisine={restaurant.cuisines[0] ?? restaurant.cuisineLabel}
           slug={restaurant.slug}
+          name={title}
         />
       </div>
 

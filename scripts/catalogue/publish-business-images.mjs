@@ -71,17 +71,39 @@ const slug = (s) =>
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60) || 'image';
 
 async function download(url) {
-  const res = await fetch(url, {
-    headers: { 'user-agent': UA, accept: 'image/*' },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!res.ok) return { error: `http ${res.status}` };
-  const type = res.headers.get('content-type') || '';
-  if (!/^image\//i.test(type)) return { error: `not an image (${type.slice(0, 30)})` };
-  const buf = Buffer.from(await res.arrayBuffer());
-  if (buf.length > 12_000_000) return { error: 'too big' };
-  return { buf };
+  try {
+    const res = await fetch(url, {
+      headers: { 'user-agent': UA, accept: 'image/*' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return { error: `http ${res.status}` };
+    const type = res.headers.get('content-type') || '';
+    if (!/^image\//i.test(type)) return { error: `not an image (${type.slice(0, 30)})` };
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length > 12_000_000) return { error: 'too big' };
+    return { buf };
+  } catch (err) {
+    // A dead domain, an expired certificate, a host that hangs up. There are
+    // thousands of these in a catalogue this size and not one of them should
+    // end the run.
+    return { error: String(err?.cause?.code || err?.name || err).slice(0, 50) };
+  }
+}
+
+/** Runs a Supabase call twice before giving up, and never throws. */
+async function attempt(fn) {
+  for (let i = 0; i < 2; i++) {
+    try {
+      const res = await fn();
+      if (!res?.error) return res;
+      if (i) return res;
+    } catch (err) {
+      if (i) return { error: { message: String(err?.message || err).slice(0, 60) } };
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  return { error: { message: 'gave up' } };
 }
 
 let stored = 0;
@@ -132,7 +154,10 @@ for (const site of queue) {
     ? await sharp(buf).resize(480, 480, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toBuffer()
     : await sharp(buf).resize(960, 720, { fit: 'cover', position: 'attention' }).webp({ quality: 78 }).toBuffer();
 
-  const up = await sb.storage.from(BUCKET).upload(path, out, { contentType: 'image/webp', upsert: true });
+  // Storage and PostgREST occasionally answer with an HTML error page, which
+  // the client tries to parse as JSON and throws on. One bad minute must not
+  // end a run of two thousand images.
+  const up = await attempt(() => sb.storage.from(BUCKET).upload(path, out, { contentType: 'image/webp', upsert: true }));
   if (up.error) { problems.push([site.host, `upload: ${up.error.message}`]); continue; }
   stored++;
 
@@ -145,7 +170,7 @@ for (const site of queue) {
     source_url: site.pageUrl || `https://${site.host}/`,
     source_site: site.host,
   }));
-  const ins = await sb.from('restaurant_photos').insert(rows);
+  const ins = await attempt(() => sb.from('restaurant_photos').insert(rows));
   if (ins.error) { problems.push([site.host, `insert: ${ins.error.message}`]); continue; }
   attached += rows.length;
   if (stored % 50 === 0) console.log(`  ${stored} images stored, ${attached} listings`);

@@ -74,13 +74,22 @@ export async function POST(request: Request) {
   const postcodeRaw = clean(body.postcode, 10)?.toUpperCase() ?? null;
   const relationship = ['owner', 'staff', 'customer'].includes(String(body.relationship)) ? String(body.relationship) : null;
   const contactEmail = clean(body.contact_email, 200);
+  const contactName = clean(body.contact_name, 100);
+  const phone = clean(body.phone, 40);
 
+  // A submission we cannot follow up is a submission we cannot check, and an
+  // unchecked entry is the thing this site exists to be better than. The phone
+  // number is not a formality either: ringing to ask is how most places get
+  // their label.
   const problems: string[] = [];
   if (!name || name.length < 2) problems.push('the restaurant name');
   if (!address || address.length < 5) problems.push('the street address');
   if (!postcodeRaw || !UK_POSTCODE.test(postcodeRaw)) problems.push('a full UK postcode');
+  if (!phone || phone.replace(/\D/g, '').length < 10) problems.push("the restaurant's phone number");
   if (!relationship) problems.push('how you know this restaurant');
-  if (contactEmail && !EMAIL.test(contactEmail)) problems.push('a valid email address, or leave it blank');
+  if (!contactName || contactName.length < 2) problems.push('your name');
+  if (!contactEmail) problems.push('your email address');
+  else if (!EMAIL.test(contactEmail)) problems.push('a valid email address');
   if (problems.length) {
     return NextResponse.json({ error: `Please add ${problems.join(', ')}.` }, { status: 422 });
   }
@@ -181,7 +190,7 @@ export async function POST(request: Request) {
       instagram: clean(body.instagram, 100),
       cuisine: clean(body.cuisine, 60),
       relationship,
-      contact_name: clean(body.contact_name, 100),
+      contact_name: contactName,
       contact_email: contactEmail,
       halal_claim: claim,
       all_meat_halal: claim === 'fully_halal' ? true : claim === 'halal_options' ? false : null,

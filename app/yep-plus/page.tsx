@@ -1,17 +1,27 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CheckIcon, HeartHandIcon, MapPinIcon, SealCheckIcon, SparkleIcon } from '@/components/icons';
+import { ctaGhost } from '@/components/cta';
+import { ArrowRightIcon, CheckIcon, HeartHandIcon, MapPinIcon, SealCheckIcon, SparkleIcon } from '@/components/icons';
 
 export const metadata: Metadata = {
   title: 'Support YepItsHalal',
   description:
-    'Searching for halal food is free for everyone, everywhere in London. Yep+ supporters pay for the checking, fund a meal every month through ShareTheMeal, and choose the area we check next. From £2.99 a month.',
+    'Finding out whether your dinner is halal is free for everyone, everywhere in London, and stays that way. Yep+ supporters pay for the checking, fund a meal every month through ShareTheMeal, and choose the area we check next. From £2.99 a month.',
   alternates: { canonical: '/yep-plus' },
 };
 
-// Nothing on this page may promise something that does not exist. Every line
-// below is either already true (the site is free, the vote works, the badge is
-// on the account page) or worded as the intention it is.
+// AIDA, the same order the homepage uses (see the note in app/page.tsx).
+//
+//   Attention   the promise, stated as a promise: the halal answer is free.
+//   Interest    what that costs, and what the money is actually spent on.
+//   Desire      what a supporter gets, ending on the one that grows over time.
+//   Action      one price, two buttons, and what happens if you stop.
+//
+// Nothing on this page may promise something that does not exist. Every line is
+// either already true (the site is free, the vote works, the badge is on the
+// account page) or plainly worded as the intention it is. In particular, the
+// early-supporter line promises that today's supporters are counted first when
+// there is more to give, and does not promise what that will be or when.
 
 const FREE_FOR_EVERYONE = [
   'Every place we know about, anywhere in London',
@@ -77,6 +87,8 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
         <Notice tone="warn">Support payments aren&apos;t switched on yet. Please check back soon.</Notice>
       )}
 
+      {/* ATTENTION. The headline is the promise itself, not a description of a
+          product, because the promise is the surprising part. */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-ink">
           <SparkleIcon className="h-3.5 w-3.5" />
@@ -86,9 +98,9 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
           The food info is free. Always.
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-pretty text-[15px] leading-relaxed text-muted sm:text-base">
-          Nobody should have to pay to find out whether their dinner is halal. There is no locked
-          distance, no members-only listing and no paywall anywhere on this site. Yep+ is for people
-          who want to pay for the work anyway, so that the rest of us never have to.
+          Nobody should have to pay to find out whether their dinner is halal. No locked distance, no
+          members-only listing, no paywall on a single halal answer. Yep+ is for people who want to
+          pay for the work anyway, so that the rest of us never have to.
         </p>
       </div>
 
@@ -97,13 +109,15 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
         <ul className="mt-4 grid gap-2.5 text-sm text-ink/80 sm:grid-cols-2">
           {FREE_FOR_EVERYONE.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-halal-fullInk" />
+              <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-halal-fullInk" aria-hidden="true" />
               {f}
             </li>
           ))}
         </ul>
       </div>
 
+      {/* INTEREST. Free is easy to say and expensive to do; this is the cost,
+          in the concrete terms of the actual work. */}
       <div className="mt-6 rounded-2xl bg-paper p-6 ring-1 ring-line">
         <h2 className="font-display text-lg font-semibold text-ink">What your money actually does</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink/80">
@@ -116,6 +130,8 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
         </p>
       </div>
 
+      {/* DESIRE. Five things you get, then the sixth that is about timing: the
+          people paying now are paying when there is least to show for it. */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-[1.15fr_1fr]">
         <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
           <h2 className="font-display text-lg font-semibold text-ink">What supporters get</h2>
@@ -123,7 +139,7 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
             {SUPPORTER_GETS.map((s) => (
               <li key={s.title} className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
-                  <CheckIcon className="h-4 w-4" />
+                  <CheckIcon className="h-4 w-4" aria-hidden="true" />
                 </span>
                 <span>
                   <span className="block text-sm font-semibold text-ink">{s.title}</span>
@@ -165,8 +181,27 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
         </div>
       </div>
 
+      {/* The strongest reason to support now rather than later, and the only
+          one that has to be worded carefully, because it is about the future. */}
+      <div className="mt-6 flex flex-col gap-3 rounded-2xl border-2 border-accent/30 bg-accent-soft p-6 sm:flex-row sm:items-start">
+        <SparkleIcon className="h-6 w-6 shrink-0 text-accent-ink" aria-hidden="true" />
+        <div>
+          <h2 className="font-display text-base font-semibold text-ink">Supporting now counts for more</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink/80">
+            Right now all we have to offer is the thing itself: halal places, and how we know. We are
+            working on more, including real offers at halal restaurants and shops. When those arrive,
+            the people who paid for the site when it was only a directory get them first, and we will
+            keep a permanent record of who was here at the start.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            That is a promise about the order of things, not a list of features. We would rather owe
+            you something than advertise something we have not built.
+          </p>
+        </div>
+      </div>
+
       <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-line bg-white p-6 shadow-sm sm:flex-row sm:items-start">
-        <HeartHandIcon className="h-6 w-6 shrink-0 text-accent-ink" />
+        <HeartHandIcon className="h-6 w-6 shrink-0 text-accent-ink" aria-hidden="true" />
         <div>
           <h2 className="font-display text-base font-semibold text-ink">About the meal</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted">
@@ -185,8 +220,10 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
         </div>
       </div>
 
+      {/* ACTION, for the reader who is not going to pay: there is a way to help
+          that costs nothing, and it is genuinely as useful. */}
       <div className="mt-6 rounded-2xl border border-dashed border-black/10 p-6 text-center">
-        <MapPinIcon className="mx-auto h-6 w-6 text-subtle" />
+        <MapPinIcon className="mx-auto h-6 w-6 text-subtle" aria-hidden="true" />
         <p className="mt-2 text-sm leading-relaxed text-muted">
           Not ready to pay? Helping is still free.{' '}
           <Link href="/submit-restaurant" className="font-semibold text-accent-ink underline underline-offset-2">
@@ -194,10 +231,14 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
           </Link>{' '}
           or tell us when we have something wrong. That is worth as much as the money.
         </p>
+        <Link href="/how-we-check" className={`${ctaGhost} mt-1`}>
+          How we check a restaurant
+          <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </div>
 
       <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-subtle">
-        <SealCheckIcon className="h-4 w-4" />
+        <SealCheckIcon className="h-4 w-4" aria-hidden="true" />
         Payments are handled by Stripe. We never see your card details.
       </p>
     </div>

@@ -95,6 +95,7 @@ export function HalalEvidencePanel({
   isSearchable = false,
   cuisine = null,
   slug,
+  name,
 }: {
   classification: HalalClassification;
   strength: EvidenceStrength | null;
@@ -105,13 +106,15 @@ export function HalalEvidencePanel({
   isSearchable?: boolean;
   cuisine?: string | null;
   slug: string;
+  /** Used in the heading, because "Is X halal?" is what people searched for. */
+  name: string;
 }) {
   if (!isListed && isSearchable && !strength) {
     return (
       <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="halal-status" className="font-display text-lg font-semibold text-ink">
-            Halal status
+          <h2 id="halal-status" className="text-balance font-display text-lg font-semibold text-ink">
+            Is {name} halal?
           </h2>
           <HalalBadge classification="unknown" size="md" variant="solid" />
         </div>
@@ -146,8 +149,8 @@ export function HalalEvidencePanel({
   if (!isListed || !strength) {
     return (
       <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
-        <h2 id="halal-status" className="font-display text-lg font-semibold text-ink">
-          Halal status
+        <h2 id="halal-status" className="text-balance font-display text-lg font-semibold text-ink">
+          Is {name} halal?
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           {summary ??
@@ -168,8 +171,8 @@ export function HalalEvidencePanel({
   return (
     <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="halal-status" className="font-display text-lg font-semibold text-ink">
-          Halal status
+        <h2 id="halal-status" className="text-balance font-display text-lg font-semibold text-ink">
+          Is {name} halal?
         </h2>
         <HalalBadge classification={classification} size="md" variant="solid" />
       </div>
