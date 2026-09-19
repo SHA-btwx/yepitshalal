@@ -137,6 +137,7 @@ export function RestaurantMap({
     if (!containerRef.current || mapRef.current) return;
 
     let map: MapLibreMap | null = null;
+    let basemapTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
@@ -170,18 +171,36 @@ export function RestaurantMap({
       // The basemap comes from a free, donation-funded tile service. When it is
       // unreachable the pins and the coverage ring still draw correctly on an
       // empty background, which looks broken unless we say what happened.
+      //
+      // Deciding that by errors alone did not work: a blocked or throttled tile
+      // request can finish quietly, and 'idle' fires as soon as the map has
+      // finished drawing whatever it has, including nothing, which cleared the
+      // warning the moment it was set. So the test is the honest one, did any
+      // map data actually arrive, with a deadline.
+      let basemapArrived = false;
+      map.on('sourcedata', (e) => {
+        const id = (e as unknown as { sourceId?: string }).sourceId;
+        const loaded = (e as unknown as { isSourceLoaded?: boolean }).isSourceLoaded;
+        // Our own coverage layers load fine whether or not the basemap does.
+        if (!id || id === COVERAGE_SRC || id === CENTER_SRC || !loaded) return;
+        basemapArrived = true;
+        setBasemapFailed(false);
+      });
       map.on('error', (e) => {
         const status = (e as unknown as { error?: { status?: number } }).error?.status;
         if (status === 404) return; // A single missing tile is not an outage.
-        setBasemapFailed(true);
+        if (!basemapArrived) setBasemapFailed(true);
       });
-      map.on('idle', () => setBasemapFailed(false));
+      basemapTimer = setTimeout(() => {
+        if (!basemapArrived) setBasemapFailed(true);
+      }, 6000);
     } catch {
       // Tile source unreachable — the map simply doesn't render.
       // Search/list results are independent of this and keep working.
     }
 
     return () => {
+      clearTimeout(basemapTimer);
       // MapLibre's remove() detaches the DOM nodes it created from the
       // container React manages. Clearing markers here too means a genuine
       // remount (e.g. Fast Refresh) starts from a clean slate instead of
