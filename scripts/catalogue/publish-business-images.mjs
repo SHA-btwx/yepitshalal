@@ -117,38 +117,51 @@ for (const site of queue) {
   const places = site.places.filter((id) => !taken.has(id));
   if (!places.length) { skipped++; continue; }
 
-  const { buf, error } = await download(site.image);
-  if (error) { problems.push([site.host, error]); continue; }
+  // Walk the shortlist the finder left. A site's first picture is often a dead
+  // link or a 2000x40 banner, and its second is the one you wanted.
+  const candidates = site.candidates?.length ? site.candidates : [{ url: site.image, kind: site.kind }];
+  let chosen = null;
+  let buf = null;
+  let why = 'no candidates';
 
-  let image;
-  try {
-    image = sharp(buf, { animated: false });
-    const meta = await image.metadata();
-    // A tracking pixel, a sliver, or a 2000x40 banner is not a picture of a
-    // restaurant. A logo is allowed to be small and square.
-    const ratio = (meta.width || 1) / (meta.height || 1);
-    if (site.kind === 'logo') {
-      if ((meta.width || 0) < 64 || (meta.height || 0) < 64) { problems.push([site.host, `logo too small ${meta.width}x${meta.height}`]); continue; }
-    } else {
-      if ((meta.width || 0) < 400 || (meta.height || 0) < 260) { problems.push([site.host, `too small ${meta.width}x${meta.height}`]); continue; }
-      if (ratio > 3.2 || ratio < 0.4) { problems.push([site.host, `odd shape ${meta.width}x${meta.height}`]); continue; }
+  for (const candidate of candidates) {
+    const got = await download(candidate.url);
+    if (got.error) { why = got.error; continue; }
+
+    try {
+      const meta = await sharp(got.buf, { animated: false }).metadata();
+      // A tracking pixel, a sliver, or a 2000x40 banner is not a picture of a
+      // restaurant. A logo is allowed to be small and square.
+      const ratio = (meta.width || 1) / (meta.height || 1);
+      if (candidate.kind === 'logo') {
+        if ((meta.width || 0) < 64 || (meta.height || 0) < 64) { why = `logo too small ${meta.width}x${meta.height}`; continue; }
+      } else {
+        if ((meta.width || 0) < 400 || (meta.height || 0) < 260) { why = `too small ${meta.width}x${meta.height}`; continue; }
+        if (ratio > 3.2 || ratio < 0.4) { why = `odd shape ${meta.width}x${meta.height}`; continue; }
+      }
+    } catch (e) {
+      why = `unreadable: ${String(e?.message || e).slice(0, 40)}`;
+      continue;
     }
-  } catch (e) {
-    problems.push([site.host, `unreadable: ${String(e?.message || e).slice(0, 40)}`]);
-    continue;
+
+    chosen = candidate;
+    buf = got.buf;
+    break;
   }
 
-  const prefix = site.kind === 'logo' ? 'business-logo' : 'business';
-  const path = `${prefix}/${slug(site.host)}/${slug(new URL(site.image).pathname.split('/').pop() || 'image')}.webp`;
+  if (!chosen) { problems.push([site.host, why]); continue; }
+
+  const prefix = chosen.kind === 'logo' ? 'business-logo' : 'business';
+  const path = `${prefix}/${slug(site.host)}/${slug(new URL(chosen.url).pathname.split('/').pop() || 'image')}.webp`;
 
   if (!APPLY) {
     stored++;
     attached += places.length;
-    if (stored <= 12) console.log(`  ${site.kind.padEnd(5)} ${site.host.slice(0, 32).padEnd(34)} -> ${places.length} listing(s)`);
+    if (stored <= 12) console.log(`  ${chosen.kind.padEnd(5)} ${site.host.slice(0, 32).padEnd(34)} -> ${places.length} listing(s)`);
     continue;
   }
 
-  const out = site.kind === 'logo'
+  const out = chosen.kind === 'logo'
     // Logos keep their shape and their transparency; they are padded on the
     // page, not here, so one does not end up stretched into a food photo.
     ? await sharp(buf).resize(480, 480, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toBuffer()
@@ -164,9 +177,9 @@ for (const site of queue) {
   const rows = places.map((restaurant_id) => ({
     restaurant_id,
     storage_path: PUBLIC + path,
-    type: site.kind === 'logo' ? 'exterior' : 'food',
+    type: chosen.kind === 'logo' ? 'exterior' : 'food',
     is_primary: true,
-    is_logo: site.kind === 'logo',
+    is_logo: chosen.kind === 'logo',
     source_url: site.pageUrl || `https://${site.host}/`,
     source_site: site.host,
   }));

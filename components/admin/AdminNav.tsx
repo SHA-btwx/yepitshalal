@@ -15,6 +15,7 @@ const SECTIONS = [
   { href: '/admin/coverage', label: 'Coverage', Icon: MapPinIcon },
   { href: '/admin/duplicates', label: 'Duplicates', Icon: ListIcon },
   { href: '/admin/reels', label: 'Reels', Icon: MapIcon },
+  { href: '/admin/certification', label: 'Certification', Icon: SealCheckIcon },
   { href: '/admin/claims', label: 'Claims', Icon: UserIcon },
   { href: '/admin/offers', label: 'Offers', Icon: SparkleIcon },
   { href: '/admin/subscriptions', label: 'Subscriptions', Icon: UserIcon },

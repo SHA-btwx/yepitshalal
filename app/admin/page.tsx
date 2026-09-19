@@ -23,6 +23,12 @@ const SECTIONS = [
     body: 'Free and priority requests: assign, review, publish.',
   },
   {
+    href: '/admin/certification',
+    Icon: SealCheckIcon,
+    title: 'Certification claims',
+    body: 'Places that say they are certified, grouped by business. Confirm one and it becomes Fully Halal.',
+  },
+  {
     href: '/admin/restaurants',
     Icon: ForkKnifeIcon,
     title: 'Restaurants',

@@ -87,13 +87,27 @@ for (const p of places) {
   byHost.get(host).places.push(p.id);
 }
 
+// RETRY=1 goes back over the sites that gave us nothing. Worth doing after the
+// extractor improves, and because a good share of the failures are weather: a
+// DNS lookup that timed out, a server that hung up, a certificate that has
+// since been renewed. Sites that said no in robots.txt are never retried.
+const RETRY = process.env.RETRY === '1';
 const done = new Set();
-if (existsSync(OUT)) for (const r of readJsonl(OUT)) done.add(r.host);
+const empty = new Set();
+if (existsSync(OUT)) {
+  for (const r of readJsonl(OUT)) {
+    done.add(r.host);
+    if (!r.image && !r.blocked) empty.add(r.host);
+    else empty.delete(r.host);
+  }
+}
 
-let queue = [...byHost.values()].filter((h) => !done.has(h.host));
+let queue = [...byHost.values()].filter((h) => (RETRY ? empty.has(h.host) : !done.has(h.host)));
 if (ONLY) queue = [...byHost.values()].filter((h) => ONLY.includes(h.host));
 if (LIMIT) queue = queue.slice(0, LIMIT);
-console.log(`sites ${byHost.size}, already tried ${done.size}, to try ${queue.length}`);
+console.log(
+  `sites ${byHost.size}, already tried ${done.size}, ${empty.size} gave nothing, to try ${queue.length}${RETRY ? ' (retry)' : ''}`
+);
 
 // --- http ------------------------------------------------------------------
 
@@ -198,23 +212,41 @@ function classify(url) {
   return LOOKS_LIKE_LOGO.test(url) ? 'logo' : 'photo';
 }
 
-function findImage(html, baseUrl) {
+/**
+ * An ordered shortlist rather than a single pick.
+ *
+ * A third of the first choices turned out to be unusable once downloaded: a
+ * tracking pixel, a 2000x40 banner, a dead link, a file no decoder would read.
+ * A site that offers a second picture should not lose its listing over a bad
+ * first one, so the publisher gets everything found, best first, and takes the
+ * first that survives inspection.
+ */
+function findImages(html, baseUrl) {
+  const found = [];
+  const seen = new Set();
+  const add = (url, from, kind) => {
+    if (!url || seen.has(url) || found.length >= 5) return;
+    seen.add(url);
+    found.push({ url, from, kind });
+  };
+
   for (const [re, from] of META) {
     const m = html.match(re);
     const url = m && absolute(m[1], baseUrl);
     const kind = classify(url);
-    if (kind) return { url, from, kind };
+    if (kind) add(url, from, kind);
   }
 
   // JSON-LD: "image": "…" or "image": ["…"] or "image": { "url": "…" }
   for (const block of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]{0,20000}?)<\/script>/gi)) {
-    const m = block[1].match(/"image"\s*:\s*(?:\[\s*)?(?:\{[^}]*"url"\s*:\s*)?"([^"]+)"/i);
-    const url = m && absolute(m[1], baseUrl);
-    const kind = classify(url);
-    if (kind) return { url, from: 'schema.org', kind };
+    for (const m of block[1].matchAll(/"(?:image|contentUrl|thumbnailUrl)"\s*:\s*(?:\[\s*)?(?:\{[^}]*"url"\s*:\s*)?"([^"]+)"/gi)) {
+      const url = absolute(m[1], baseUrl);
+      const kind = classify(url);
+      if (kind) add(url, 'schema.org', kind);
+    }
   }
 
-  // A big picture on the page, for the many sites (Framer, Squarespace, Wix)
+  // Big pictures on the page, for the many sites (Framer, Squarespace, Wix)
   // that ship no og:image at all. The size has to be stated on the tag:
   // guessing from a filename picks up logos and sprites.
   for (const img of html.matchAll(/<img\b[^>]*>/gi)) {
@@ -227,22 +259,42 @@ function findImage(html, baseUrl) {
     const h = Number((tag.match(/\bheight=["']?(\d{2,5})/i) || [])[1] || 0);
     const url = absolute(src, baseUrl);
     if (classify(url) !== 'photo' || /logo/i.test(tag)) continue;
-    if (w >= 600 && (h === 0 || h >= 300)) return { url, from: 'page image', kind: 'photo' };
+    if (w >= 600 && (h === 0 || h >= 300)) add(url, 'page image', 'photo');
+  }
+
+  // Pictures whose size the tag does not state, which on a modern site is most
+  // of them. Only consulted when nothing above produced a photograph, and only
+  // for files named like one; the publisher measures them before using one.
+  if (!found.some((f) => f.kind === 'photo')) {
+    for (const img of html.matchAll(/<img\b[^>]*>/gi)) {
+      const tag = img[0];
+      const src =
+        (tag.match(/\bsrc=["']([^"']+)["']/i) || [])[1] ||
+        (tag.match(/\bsrcset=["']([^"'\s,]+)/i) || [])[1];
+      if (!src || /logo/i.test(tag)) continue;
+      const url = absolute(src, baseUrl);
+      if (classify(url) !== 'photo') continue;
+      if (!/\.(?:jpe?g|png|webp|avif)(?:[?#]|$)/i.test(url)) continue;
+      add(url, 'page image (unsized)', 'photo');
+    }
   }
 
   // The logo, last. Not a photo of the food, but it is the business's own mark
   // and it is better than a stock curry for telling one chain from another.
-  const icon =
-    (html.match(/<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]+href=["']([^"']+)["']/i) || [])[1] ||
-    (html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["'][^"']*apple-touch-icon[^"']*["']/i) || [])[1] ||
-    (html.match(/<link[^>]+rel=["']icon["'][^>]+href=["']([^"']+\.(?:png|jpe?g|webp))["']/i) || [])[1] ||
-    (html.match(/<link[^>]+href=["']([^"']+\.(?:png|jpe?g|webp))["'][^>]+rel=["']icon["']/i) || [])[1] ||
-    (html.match(/<img\b[^>]*\blogo\b[^>]*\bsrc=["']([^"']+)["']/i) || [])[1] ||
-    (html.match(/<img\b[^>]*\bsrc=["']([^"']*logo[^"']*)["']/i) || [])[1];
-  const logoUrl = icon && absolute(icon, baseUrl);
-  if (logoUrl && !TEMPLATE_STOCK.test(logoUrl)) return { url: logoUrl, from: 'logo', kind: 'logo' };
+  const icons = [
+    (html.match(/<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]+href=["']([^"']+)["']/i) || [])[1],
+    (html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["'][^"']*apple-touch-icon[^"']*["']/i) || [])[1],
+    (html.match(/<link[^>]+rel=["']icon["'][^>]+href=["']([^"']+\.(?:png|jpe?g|webp))["']/i) || [])[1],
+    (html.match(/<link[^>]+href=["']([^"']+\.(?:png|jpe?g|webp))["'][^>]+rel=["']icon["']/i) || [])[1],
+    (html.match(/<img\b[^>]*\blogo\b[^>]*\bsrc=["']([^"']+)["']/i) || [])[1],
+    (html.match(/<img\b[^>]*\bsrc=["']([^"']*logo[^"']*)["']/i) || [])[1],
+  ];
+  for (const icon of icons) {
+    const url = icon && absolute(icon, baseUrl);
+    if (url && !TEMPLATE_STOCK.test(url)) add(url, 'logo', 'logo');
+  }
 
-  return null;
+  return found;
 }
 
 // --- run -------------------------------------------------------------------
@@ -279,12 +331,14 @@ async function handle(site) {
     return record;
   }
 
-  const image = findImage(page.body, page.finalUrl || start);
-  if (image) {
+  const images = findImages(page.body, page.finalUrl || start);
+  if (images.length) {
     found++;
-    record.image = image.url;
-    record.from = image.from;
-    record.kind = image.kind;
+    // The first is what the publisher tries; the rest are its fallbacks.
+    record.image = images[0].url;
+    record.from = images[0].from;
+    record.kind = images[0].kind;
+    record.candidates = images;
     record.pageUrl = page.finalUrl || start;
   }
   return record;
