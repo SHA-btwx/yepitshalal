@@ -58,7 +58,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <SiteHeader />
-        <main id="main" className="pb-16 sm:pb-0">
+        {/* The tab bar is fixed over the page on a phone, and on an iPhone it
+            sits above the home indicator, so the page has to end above both. */}
+        <main id="main" className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
           {children}
         </main>
         <SiteFooter />

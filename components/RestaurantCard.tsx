@@ -52,7 +52,7 @@ export function RestaurantCard({
   return (
     <Link
       href={`/restaurant/${restaurant.slug}`}
-      className="group flex items-center gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3"
+      className="group flex items-center gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition duration-200 active:scale-[0.99] active:bg-black/[0.02] hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3"
     >
       <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft sm:h-[92px] sm:w-[92px]">
         <Image
@@ -64,10 +64,12 @@ export function RestaurantCard({
           className="object-cover transition duration-300 group-hover:scale-105"
         />
         {/* Never the restaurant's own food unless it sent us a photo, and the
-            card says so rather than let a stock biryani pass as theirs. */}
+            card says so rather than let a stock biryani pass as theirs. A corner
+            chip rather than a bar across the picture: the same honesty, without
+            a black band down every row of the list. */}
         {!cover.own && (
-          <span className="absolute inset-x-0 bottom-0 bg-black/50 px-1 py-[3px] text-center text-[9px] font-medium leading-none tracking-wide text-white">
-            Example dish
+          <span className="absolute bottom-1 left-1 rounded-md bg-black/55 px-1.5 py-[2px] text-[9px] font-medium leading-none tracking-wide text-white backdrop-blur-[2px]">
+            Example
           </span>
         )}
       </div>
@@ -98,12 +100,14 @@ export function RestaurantCard({
         </p>
 
         {/* The label and, beside it, the reason for it: a label alone is the
-            thing this site exists to improve on. */}
-        <div className="flex min-w-0 items-center gap-2">
+            thing this site exists to improve on. On a phone the reason wraps to
+            a second line rather than being cut to "The restaurant says all i…",
+            which told nobody anything. */}
+        <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
           <span className="shrink-0">
             <HalalBadge classification={status} size="sm" />
           </span>
-          {reason && <span className="truncate text-xs text-muted">{reason}</span>}
+          {reason && <span className="line-clamp-2 text-xs leading-snug text-muted sm:truncate">{reason}</span>}
         </div>
       </div>
 

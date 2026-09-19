@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import maplibregl, { Map as MapLibreMap, Marker } from 'maplibre-gl';
 import Supercluster from 'supercluster';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -27,6 +27,11 @@ interface RestaurantMapProps {
    * query used, so the ring can never claim a different area to the results.
    */
   coverageRadiusMeters: number;
+  /**
+   * Called when a cluster cannot usefully be zoomed into any further, so the
+   * only way to reach those places is to list them.
+   */
+  onSelectCluster?: (restaurants: SearchResultRestaurant[]) => void;
 }
 
 type ClusterProps = { restaurant?: SearchResultRestaurant };
@@ -86,14 +91,18 @@ export function RestaurantMap({
   onSelect,
   resizeSignal = 0,
   coverageRadiusMeters,
+  onSelectCluster,
 }: RestaurantMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [basemapFailed, setBasemapFailed] = useState(false);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const onSelectRef = useRef(onSelect);
+  const onSelectClusterRef = useRef(onSelectCluster);
   const restaurantsRef = useRef(restaurants);
   const selectedIdRef = useRef(selectedId);
   onSelectRef.current = onSelect;
+  onSelectClusterRef.current = onSelectCluster;
   restaurantsRef.current = restaurants;
   selectedIdRef.current = selectedId;
 
@@ -124,7 +133,8 @@ export function RestaurantMap({
       // and open at the default camera instead of the searched area.
       lastFitRef.current = '';
 
-      const rerender = () => renderMarkers(map!, restaurantsRef.current, selectedIdRef.current, onSelectRef, markersRef);
+      const rerender = () =>
+        renderMarkers(map!, restaurantsRef.current, selectedIdRef.current, onSelectRef, markersRef, onSelectClusterRef);
       map.on('moveend', rerender);
 
       // 'load' waits for every tile source to resolve its metadata, so a slow or
@@ -138,6 +148,16 @@ export function RestaurantMap({
         rerender();
       });
       map.on('load', rerender);
+
+      // The basemap comes from a free, donation-funded tile service. When it is
+      // unreachable the pins and the coverage ring still draw correctly on an
+      // empty background, which looks broken unless we say what happened.
+      map.on('error', (e) => {
+        const status = (e as unknown as { error?: { status?: number } }).error?.status;
+        if (status === 404) return; // A single missing tile is not an outage.
+        setBasemapFailed(true);
+      });
+      map.on('idle', () => setBasemapFailed(false));
     } catch {
       // Tile source unreachable — the map simply doesn't render.
       // Search/list results are independent of this and keep working.
@@ -222,10 +242,19 @@ export function RestaurantMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    renderMarkers(map, restaurants, selectedId, onSelectRef, markersRef);
+    renderMarkers(map, restaurants, selectedId, onSelectRef, markersRef, onSelectClusterRef);
   }, [restaurants, selectedId]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return (
+    <div className="relative h-full w-full">
+      <div ref={containerRef} className="h-full w-full" />
+      {basemapFailed && (
+        <p className="pointer-events-none absolute inset-x-3 bottom-8 z-10 mx-auto w-fit rounded-full bg-ink/85 px-3.5 py-1.5 text-center text-xs font-medium text-white shadow-lg backdrop-blur">
+          Map background didn&apos;t load. The pins are still in the right places.
+        </p>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -267,12 +296,15 @@ function renderMarkers(
   restaurants: SearchResultRestaurant[],
   selectedId: string | null,
   onSelectRef: React.MutableRefObject<(r: SearchResultRestaurant) => void>,
-  markersRef: React.MutableRefObject<Marker[]>
+  markersRef: React.MutableRefObject<Marker[]>,
+  onSelectClusterRef: React.MutableRefObject<((rs: SearchResultRestaurant[]) => void) | undefined>
 ) {
   for (const m of markersRef.current) m.remove();
   markersRef.current = [];
 
-  const index = new Supercluster<ClusterProps>({ radius: 50, maxZoom: 18 });
+  // 36 rather than 50: on a London high street the difference is a screen of
+  // reachable pins instead of one number you have to tap through.
+  const index = new Supercluster<ClusterProps>({ radius: 36, maxZoom: 18 });
   index.load(
     restaurants.map((r) => ({
       type: 'Feature',
@@ -318,6 +350,15 @@ function renderMarkers(
       el.textContent = String(count);
       el.addEventListener('click', () => {
         const expansionZoom = Math.min(index.getClusterExpansionZoom(props.cluster_id!), 20);
+        // Places stacked on one address (a food court, a parade of shops) never
+        // separate however far you zoom. Rather than leave a number that does
+        // nothing when tapped, hand the list to whoever asked for it.
+        const stuck = expansionZoom <= map.getZoom() + 0.25 || map.getZoom() >= 17.5;
+        if (stuck && onSelectClusterRef.current) {
+          const leaves = index.getLeaves(props.cluster_id!, 40) as unknown as { properties: ClusterProps }[];
+          onSelectClusterRef.current(leaves.map((l) => l.properties.restaurant!).filter(Boolean));
+          return;
+        }
         map.easeTo({ center: [lng, lat], zoom: expansionZoom, duration: 350 });
       });
 
@@ -325,7 +366,7 @@ function renderMarkers(
       // MapLibre stamps its own generic 'Map marker' label on the element it is
       // handed, so ours has to be written back afterwards — otherwise every pin
       // and cluster on the map announces the identical name.
-      el.setAttribute('aria-label', `${count} restaurants. Zoom in to see them`);
+      el.setAttribute('aria-label', `${count} restaurants in this area. Tap to see them`);
       markersRef.current.push(marker);
       continue;
     }
@@ -333,15 +374,15 @@ function renderMarkers(
     const restaurant = props.restaurant!;
     const isSelected = restaurant.id === selectedId;
     // The visible dot stays small so a dense high street stays readable, but the
-    // button around it is 32px — a 20px tap target is a coin-flip on a phone.
-    // 32 rather than 44 because these boxes overlap each other, and an oversized
+    // button around it is 40px — a 22px tap target is a coin-flip on a phone.
+    // 40 rather than 44 because these boxes overlap each other, and an oversized
     // one swallows the drag gesture used to pan the map.
-    const size = isSelected ? 28 : 20;
+    const size = isSelected ? 30 : 22;
     const el = document.createElement('button');
     el.type = 'button';
     el.title = restaurant.name;
-    el.style.width = '32px';
-    el.style.height = '32px';
+    el.style.width = '40px';
+    el.style.height = '40px';
     el.style.display = 'flex';
     el.style.alignItems = 'center';
     el.style.justifyContent = 'center';

@@ -134,13 +134,24 @@ export interface OpeningHour {
   is_closed: boolean;
 }
 
-export const RADIUS_OPTIONS_MILES = [1, 2, 5, 10, 25, 50] as const;
+// Five miles is the far end on purpose. Past it a London map is a blur of
+// clusters, the 500 row cap starts truncating, and "halal food near me" stops
+// meaning anything. Places further out are found by searching there instead.
+export const RADIUS_OPTIONS_MILES = [0.5, 1, 2, 5] as const;
+
+/** "½ mi" reads better than "0.5 mi" in a chip that has to stay narrow. */
+export function formatRadiusLabel(miles: number): string {
+  return miles === 0.5 ? '½ mi' : `${miles} mi`;
+}
 
 /** Where every search opens before anyone touches the radius. */
 export const DEFAULT_RADIUS_MILES = 1;
 export const DEFAULT_RADIUS_METERS = 1609;
 
-/** Ceiling for any search. Mirrors the clamp in search_restaurants(). */
+/**
+ * Ceiling for any search, and only a guard: the selector stops at 5 miles.
+ * Mirrors the clamp in search_restaurants(), which is what actually enforces it.
+ */
 export const MAX_RADIUS_METERS = 80467;
 
 export type SearchMode = 'current_location' | 'searched_location';
