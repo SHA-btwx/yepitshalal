@@ -239,8 +239,10 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             onClick={() => toggleClassification(f.value)}
             aria-pressed={on}
             className={clsx(
-              'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition active:scale-[0.98]',
-              on ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink/75 hover:border-ink/30 hover:text-ink'
+              'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition active:scale-[0.98]',
+              on
+                ? 'bg-ink text-white shadow-[0_6px_16px_-10px_rgba(20,24,26,0.5)]'
+                : 'bg-white text-ink/75 shadow-[0_1px_2px_rgba(20,24,26,0.04)] hover:text-ink hover:shadow-[0_4px_12px_-8px_rgba(20,24,26,0.25)]'
             )}
           >
             <f.Mark className={clsx('h-4 w-4 shrink-0', on ? 'text-white' : f.tone)} aria-hidden="true" />
@@ -266,7 +268,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   );
 
   const sortToggle = (
-    <div role="group" aria-label="Sort results" className="flex items-center gap-1 rounded-full bg-black/[0.055] p-[3px]">
+    <div role="group" aria-label="Sort results" className="flex items-center gap-1 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(20,24,26,0.04)]">
       {(['evidence', 'distance'] as const).map((s) => (
         <button
           key={s}
@@ -275,7 +277,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           aria-pressed={sort === s}
           className={clsx(
             'min-h-[34px] rounded-full px-3 text-[13px] font-semibold transition',
-            sort === s ? 'bg-white text-ink shadow-sm' : 'text-ink/65 hover:text-ink'
+            sort === s ? 'bg-ink text-white' : 'text-ink/55 hover:text-ink'
           )}
         >
           {s === 'distance' ? 'Nearest' : 'Evidence first'}
@@ -288,11 +290,11 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
     <div className="mx-auto max-w-6xl sm:px-6 sm:py-4">
       {/* Two rows on a phone: where, and how far. Everything else is one tap
           away in the sheet, because results matter more than controls. */}
-      <div className="sticky top-14 z-20 border-b border-sand-line bg-sand-soft/95 px-4 py-2.5 backdrop-blur sm:static sm:rounded-2xl sm:border sm:px-5 sm:py-3.5">
+      <div className="sticky top-14 z-20 bg-sand-soft/92 px-4 pb-3 pt-2.5 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-5 after:bg-gradient-to-b after:from-sand-soft/85 after:to-transparent sm:static sm:rounded-[22px] sm:px-5 sm:py-4 sm:shadow-[0_1px_2px_rgba(20,24,26,0.03),0_10px_28px_-18px_rgba(20,24,26,0.18)] sm:after:hidden">
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 rounded-full border border-line bg-white px-3 text-left transition hover:border-ink/25 active:scale-[0.99] sm:flex-none sm:pr-4"
+            className="flex min-h-[46px] min-w-0 flex-1 items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] transition active:scale-[0.99] hover:shadow-[0_2px_4px_rgba(20,24,26,0.05),0_10px_22px_-12px_rgba(20,24,26,0.24)] sm:flex-none sm:pr-4"
             aria-label={`Searching near ${label}. Change location`}
           >
             <MapPinIcon className="h-4 w-4 shrink-0 text-accent-ink" aria-hidden="true" />
@@ -305,7 +307,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             <SearchIcon className="h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
           </Link>
 
-          <div role="group" aria-label="Result view" className="flex shrink-0 rounded-full bg-black/[0.055] p-[3px] sm:hidden">
+          <div role="group" aria-label="Result view" className="flex shrink-0 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] sm:hidden">
             {(['list', 'map'] as const).map((v) => (
               <button
                 key={v}
@@ -313,8 +315,8 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
                 onClick={() => setMobileView(v)}
                 aria-pressed={mobileView === v}
                 className={clsx(
-                  'inline-flex min-h-[38px] items-center gap-1 rounded-full px-2.5 text-[13px] font-semibold capitalize transition',
-                  mobileView === v ? 'bg-white text-ink shadow-sm' : 'text-ink/65'
+                  'inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold capitalize transition',
+                  mobileView === v ? 'bg-ink text-white' : 'text-ink/55 hover:text-ink'
                 )}
               >
                 {v === 'list' ? <ListIcon className="h-4 w-4" aria-hidden="true" /> : <MapIcon className="h-4 w-4" aria-hidden="true" />}
@@ -342,8 +344,8 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             type="button"
             onClick={() => setFiltersOpen(true)}
             className={clsx(
-              'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition active:scale-[0.98] sm:hidden',
-              activeFilterCount > 0 ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink/75'
+              'inline-flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] transition active:scale-[0.98] sm:hidden',
+              activeFilterCount > 0 ? 'bg-ink text-white' : 'bg-white text-ink/75'
             )}
           >
             <SlidersIcon className="h-4 w-4" aria-hidden="true" />
@@ -433,16 +435,28 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             </span>
           )}
         </p>
-        {activeFilterCount > 0 && (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="inline-flex min-h-[32px] items-center gap-1 rounded-full bg-black/[0.055] px-2.5 text-xs font-semibold text-ink/75 transition hover:text-ink"
-          >
-            <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            Clear filters
-          </button>
-        )}
+        <span className="flex items-center gap-3">
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex min-h-[32px] items-center gap-1 rounded-full bg-black/[0.055] px-2.5 text-xs font-semibold text-ink/75 transition hover:text-ink"
+            >
+              <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              Clear filters
+            </button>
+          )}
+          {/* The other half of eating out, offered where the count is rather
+              than on a line of its own. It makes no claim about the food. */}
+          {!loading && !failed && totalCount > 0 && (
+            <Link
+              href={`/prayer-spaces?lat=${lat}&lng=${lng}&label=${encodeURIComponent(label)}`}
+              className="text-[12.5px] font-medium text-muted underline decoration-black/15 underline-offset-4 transition hover:text-ink hover:decoration-ink/40"
+            >
+              Somewhere to pray
+            </Link>
+          )}
+        </span>
       </div>
 
       {/* The most important sentence on the page while it is still true. Every
@@ -452,43 +466,25 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
       {!loading && !failed && totalCount > 0 && !results.some((r) => r.checked_by_us) && (
         <p
           className={clsx(
-            'mx-4 mt-2.5 flex items-start gap-2 rounded-xl bg-halal-unverifiedSoft px-3.5 py-2.5 text-[13px] leading-relaxed text-halal-unverifiedInk sm:mx-0',
+            'mx-4 mt-2 flex items-start gap-2 text-[12.5px] leading-relaxed text-subtle sm:mx-0',
             mobileView === 'map' && 'hidden sm:flex'
           )}
         >
-          <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <InfoIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-black/25" aria-hidden="true" />
           <span>
-            We haven&apos;t checked any of these ourselves yet. Every label comes from what the
-            restaurant publishes or what open data records, never from a visit.{' '}
-            <Link href="/how-we-check" className="font-semibold underline underline-offset-2">
+            Nobody from YepItsHalal has visited these yet: every label comes from what the place
+            publishes about itself.{' '}
+            <Link href="/how-we-check" className="font-medium text-ink/70 underline decoration-black/15 underline-offset-2 hover:text-ink">
               How we label places
             </Link>
           </span>
         </p>
       )}
 
-      {/* The other half of eating out. It takes the location already in hand,
-          and makes no claim about any of the food above it. */}
-      {!loading && !failed && totalCount > 0 && (
-        <p
-          className={clsx(
-            'mx-4 mt-2.5 text-[13px] text-muted sm:mx-0',
-            mobileView === 'map' && 'hidden sm:block'
-          )}
-        >
-          <Link
-            href={`/prayer-spaces?lat=${lat}&lng=${lng}&label=${encodeURIComponent(label)}`}
-            className="font-semibold text-accent-ink hover:underline"
-          >
-            Somewhere to pray near {label}
-          </Link>
-        </p>
-      )}
-
       <div className="mt-2.5 grid grid-cols-1 gap-4 sm:mt-4 sm:grid-cols-[minmax(0,1fr)_1.1fr]">
         <div
           aria-busy={loading}
-          className={clsx('flex flex-col gap-2.5 px-4 sm:px-0', mobileView === 'map' && 'hidden sm:flex')}
+          className={clsx('flex flex-col gap-3 px-4 sm:px-0', mobileView === 'map' && 'hidden sm:flex')}
         >
           <h2 className="sr-only">Results</h2>
 

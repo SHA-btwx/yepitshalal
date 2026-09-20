@@ -52,68 +52,83 @@ export function RestaurantCard({
   const reason = restaurant.halal_summary ?? (status === 'unknown' ? "We don't know yet if the food is halal" : null);
 
   return (
+    // No outline. A hairline ring plus a shadow plus a border on the thing
+    // above it is what made a list of thirty of these read as a stack of boxes;
+    // a soft shadow alone is enough to lift a white card off a warm ground, and
+    // the eye is then free to land on the photograph and the name.
     <Link
       href={`/restaurant/${restaurant.slug}`}
-      className="group flex items-center gap-3.5 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-black/5 transition duration-200 active:scale-[0.99] active:bg-black/[0.02] hover:-translate-y-0.5 hover:shadow-lg hover:ring-black/10 sm:gap-4 sm:p-3.5"
+      className="group flex items-center gap-4 rounded-[22px] bg-white p-3 shadow-[0_1px_2px_rgba(20,24,26,0.04),0_10px_28px_-14px_rgba(20,24,26,0.18)] transition duration-200 active:scale-[0.995] hover:-translate-y-[2px] hover:shadow-[0_2px_4px_rgba(20,24,26,0.05),0_18px_38px_-16px_rgba(20,24,26,0.26)] sm:p-3.5"
     >
-      {/* Bigger than it was. At 76px a photo of a dinner was a thumbnail you
-          squinted at; this is the thing that makes a row identifiable before
-          you have read a word of it. */}
-      <div className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft sm:h-[120px] sm:w-[120px]">
+      <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] bg-halal-unverifiedSoft sm:h-[116px] sm:w-[116px]">
         <CoverImage
           src={cover.src}
           alt={cover.own ? title : ''}
-          sizes="(max-width: 640px) 104px, 120px"
+          sizes="(max-width: 640px) 100px, 116px"
           priority={priority}
           thumb
-          className={logo ? '' : 'transition duration-300 group-hover:scale-105'}
+          className={logo ? '' : 'transition duration-500 group-hover:scale-[1.06]'}
         />
         {/* Never the restaurant's own food unless it is their picture, and the
-            card says so rather than let a stock biryani pass as theirs. */}
+            card says so. A wash into the bottom edge rather than a black pill
+            stuck on the corner: the same honesty, without a hard little box. */}
         {!cover.own && (
-          <span className="absolute bottom-1 left-1 rounded-md bg-black/55 px-1.5 py-[2px] text-[9px] font-medium leading-none tracking-wide text-white backdrop-blur-[2px]">
-            Example
-          </span>
+          <>
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-black/45 to-transparent"
+            />
+            <span className="absolute bottom-1 left-2 text-[10px] font-medium leading-none text-white/85">
+              Example
+            </span>
+          </>
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="line-clamp-2 font-display text-[17px] font-semibold leading-tight text-ink sm:text-lg">{title}</h3>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <h3 className="line-clamp-2 font-display text-[17px] font-semibold leading-[1.2] text-ink sm:text-[19px]">
+          {title}
+        </h3>
 
-        <p className="truncate text-[13px] text-muted">
-          <span className="font-semibold text-ink/80">{distance}</span>
+        <p className="mt-1 truncate text-[13px] leading-snug text-muted">
+          <span className="font-semibold text-ink/75">{distance}</span>
           {restaurant.branch_label && (
             <>
-              <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
+              <span className="mx-1.5 text-black/20" aria-hidden="true">•</span>
               {restaurant.branch_label}
             </>
           )}
           {cuisine && (
             <>
-              <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
+              <span className="mx-1.5 text-black/20" aria-hidden="true">•</span>
               {cuisine}
             </>
           )}
           {open && open.state !== 'unknown' && (
             <>
-              <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
-              <span suppressHydrationWarning className={`font-semibold ${OPEN_TONE[open.state]}`}>{open.label}</span>
+              <span className="mx-1.5 text-black/20" aria-hidden="true">•</span>
+              <span suppressHydrationWarning className={`font-semibold ${OPEN_TONE[open.state]}`}>
+                {open.label}
+              </span>
             </>
           )}
         </p>
 
         {/* The label and, under it, the reason for it: a label alone is the
             thing this site exists to improve on. */}
-        <div className="flex min-w-0 flex-col gap-1">
-          <span className="flex shrink-0 flex-wrap items-center gap-2">
-            <HalalBadge classification={status} size="sm" />
-            {restaurant.checked_by_us && <CheckedByUsBadge size="sm" />}
-          </span>
-          {reason && <span className="line-clamp-2 text-xs leading-snug text-muted">{reason}</span>}
-        </div>
+        <span className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <HalalBadge classification={status} size="sm" />
+          {restaurant.checked_by_us && <CheckedByUsBadge size="sm" />}
+        </span>
+        {reason && (
+          <span className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-subtle">{reason}</span>
+        )}
       </div>
 
-      <ArrowRightIcon className="mr-0.5 hidden h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink sm:block" aria-hidden="true" />
+      <ArrowRightIcon
+        className="mr-1 hidden h-4 w-4 shrink-0 text-black/15 transition group-hover:translate-x-0.5 group-hover:text-ink/50 sm:block"
+        aria-hidden="true"
+      />
     </Link>
   );
 }
