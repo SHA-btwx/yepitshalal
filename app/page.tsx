@@ -133,7 +133,7 @@ export default async function HomePage() {
           className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-sand-soft"
         />
 
-        <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-5 pt-7 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
           <div className="text-center lg:text-left">
             {/* Two facts, not one hedge. "London, for now" as a grey whisper
                 left people to work out for themselves whether the site was
@@ -145,7 +145,7 @@ export default async function HomePage() {
               </span>
               <a href="#next-cities" className="inline-flex items-center gap-1.5 font-semibold underline decoration-white/35 underline-offset-2 transition hover:decoration-white">
                 <MapPinIcon className="h-3.5 w-3.5" />
-                London first. More cities next.
+                London&apos;s the test run. More cities soon.
               </a>
             </span>
 
@@ -153,19 +153,19 @@ export default async function HomePage() {
                 paragraph that used to sit under it said the same thing again
                 in smaller type, and the section below the fold says it
                 properly, so it went. */}
-            <h1 className="mt-5 text-balance font-display text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.25rem]">
+            <h1 className="mt-4 text-balance font-display text-[2.6rem] min-[390px]:text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.25rem]">
               Find halal food, wherever you are.
             </h1>
 
-            <div id="search" className="mt-8 flex justify-center lg:justify-start">
+            <div id="search" className="mt-5 flex justify-center sm:mt-8 lg:justify-start">
               <LocationSearchBar />
             </div>
 
-            <div className="mt-7">
+            <div className="mt-4 sm:mt-7">
               <h2 className="text-xs font-semibold text-white/60">Popular areas</h2>
-              <ul className="mt-2.5 flex flex-wrap justify-center gap-2 lg:justify-start">
+              <ul className="-mx-5 mt-2.5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 lg:justify-start">
                 {POPULAR_AREAS.map((area) => (
-                  <li key={area.label}>
+                  <li key={area.label} className="shrink-0">
                     <Link
                       href={`/search?lat=${area.lat}&lng=${area.lng}&mode=searched_location&label=${encodeURIComponent(area.label)}`}
                       className="inline-flex min-h-[38px] items-center rounded-full bg-white/10 px-3.5 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20"
@@ -211,16 +211,16 @@ export default async function HomePage() {
           pretending to cover their city, we are asking which one to do next
           and saying what decides the order. */}
       <section id="next-cities" className="scroll-mt-20 border-b border-sand-line bg-sand">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-5 py-11 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 px-5 py-6 sm:gap-6 sm:px-6 sm:py-11 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
           <div>
             {/* No second Beta pill: the hero's is two inches above this, and
                 the headline is the same admission said in plainer words. */}
             <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
-              Not in London? Tell us where you are.
+              Not in London? Tell us where you&apos;re looking.
             </h2>
             <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-muted">
-              We&apos;ll email you when we reach your city. The more people who ask for it, the
-              sooner we do.
+              We&apos;ll email you the moment we get there. We expand where the most people are
+              asking.
             </p>
           </div>
 

@@ -101,8 +101,8 @@ export const LOCALES: LocaleCopy[] = [
     ],
     browseHeading: 'من أين تبدأ',
     browseBody: 'تصفّح حسب المنطقة أو حسب نوع الطعام، أو ابحث بالرمز البريدي.',
-    notifyHeading: 'لست في لندن؟',
-    notifyBody: "سنراسلك عندما نصل إلى مدينتك. وكلما زاد عدد من يطلبونها، وصلنا إليها أسرع.",
+    notifyHeading: "لست في لندن؟ أخبرنا أين تبحث.",
+    notifyBody: "سنراسلك فور وصولنا إلى هناك. ونتوسّع أولًا حيث يطلبنا أكبر عدد من الناس.",
     notifyButton: 'أبلغوني',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'أي مدينة؟ (اختياري)',
@@ -151,8 +151,8 @@ export const LOCALES: LocaleCopy[] = [
     ],
     browseHeading: 'کہاں سے شروع کریں',
     browseBody: 'علاقے کے حساب سے یا کھانے کی قسم کے حساب سے دیکھیں، یا پوسٹ کوڈ سے تلاش کریں۔',
-    notifyHeading: 'لندن میں نہیں ہیں؟',
-    notifyBody: "جب ہم آپ کے شہر پہنچیں گے تو ای میل کریں گے۔ جتنے زیادہ لوگ اس کے لیے کہیں گے، ہم اتنی جلدی وہاں جائیں گے۔",
+    notifyHeading: "لندن میں نہیں ہیں؟ بتائیں آپ کہاں تلاش کر رہے ہیں۔",
+    notifyBody: "جیسے ہی ہم وہاں پہنچیں گے، آپ کو ای میل کریں گے۔ ہم وہیں سے پھیلتے ہیں جہاں سب سے زیادہ لوگ کہتے ہیں۔",
     notifyButton: 'مجھے اطلاع دیں',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'کون سا شہر؟ (اختیاری)',
@@ -205,8 +205,8 @@ export const LOCALES: LocaleCopy[] = [
     ],
     browseHeading: 'কোথা থেকে শুরু করবেন',
     browseBody: 'এলাকা ধরে বা খাবারের ধরন ধরে দেখুন, কিংবা পোস্টকোড দিয়ে খুঁজুন।',
-    notifyHeading: 'লন্ডনে নেই?',
-    notifyBody: "আপনার শহরে পৌঁছলে আমরা ইমেইল করব। যত বেশি মানুষ সেটির জন্য বলবেন, তত তাড়াতাড়ি হবে।",
+    notifyHeading: "লন্ডনে নেই? কোথায় খুঁজছেন জানান।",
+    notifyBody: "সেখানে পৌঁছনোর সঙ্গে সঙ্গেই আমরা ইমেইল করব। যেখানে সবচেয়ে বেশি মানুষ চান, আমরা সেখান থেকেই শুরু করি।",
     notifyButton: 'জানিয়ে দিন',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'কোন শহর? (ঐচ্ছিক)',
@@ -259,8 +259,8 @@ export const LOCALES: LocaleCopy[] = [
     ],
     browseHeading: 'Nereden başlamalı',
     browseBody: 'Semte göre veya yemek türüne göre gezin, ya da posta koduyla arayın.',
-    notifyHeading: "Londra'da değil misiniz?",
-    notifyBody: "Şehrinize geldiğimizde size e-posta atacağız. Onu ne kadar çok kişi isterse, o kadar erken geliriz.",
+    notifyHeading: "Londra’da değil misiniz? Nerede aradığınızı yazın.",
+    notifyBody: "Oraya varır varmaz size e-posta atacağız. En çok istenen yerden başlayarak büyüyoruz.",
     notifyButton: 'Haber verin',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'Hangi şehir? (isteğe bağlı)',
@@ -313,8 +313,8 @@ export const LOCALES: LocaleCopy[] = [
     ],
     browseHeading: 'Par où commencer',
     browseBody: 'Parcourez par quartier ou par type de cuisine, ou cherchez par code postal.',
-    notifyHeading: 'Pas à Londres ?',
-    notifyBody: "Nous vous écrirons quand nous arriverons dans votre ville. Plus elle est demandée, plus vite nous y allons.",
+    notifyHeading: "Pas à Londres ? Dites-nous où vous cherchez.",
+    notifyBody: "Nous vous écrirons dès notre arrivée. Nous nous développons là où le plus de gens le demandent.",
     notifyButton: 'Prévenez-moi',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'Quelle ville ? (facultatif)',
@@ -324,6 +324,226 @@ export const LOCALES: LocaleCopy[] = [
     notifyDoneTitle: 'Vous êtes sur la liste',
     notifyDoneBody: "Nous vous écrirons quand nous ouvrirons une nouvelle ville. Rien d'autre, et jamais à quelqu'un d'autre.",
     notifyPrivacy: "Une adresse, pour cela seulement. Jamais revendue, désabonnement en un clic.",
+  },
+  {
+    code: "so",
+    endonym: "Soomaali",
+    dir: "ltr",
+    title: "Maqaayadaha xalaasha ah ee London",
+    description: "Meelaha cuntada xalaasha ah ee London, iyo caddaynta ka dambaysa calaamad kasta iyo taariikhda la hubiyay. Bilaash, koonto looma baahna.",
+    beta: "Tijaabo",
+    h1: "Maqaayadaha xalaasha ah ee London",
+    intro: "YepItsHalal wuxuu tusayaa meelaha cuntada xalaasha ah ee London. Calaamad kasta waxaa la siiyaa caddayntii ka dambaysay iyo taariikhdii la hubiyay. Bilaash, koonto looma baahna.",
+    englishNote: "Bogga, raadinta iyo bogagga maqaayadaha waa Ingiriisi. Boggan wuxuu sharxayaa micnaha calaamad kasta intaadan bilaabin.",
+    ctaSearch: "Ka raadi London",
+    ctaHow: "Sida aan meelaha u calaamadayno",
+    labelsHeading: "Maxay calaamaduhu ka dhigan yihiin",
+    labels: [
+      {
+        en: "Fully Halal",
+        name: "Xalaal buuxa",
+        body: "Caddayn adag oo muujinaysa in hilibka oo dhan xalaal yahay."
+      },
+      {
+        en: "Halal Options",
+        name: "Doorasho xalaal ah",
+        body: "Halkan waxaa laga helaa cunto xalaal ah iyo cunto aan xalaal ahayn labadaba."
+      },
+      {
+        en: "Unverified",
+        name: "La ma xaqiijin",
+        body: "Waxaa jira calaamado muujinaya cunto xalaal ah, laakiin lama xaqiijin. Taasi weligeed macnaheedu ma aha inay xaaraan tahay."
+      },
+      {
+        en: "Worth asking",
+        name: "Waa in la weydiiyo",
+        body: "Waxay bixisaa nooc cunto ah oo London inta badan xalaal ah, markaa waa in la weydiiyo. Qofna weli ma hubin tan."
+      }
+    ],
+    evidenceHeading: "Sidee bay noo ogaannaa",
+    evidence: [
+      "Waxaan akhrinnaa waxa maqaayaddu iyadu daabacdo, waxaanan soo xiginnaa iyadoo ay la socoto xiriiriye iyo taariikhda aan akhrinnay.",
+      "Shahaadada xalaalka waxaa la tusaa marka laga xaqiijiyo hayadda bixisay. Haddii maqaayaddu iyadu sheegato, waxaa loo tusaa sidaas oo kale, sheegasho ahaan.",
+      "Qof ka socda YepItsHalal weli ma booqan maqaayad, bogguna bog kasta ayuu taas ku sheegayaa."
+    ],
+    browseHeading: "Halkee ka bilow",
+    browseBody: "Ka eeg degmada ama nooca cuntada, ama ka raadi koodhka boostada.",
+    notifyHeading: "Ma joogtid London? Noo sheeg halka aad ka raadinayso.",
+    notifyBody: "Isla marka aan halkaas gaarno waan ku soo emayli doonnaa. Waxaan ka bilownaa meesha dadka ugu badan ay weydiistaan.",
+    notifyButton: "I soo ogeysii",
+    notifyEmailPlaceholder: "you@example.com",
+    notifyCityPlaceholder: "Magaalo kee? (ikhtiyaari)",
+    notifyEmailLabel: "Emaylkaaga",
+    notifyCityLabel: "Magaalo kee ayaa xigta?",
+    notifySending: "Waa la dirayaa…",
+    notifyDoneTitle: "Waad ku jirtaa liiska",
+    notifyDoneBody: "Waan ku soo emayli doonnaa marka aan gaarno magaalo cusub. Wax kale ma jiro, cidna lama siinayo.",
+    notifyPrivacy: "Hal emayl, arrintan oo keliya. Weligeed lama iibinayo, hal gujin ayaad kaga bixi kartaa."
+  },
+  {
+    code: "fa",
+    endonym: "فارسی",
+    dir: "rtl",
+    title: "رستوران‌های حلال در لندن",
+    description: "جاهای غذای حلال در لندن، همراه با مدرکی که پشت هر برچسب است و تاریخ بررسی. رایگان، بدون حساب کاربری.",
+    beta: "نسخهٔ آزمایشی",
+    h1: "رستوران‌های حلال در لندن",
+    intro: "YepItsHalal جاهای غذای حلال لندن را نشان می‌دهد، همراه با مدرکی که پشت هر برچسب است و تاریخ آخرین بررسی. رایگان، بدون حساب کاربری.",
+    englishNote: "سایت، جست‌وجو و صفحه‌های رستوران‌ها به انگلیسی است. این صفحه پیش از شروع توضیح می‌دهد هر برچسب چه معنایی دارد.",
+    ctaSearch: "در لندن جست‌وجو کنید",
+    ctaHow: "چطور برچسب می‌زنیم",
+    labelsHeading: "برچسب‌ها یعنی چه",
+    labels: [
+      {
+        en: "Fully Halal",
+        name: "کاملاً حلال",
+        body: "مدرک محکمی هست که تمام گوشت حلال است."
+      },
+      {
+        en: "Halal Options",
+        name: "گزینه‌های حلال",
+        body: "اینجا هم غذای حلال سرو می‌شود و هم غذایی که حلال نیست."
+      },
+      {
+        en: "Unverified",
+        name: "تأیید نشده",
+        body: "نشانه‌هایی از حلال بودن هست، اما تأیید نشده. این هرگز به معنای حرام بودن نیست."
+      },
+      {
+        en: "Worth asking",
+        name: "ارزش پرسیدن دارد",
+        body: "نوعی غذا سرو می‌کند که در لندن اغلب حلال است، پس پرسیدنش می‌ارزد. هنوز کسی این یکی را بررسی نکرده است."
+      }
+    ],
+    evidenceHeading: "از کجا می‌دانیم",
+    evidence: [
+      "آنچه را خود رستوران منتشر می‌کند می‌خوانیم و با پیوند و تاریخ خواندن نقل می‌کنیم.",
+      "گواهی حلال تنها وقتی نشان داده می‌شود که با نهاد صادرکننده تأیید شده باشد. ادعای خود رستوران دقیقاً به عنوان ادعا نشان داده می‌شود.",
+      "هنوز هیچ‌کس از YepItsHalal به رستورانی نرفته است، و سایت این را در هر صفحه می‌گوید."
+    ],
+    browseHeading: "از کجا شروع کنیم",
+    browseBody: "بر اساس منطقه یا نوع غذا ببینید، یا با کد پستی جست‌وجو کنید.",
+    notifyHeading: "در لندن نیستید؟ بگویید کجا دنبالش می‌گردید.",
+    notifyBody: "به‌محض رسیدن به آنجا ایمیل می‌زنیم. از جایی گسترش می‌دهیم که بیشترین درخواست را دارد.",
+    notifyButton: "خبرم کنید",
+    notifyEmailPlaceholder: "you@example.com",
+    notifyCityPlaceholder: "کدام شهر؟ (اختیاری)",
+    notifyEmailLabel: "ایمیل شما",
+    notifyCityLabel: "شهر بعدی کدام باشد؟",
+    notifySending: "در حال ارسال…",
+    notifyDoneTitle: "در فهرست هستید",
+    notifyDoneBody: "وقتی به شهر تازه‌ای برسیم ایمیل می‌زنیم. چیز دیگری نه، و به کسی هم داده نمی‌شود.",
+    notifyPrivacy: "یک نشانی، فقط برای همین. هرگز فروخته نمی‌شود، با یک کلیک لغو کنید."
+  },
+  {
+    code: "sq",
+    endonym: "Shqip",
+    dir: "ltr",
+    title: "Restorante hallall në Londër",
+    description: "Vendet me ushqim hallall në Londër, me provën pas çdo etikete dhe datën e kontrollit. Falas, pa llogari.",
+    beta: "Beta",
+    h1: "Restorante hallall në Londër",
+    intro: "YepItsHalal tregon vendet me ushqim hallall në Londër, me provën pas çdo etikete dhe datën e kontrollit të fundit. Falas, pa llogari.",
+    englishNote: "Faqja, kërkimi dhe faqet e restoranteve janë në anglisht. Kjo faqe shpjegon se çfarë do të thotë secila etiketë para se të nisni.",
+    ctaSearch: "Kërko në Londër",
+    ctaHow: "Si i etiketojmë vendet",
+    labelsHeading: "Çfarë do të thonë etiketat",
+    labels: [
+      {
+        en: "Fully Halal",
+        name: "Plotësisht hallall",
+        body: "Provë e fortë se i gjithë mishi është hallall."
+      },
+      {
+        en: "Halal Options",
+        name: "Opsione hallall",
+        body: "Këtu shërbehet ushqim hallall krahas ushqimit që nuk është hallall."
+      },
+      {
+        en: "Unverified",
+        name: "E paverifikuar",
+        body: "Ka shenja ushqimi hallall, por nuk është konfirmuar. Kjo kurrë nuk do të thotë se nuk është hallall."
+      },
+      {
+        en: "Worth asking",
+        name: "Ia vlen të pyesësh",
+        body: "Shërben një lloj ushqimi që në Londër shpesh është hallall, prandaj ia vlen të pyesësh. Këtë vend nuk e ka kontrolluar ende askush."
+      }
+    ],
+    evidenceHeading: "Si e dimë",
+    evidence: [
+      "Lexojmë atë që restoranti publikon vetë dhe e citojmë, me lidhjen dhe datën kur e lexuam.",
+      "Certifikata hallall shfaqet vetëm kur është konfirmuar me organin që e ka lëshuar. Pretendimi i vetë restorantit shfaqet pikërisht si pretendim.",
+      "Askush nga YepItsHalal nuk ka vizituar ende asnjë restorant, dhe faqja e thotë këtë në çdo faqe."
+    ],
+    browseHeading: "Nga ta nisësh",
+    browseBody: "Shfleto sipas lagjes ose sipas llojit të ushqimit, ose kërko me kodin postar.",
+    notifyHeading: "Nuk je në Londër? Na thuaj ku po kërkon.",
+    notifyBody: "Do të të shkruajmë sapo të arrijmë atje. Zgjerohemi aty ku e kërkojnë më shumë njerëz.",
+    notifyButton: "Më njofto",
+    notifyEmailPlaceholder: "you@example.com",
+    notifyCityPlaceholder: "Cili qytet? (opsionale)",
+    notifyEmailLabel: "Email-i yt",
+    notifyCityLabel: "Cili qytet duhet të jetë i radhës?",
+    notifySending: "Duke dërguar…",
+    notifyDoneTitle: "Je në listë",
+    notifyDoneBody: "Do të të shkruajmë kur të hapim një qytet të ri. Asgjë tjetër, dhe kurrë askujt tjetër.",
+    notifyPrivacy: "Një adresë, vetëm për këtë. Kurrë e shitur, çregjistrohu me një klikim."
+  },
+  {
+    code: "id",
+    endonym: "Bahasa Indonesia",
+    dir: "ltr",
+    title: "Restoran halal di London",
+    description: "Tempat makan halal di London, lengkap dengan bukti di balik setiap label dan tanggal pemeriksaannya. Gratis, tanpa akun.",
+    beta: "Beta",
+    h1: "Restoran halal di London",
+    intro: "YepItsHalal menunjukkan tempat makan halal di London, lengkap dengan bukti di balik setiap label dan kapan terakhir diperiksa. Gratis, tanpa akun.",
+    englishNote: "Situs, pencarian, dan halaman restoran berbahasa Inggris. Halaman ini menjelaskan arti setiap label sebelum Anda mulai.",
+    ctaSearch: "Cari di London",
+    ctaHow: "Cara kami memberi label",
+    labelsHeading: "Arti setiap label",
+    labels: [
+      {
+        en: "Fully Halal",
+        name: "Halal sepenuhnya",
+        body: "Ada bukti kuat bahwa semua dagingnya halal."
+      },
+      {
+        en: "Halal Options",
+        name: "Ada pilihan halal",
+        body: "Di sini disajikan makanan halal berdampingan dengan makanan yang tidak halal."
+      },
+      {
+        en: "Unverified",
+        name: "Belum diverifikasi",
+        body: "Ada tanda-tanda makanan halal, tetapi belum dipastikan. Ini tidak pernah berarti tidak halal."
+      },
+      {
+        en: "Worth asking",
+        name: "Layak ditanyakan",
+        body: "Menyajikan jenis makanan yang di London sering halal, jadi layak ditanyakan. Tempat ini belum diperiksa siapa pun."
+      }
+    ],
+    evidenceHeading: "Dari mana kami tahu",
+    evidence: [
+      "Kami membaca apa yang diterbitkan restoran itu sendiri, lalu mengutipnya beserta tautan dan tanggal kami membacanya.",
+      "Sertifikat halal hanya ditampilkan setelah dipastikan ke lembaga penerbitnya. Klaim dari restoran sendiri ditampilkan persis sebagai klaim.",
+      "Belum ada orang dari YepItsHalal yang mendatangi restoran mana pun, dan situs ini menyatakannya di setiap halaman."
+    ],
+    browseHeading: "Mulai dari mana",
+    browseBody: "Telusuri per wilayah atau per jenis makanan, atau cari dengan kode pos.",
+    notifyHeading: "Tidak di London? Beri tahu kami Anda mencari di mana.",
+    notifyBody: "Kami akan mengirim email begitu kami sampai di sana. Kami berkembang ke tempat yang paling banyak diminta.",
+    notifyButton: "Beri tahu saya",
+    notifyEmailPlaceholder: "you@example.com",
+    notifyCityPlaceholder: "Kota mana? (opsional)",
+    notifyEmailLabel: "Email Anda",
+    notifyCityLabel: "Kota mana berikutnya?",
+    notifySending: "Mengirim…",
+    notifyDoneTitle: "Anda sudah terdaftar",
+    notifyDoneBody: "Kami akan mengirim email saat kami membuka kota baru. Tidak ada yang lain, dan tidak akan diberikan ke siapa pun.",
+    notifyPrivacy: "Satu alamat, hanya untuk ini. Tidak pernah dijual, berhenti berlangganan dengan sekali klik."
   },
 ];
 

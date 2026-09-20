@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { ipHashFor, overIpLimit, RATE_LIMITED_MESSAGE } from '@/lib/rateLimit';
 
 // Feedback about the site itself. Written with the service role because nobody
 // should be able to read this table back out, including the person who wrote
@@ -43,10 +44,17 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminSupabase();
+
+  const ipHash = ipHashFor(request);
+  if (await overIpLimit(supabase, 'site_feedback', ipHash)) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { status: 429 });
+  }
+
   const { error } = await supabase.from('site_feedback').insert({
     email,
     message,
     page_url: clean(body.page_url, 500),
+    ip_hash: ipHash,
   });
 
   if (error) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { ipHashFor, overIpLimit, RATE_LIMITED_MESSAGE } from '@/lib/rateLimit';
 
 // "Tell me when you reach my city."
 //
@@ -65,6 +66,13 @@ export async function POST(request: Request) {
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
   const supabase = createAdminSupabase();
+
+  // One connection cannot put a stack of other people's addresses on the list.
+  const ipHash = ipHashFor(request);
+  if (await overIpLimit(supabase, 'subscribers', ipHash)) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { status: 429 });
+  }
+
   const { error } = await supabase.from('subscribers').upsert(
     {
       email,
@@ -77,6 +85,7 @@ export async function POST(request: Request) {
       wanted_place_id: str(p?.placeId, 64),
       wanted_lat: num(p?.lat),
       wanted_lng: num(p?.lng),
+      ip_hash: ipHash,
       source: clean(body.source, 200),
       locale: clean(body.locale, 8) ?? 'en',
       status: 'active',

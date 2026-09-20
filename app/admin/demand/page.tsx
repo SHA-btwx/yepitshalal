@@ -37,6 +37,15 @@ function when(iso: string) {
 export default async function AdminDemandPage() {
   const supabase = createAdminSupabase();
 
+  // Languages people asked for, from the form under the switcher. Kept on
+  // this page because "which language next" is the same question as "which
+  // city next", answered by the same people.
+  const { data: langRows } = await supabase
+    .from('language_requests')
+    .select('language, language_code, email, created_at')
+    .order('created_at', { ascending: false })
+    .limit(1000);
+
   const rows: Row[] = [];
   for (let from = 0; ; from += 1000) {
     const { data, error } = await supabase
@@ -88,6 +97,16 @@ export default async function AdminDemandPage() {
 
   const ranked = [...places.values()].sort((a, b) => b.n - a.n || a.label.localeCompare(b.label));
   const byCountry = [...countries.values()].sort((a, b) => b.n - a.n);
+  const langTally = new Map<string, { name: string; code: string | null; n: number; withEmail: number }>();
+  for (const r of (langRows ?? []) as { language: string; language_code: string | null; email: string | null }[]) {
+    const key = r.language_code ?? r.language.toLowerCase();
+    const g = langTally.get(key) ?? { name: r.language, code: r.language_code, n: 0, withEmail: 0 };
+    g.n++;
+    if (r.email) g.withEmail++;
+    langTally.set(key, g);
+  }
+  const languages = [...langTally.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
+
   const locales = new Map<string, number>();
   for (const r of rows) locales.set(r.locale, (locales.get(r.locale) ?? 0) + 1);
 
@@ -173,6 +192,39 @@ export default async function AdminDemandPage() {
             </div>
           </Panel>
         )}
+
+        <Panel
+          title="Languages asked for"
+          action={<Tag>{languages.length}</Tag>}
+        >
+          {languages.length === 0 ? (
+            <p className="px-5 py-6 text-sm text-muted">
+              Nobody has asked for one yet. The form sits under the language switcher in the footer
+              of every page.
+            </p>
+          ) : (
+            <ol className="divide-y divide-line">
+              {languages.map((l, i) => (
+                <li key={l.name} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-3">
+                  <span>
+                    <span className="font-semibold text-ink">
+                      {i + 1}. {l.name}
+                    </span>
+                    {l.code ? (
+                      <span className="ml-2 text-xs text-subtle">{l.code}</span>
+                    ) : (
+                      <span className="ml-2 text-xs text-subtle">typed by hand</span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-sm text-muted">
+                    <span className="font-display text-lg font-semibold text-ink">{l.n}</span> asked
+                    {l.withEmail > 0 && `, ${l.withEmail} left an email`}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
 
         {freeText.length > 0 && (
           <Panel title="Typed by hand" action={<Tag>{freeText.length}</Tag>}>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { GlobeIcon } from './icons';
 import { LOCALES } from '@/lib/locales';
+import { LanguageRequestForm } from './LanguageRequestForm';
 
 // Every language in its own script, never in English.
 //
@@ -52,6 +53,7 @@ export function LanguageSwitcher({
           );
         })}
       </ul>
+      <LanguageRequestForm locale={current} />
     </nav>
   );
 }

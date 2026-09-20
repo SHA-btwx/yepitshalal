@@ -11,6 +11,32 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    /* Every in-page jump on this site glides instead of teleporting: the "more
+       cities" link in the hero, the "search your area" link at the bottom, and
+       any #anchor a visitor arrives on. The reduced-motion block below turns
+       it straight back off for anybody who has asked for that. */
+    scroll-behavior: smooth;
+  }
+
+  /* Landing on a section: it lifts and settles, once, so the eye knows where
+     it has been put. Two thirds of a second, and never on a reload. */
+  :target {
+    animation: arrive 0.62s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+  }
+
+  @keyframes arrive {
+    0% {
+      transform: translateY(14px);
+      opacity: 0.55;
+    }
+    60% {
+      transform: translateY(-4px);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   body {
