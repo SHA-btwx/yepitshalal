@@ -21,6 +21,7 @@ const SECTIONS = [
   { href: '/admin/offers', label: 'Offers', Icon: SparkleIcon },
   { href: '/admin/subscriptions', label: 'Subscriptions', Icon: UserIcon },
   { href: '/admin/feedback', label: 'Feedback', Icon: InfoIcon },
+  { href: '/admin/demand', label: 'Where next', Icon: MapPinIcon },
 ];
 
 export function AdminNav() {

@@ -219,9 +219,8 @@ export default async function HomePage() {
               Not in London? Tell us where you are.
             </h2>
             <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-muted">
-              London is the first city, not the only one. We are building it out street by street
-              here so the method holds up, then doing the next city, and the next. The order comes
-              from who asks, so asking genuinely moves it.
+              Right now we only cover London. Tell us where you are and we&apos;ll email you when we
+              get there. The more people who ask for a city, the sooner we do it.
             </p>
           </div>
 

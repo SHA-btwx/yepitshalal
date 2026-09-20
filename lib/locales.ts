@@ -102,8 +102,7 @@ export const LOCALES: LocaleCopy[] = [
     browseHeading: 'من أين تبدأ',
     browseBody: 'تصفّح حسب المنطقة أو حسب نوع الطعام، أو ابحث بالرمز البريدي.',
     notifyHeading: 'لست في لندن؟',
-    notifyBody:
-      'لندن هي أول مدينة وليست الوحيدة. أخبرنا أين أنت، وسنراسلك عندما نصل إلى مدينتك. ترتيب المدن يعتمد على من يطلب.',
+    notifyBody: "حاليًا نغطّي لندن فقط. أخبرنا أين أنت وسنراسلك عندما نصل إليك. كلما زاد عدد من يطلبون مدينة، وصلنا إليها أسرع.",
     notifyButton: 'أبلغوني',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'أي مدينة؟ (اختياري)',
@@ -153,8 +152,7 @@ export const LOCALES: LocaleCopy[] = [
     browseHeading: 'کہاں سے شروع کریں',
     browseBody: 'علاقے کے حساب سے یا کھانے کی قسم کے حساب سے دیکھیں، یا پوسٹ کوڈ سے تلاش کریں۔',
     notifyHeading: 'لندن میں نہیں ہیں؟',
-    notifyBody:
-      'لندن پہلا شہر ہے، واحد نہیں۔ ہمیں بتائیں آپ کہاں ہیں، اور جب ہم آپ کے شہر پہنچیں گے تو ای میل کریں گے۔ شہروں کی ترتیب اسی سے طے ہوتی ہے کہ کون پوچھتا ہے۔',
+    notifyBody: "ابھی ہم صرف لندن میں ہیں۔ ہمیں بتائیں آپ کہاں ہیں، اور جب ہم وہاں پہنچیں گے تو ای میل کریں گے۔ جس شہر کے لیے جتنے زیادہ لوگ کہیں گے، ہم اتنی جلدی وہاں جائیں گے۔",
     notifyButton: 'مجھے اطلاع دیں',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'کون سا شہر؟ (اختیاری)',
@@ -208,8 +206,7 @@ export const LOCALES: LocaleCopy[] = [
     browseHeading: 'কোথা থেকে শুরু করবেন',
     browseBody: 'এলাকা ধরে বা খাবারের ধরন ধরে দেখুন, কিংবা পোস্টকোড দিয়ে খুঁজুন।',
     notifyHeading: 'লন্ডনে নেই?',
-    notifyBody:
-      'লন্ডন প্রথম শহর, একমাত্র নয়। আপনি কোথায় আছেন জানান, আপনার শহরে পৌঁছলে আমরা ইমেইল করব। কে চাইছে, তার ওপরেই শহরের ক্রম নির্ভর করে।',
+    notifyBody: "এখন আমরা শুধু লন্ডনে আছি। আপনি কোথায় আছেন জানান, সেখানে পৌঁছলে আমরা ইমেইল করব। যে শহরের জন্য যত বেশি মানুষ বলবেন, সেটা তত তাড়াতাড়ি হবে।",
     notifyButton: 'জানিয়ে দিন',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'কোন শহর? (ঐচ্ছিক)',
@@ -263,8 +260,7 @@ export const LOCALES: LocaleCopy[] = [
     browseHeading: 'Nereden başlamalı',
     browseBody: 'Semte göre veya yemek türüne göre gezin, ya da posta koduyla arayın.',
     notifyHeading: "Londra'da değil misiniz?",
-    notifyBody:
-      'Londra ilk şehir, tek şehir değil. Nerede olduğunuzu yazın, şehrinize geldiğimizde size e-posta atalım. Sıralamayı kimin istediği belirliyor.',
+    notifyBody: "Şu anda sadece Londra'dayız. Nerede olduğunuzu yazın, oraya geldiğimizde size e-posta atalım. Bir şehri ne kadar çok kişi isterse, oraya o kadar erken geliriz.",
     notifyButton: 'Haber verin',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'Hangi şehir? (isteğe bağlı)',
@@ -318,8 +314,7 @@ export const LOCALES: LocaleCopy[] = [
     browseHeading: 'Par où commencer',
     browseBody: 'Parcourez par quartier ou par type de cuisine, ou cherchez par code postal.',
     notifyHeading: 'Pas à Londres ?',
-    notifyBody:
-      "Londres est la première ville, pas la seule. Dites-nous où vous êtes et nous vous écrirons quand nous arriverons chez vous. L'ordre dépend de qui demande.",
+    notifyBody: "Pour l'instant, nous ne couvrons que Londres. Dites-nous où vous êtes et nous vous écrirons quand nous y arriverons. Plus une ville est demandée, plus vite nous nous y mettons.",
     notifyButton: 'Prévenez-moi',
     notifyEmailPlaceholder: 'you@example.com',
     notifyCityPlaceholder: 'Quelle ville ? (facultatif)',

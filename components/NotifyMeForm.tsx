@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ArrowRightIcon, CheckIcon } from './icons';
+import { PlaceAutocomplete, type ChosenPlace } from './PlaceAutocomplete';
 
 // "When are you coming to my city?"
 //
@@ -26,6 +27,7 @@ export function NotifyMeForm({
   cityPlaceholder = 'Which city? (optional)',
   emailLabel = 'Your email address',
   cityLabel = 'Which city should we cover next?',
+  cityNoResults = "We don't know that one, but type it anyway and we'll read it.",
   sendingLabel = 'Sending…',
   doneTitle = "You're on the list",
   doneBody = "We'll email you when we reach a new city or ship something worth knowing about. Nothing else, and never to anybody else.",
@@ -43,6 +45,7 @@ export function NotifyMeForm({
   /** Read out by a screen reader, so it is translated with everything else. */
   emailLabel?: string;
   cityLabel?: string;
+  cityNoResults?: string;
   sendingLabel?: string;
   doneTitle?: string;
   doneBody?: string;
@@ -50,7 +53,9 @@ export function NotifyMeForm({
 }) {
   const pathname = usePathname() ?? '/';
   const emailId = useId();
-  const cityId = useId();
+  // What they picked from the suggestions, if they picked. Null means the
+  // text in the box is their own, which is still a perfectly good answer.
+  const [place, setPlace] = useState<ChosenPlace | null>(null);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +71,8 @@ export function NotifyMeForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.get('email'),
-          wanted_city: formData.get('wanted_city'),
+          wanted_city: place?.name ?? formData.get('wanted_city'),
+          place,
           company_website: formData.get('company_website'),
           source: `${source} (${pathname})`,
           locale,
@@ -130,10 +136,14 @@ export function NotifyMeForm({
 
         {cityField && (
           <div className="sm:flex-1">
-            <label htmlFor={cityId} className="sr-only">
-              {cityLabel}
-            </label>
-            <input id={cityId} name="wanted_city" maxLength={120} placeholder={cityPlaceholder} className={field} />
+            <PlaceAutocomplete
+              name="wanted_city"
+              label={cityLabel}
+              placeholder={cityPlaceholder}
+              className={field}
+              onChoose={setPlace}
+              noResultsHint={cityNoResults}
+            />
           </div>
         )}
 
