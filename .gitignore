@@ -7,3 +7,7 @@ npm-debug.log*
 
 # Catalogue pipeline: downloaded source data and crawl output, never committed
 scripts/catalogue/.cache/
+
+# TypeScript incremental build cache. Generated, and it conflicts on every
+# branch that touches a type, which is all of them.
+tsconfig.tsbuildinfo
