@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { CheckIcon, WarningIcon, InfoIcon } from './icons';
+import { CheckFreshness } from './CheckFreshness';
 import type { HalalFactsPublic, TriState } from '@/lib/types';
 
 type Tone = 'good' | 'warn' | 'neutral';
@@ -56,7 +57,8 @@ export function HalalFactsPanel({ facts }: { facts: HalalFactsPublic | null }) {
   return (
     <div className="rounded-2xl border border-line bg-white p-5 shadow-sm">
       <h2 className="font-display text-lg font-semibold text-ink">Halal information</h2>
-      <dl className="mt-2">
+      <CheckFreshness facts={facts} />
+      <dl className="mt-3">
         <Row label="Halal food" value={halalFoodLabel} tone={halalFoodTone} />
         <Row
           label="Alcohol"
