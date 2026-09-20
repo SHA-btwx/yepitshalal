@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { getAreasWithPages, getListedRestaurantSlugs } from '@/lib/areas';
 import { getCuisines } from '@/lib/cuisines';
 import { SITE_URL as siteUrl } from '@/lib/site';
+import { LOCALES } from '@/lib/locales';
 
 export const revalidate = 3600;
 
@@ -26,6 +27,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: `${siteUrl}/`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 1 },
     { url: `${siteUrl}/halal-restaurants`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 0.9 },
+    // The translated landing pages. Each one is a real page in its own
+    // language, not a copy of an English one, so each is worth crawling.
+    ...LOCALES.map((l) => ({
+      url: `${siteUrl}/${l.code}`,
+      lastModified: CONTENT_UPDATED,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
     { url: `${siteUrl}/halal-restaurants/cuisine`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/prayer-spaces`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${siteUrl}/how-we-check`, lastModified: CONTENT_UPDATED, changeFrequency: 'monthly', priority: 0.6 },

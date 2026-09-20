@@ -10,15 +10,21 @@ import { getAreasWithPages } from '@/lib/areas';
 import { getCuisines } from '@/lib/cuisines';
 import { countPrayerSpaces } from '@/lib/prayerSpaces';
 import { NearestMosqueButton } from '@/components/NearestMosqueButton';
+import { NotifyMeForm } from '@/components/NotifyMeForm';
 import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
+import { hreflangAlternates } from '@/lib/locales';
+
+// The English homepage is the x-default and the canonical target every
+// translated landing page points back to. See lib/locales.
+export const metadata: Metadata = {
+  alternates: { canonical: '/', languages: hreflangAlternates(SITE_URL) },
+};
 
 // Hand-picked London neighbourhoods with dense halal high streets. Linking
 // straight to coordinates removes the "what do I even type?" beat for a first
 // visit, the hardest moment in a location-first product.
-export const metadata: Metadata = { alternates: { canonical: '/' } };
-
 const POPULAR_AREAS = [
   { label: 'Whitechapel', lat: 51.5195, lng: -0.0596 },
   { label: 'Edgware Road', lat: 51.5203, lng: -0.167 },
@@ -129,19 +135,29 @@ export default async function HomePage() {
 
         <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
           <div className="text-center lg:text-left">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20">
-              <MapPinIcon className="h-3.5 w-3.5" />
-              London, for now
+            {/* Two facts, not one hedge. "London, for now" as a grey whisper
+                left people to work out for themselves whether the site was
+                small or broken; saying it is a beta and that London is the
+                first city makes the same limitation read as a plan. */}
+            <span className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full bg-white/12 py-1 pl-1 pr-3.5 text-xs text-white ring-1 ring-white/20">
+              <span className="rounded-full bg-spice px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+                Beta
+              </span>
+              <a href="#next-cities" className="inline-flex items-center gap-1.5 font-semibold underline decoration-white/35 underline-offset-2 transition hover:decoration-white">
+                <MapPinIcon className="h-3.5 w-3.5" />
+                London first. More cities next.
+              </a>
             </span>
-            <h1 className="mt-4 text-balance font-display text-[2.15rem] font-semibold leading-[1.08] text-white sm:text-5xl">
+
+            {/* The whole pitch, and big enough to be the only thing read. The
+                paragraph that used to sit under it said the same thing again
+                in smaller type, and the section below the fold says it
+                properly, so it went. */}
+            <h1 className="mt-5 text-balance font-display text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.25rem]">
               Find halal food, wherever you are.
             </h1>
-            <p className="mx-auto mt-4 max-w-md text-pretty text-base leading-relaxed text-white/85 sm:text-lg lg:mx-0">
-              Search anywhere in London and see what&apos;s halal, who said so, and when we
-              last checked. Free, all of it.
-            </p>
 
-            <div id="search" className="mt-7 flex justify-center lg:justify-start">
+            <div id="search" className="mt-8 flex justify-center lg:justify-start">
               <LocationSearchBar />
             </div>
 
@@ -160,23 +176,6 @@ export default async function HomePage() {
                 ))}
               </ul>
             </div>
-            {biggestAreas.length > 0 && (
-              <p className="mt-4 text-sm leading-relaxed text-white/70">
-                Or browse by borough:{' '}
-                {biggestAreas.map((a, i) => (
-                  <span key={a.slug}>
-                    {i > 0 && ', '}
-                    <Link href={`/halal-restaurants/${a.slug}`} className="font-medium text-white underline decoration-white/40 underline-offset-2 hover:decoration-white">
-                      {a.borough}
-                    </Link>
-                  </span>
-                ))}
-                {', '}
-                <Link href="/halal-restaurants" className="font-semibold text-white underline underline-offset-2">
-                  and the rest of London
-                </Link>
-              </p>
-            )}
           </div>
 
           {/* Decorative: the same dishes are shown for real, with names and halal
@@ -203,6 +202,32 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* Straight under the hero, because this is the first thing a visitor
+          from Manchester or Toronto needs and the moment they would otherwise
+          leave. It is also the honest version of "coming soon": we are not
+          pretending to cover their city, we are asking which one to do next
+          and saying what decides the order. */}
+      <section id="next-cities" className="scroll-mt-20 border-b border-sand-line bg-sand">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-5 py-11 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
+          <div>
+            {/* No second Beta pill: the hero's is two inches above this, and
+                the headline is the same admission said in plainer words. */}
+            <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
+              Not in London? Tell us where you are.
+            </h2>
+            <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-muted">
+              London is the first city, not the only one. We are building it out street by street
+              here so the method holds up, then doing the next city, and the next. The order comes
+              from who asks, so asking genuinely moves it.
+            </p>
+          </div>
+
+          <div>
+            <NotifyMeForm source="homepage expansion band" />
+          </div>
         </div>
       </section>
 
@@ -382,6 +407,24 @@ export default async function HomePage() {
             How we label places
           </Link>
         </div>
+
+        {biggestAreas.length > 0 && (
+          <p className="mx-auto mt-7 max-w-xl text-pretty text-[13.5px] leading-relaxed text-subtle">
+            Or by borough:{' '}
+            {biggestAreas.map((a, i) => (
+              <span key={a.slug}>
+                {i > 0 && ', '}
+                <Link href={`/halal-restaurants/${a.slug}`} className="font-medium text-ink/70 underline decoration-black/15 underline-offset-2 transition hover:text-ink hover:decoration-ink/40">
+                  {a.borough}
+                </Link>
+              </span>
+            ))}
+            {', '}
+            <Link href="/halal-restaurants" className="font-semibold text-accent-ink underline underline-offset-2">
+              and the rest of London
+            </Link>
+          </p>
+        )}
       </section>
 
       {/* P.S. There is nothing to buy on this site, so the support ask and the

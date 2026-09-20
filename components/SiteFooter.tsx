@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { LogoMark } from './Logo';
 import { HeartHandIcon } from './icons';
 import { FeedbackBox } from './FeedbackBox';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { LOCALE_CODES } from '@/lib/locales';
 
 // Hidden on the two routes that own the full viewport: the Discover feed is a
 // snap-scrolling column, and admin has its own chrome.
@@ -101,6 +103,13 @@ export function SiteFooter() {
               </ul>
             </div>
           </nav>
+        </div>
+
+        {/* In the footer rather than the header: a reader who needs it will
+            look for it, and a control most visitors never touch does not earn
+            space beside the search box. */}
+        <div className="mt-8 border-t border-line pt-6">
+          <LanguageSwitcher current={LOCALE_CODES.find((c) => pathname === `/${c}`) ?? 'en'} />
         </div>
 
         <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between">
