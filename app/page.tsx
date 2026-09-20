@@ -219,8 +219,8 @@ export default async function HomePage() {
               Not in London? Tell us where you are.
             </h2>
             <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-muted">
-              Right now we only cover London. Tell us where you are and we&apos;ll email you when we
-              get there. The more people who ask for a city, the sooner we do it.
+              We&apos;ll email you when we reach your city. The more people who ask for it, the
+              sooner we do.
             </p>
           </div>
 
