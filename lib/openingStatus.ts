@@ -29,7 +29,7 @@ function formatTime(minuteOfWeek: number): string {
   return `${String(h).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 }
 
-// A row whose close time is at or before its open time runs past midnight —
+// A row whose close time is at or before its open time runs past midnight:
 // 18:00–02:00 is one eight-hour interval, not a same-day negative one.
 function buildIntervals(hours: OpeningHour[]): Interval[] {
   const intervals: Interval[] = [];

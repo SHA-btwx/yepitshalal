@@ -44,6 +44,14 @@ export default async function SubmissionPage({ params }: { params: { id: string 
     ['Alcohol served', yesNo(s.serves_alcohol)],
     ['Certifier', s.certification_body ?? 'None given'],
     ['Evidence link', s.evidence_url ? <a key="e" className="underline" href={s.evidence_url} target="_blank" rel="noreferrer">{s.evidence_url}</a> : 'None given'],
+    [
+      'Somewhere to pray',
+      s.prayer_facility === 'prayer_room' ? 'A prayer room'
+        : s.prayer_facility === 'space' ? 'Somewhere, not a dedicated room'
+        : s.prayer_facility === 'none' ? 'Nowhere'
+        : 'Not answered',
+    ],
+    ['Prayer note', s.prayer_facility_note ?? 'None'],
     ['Notes', s.notes ?? 'None'],
     ['Received', new Date(s.created_at).toLocaleString('en-GB')],
   ];

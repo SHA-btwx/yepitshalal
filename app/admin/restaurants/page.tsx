@@ -41,7 +41,7 @@ export default async function AdminRestaurantsPage() {
               <div className="flex shrink-0 items-center gap-2">
                 <HalalBadge classification={r.halal_classification} size="sm" />
                 {/* Was three 12px text links in a row, well inside each other's
-                    8px spacing — these are now real 36px targets. */}
+                    8px spacing: these are now real 36px targets. */}
                 <Link
                   href={`/admin/restaurants/${r.id}`}
                   className="inline-flex min-h-[36px] items-center rounded-full border border-line px-3 text-xs font-semibold text-ink transition hover:border-ink/30"

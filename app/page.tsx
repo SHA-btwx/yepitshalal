@@ -8,6 +8,8 @@ import { HomeReelStrip } from '@/components/HomeReelStrip';
 import { getFeaturedReels } from '@/lib/reels';
 import { getAreasWithPages } from '@/lib/areas';
 import { getCuisines } from '@/lib/cuisines';
+import { countPrayerSpaces } from '@/lib/prayerSpaces';
+import { NearestMosqueButton } from '@/components/NearestMosqueButton';
 import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
@@ -85,10 +87,11 @@ const SITE_LD = {
 };
 
 export default async function HomePage() {
-  const [featuredReels, areas, cuisines] = await Promise.all([
+  const [featuredReels, areas, cuisines, prayerSpaceCount] = await Promise.all([
     getFeaturedReels(),
     getAreasWithPages(),
     getCuisines(),
+    countPrayerSpaces(),
   ]);
   // The borough pages are the indexable half of this site. Every prominent link
   // on this page went to /search, which is noindexed and disallowed in
@@ -324,7 +327,7 @@ export default async function HomePage() {
                     href={`/halal-restaurants/cuisine/${c.slug}`}
                     className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-spice/20 bg-white px-4 text-[15px] font-medium text-ink transition hover:-translate-y-0.5 hover:border-spice/45 hover:bg-spice-soft hover:shadow-sm"
                   >
-                    Halal {c.cuisine.toLowerCase()}
+                    Halal {c.cuisine}
                     <span className="text-[13px] text-subtle">{c.listed}</span>
                   </Link>
                 </li>
@@ -333,6 +336,31 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* The other half of eating out. Its own band rather than a line in the
+          footer, because it is a thing people leave the site to go and look up,
+          and one tap is faster than typing "mosque near me" somewhere else.
+          It says nothing about any restaurant's food and never could. */}
+      <section className="border-b border-sand-line bg-white">
+        <div className="mx-auto flex max-w-5xl flex-col gap-5 px-5 py-11 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div>
+            <h2 className="font-display text-xl font-semibold text-ink sm:text-2xl">
+              Praying while you&apos;re out?
+            </h2>
+            <p className="mt-1.5 max-w-lg text-pretty text-[15px] leading-relaxed text-muted">
+              {prayerSpaceCount} mosques across London, with how far each one is to walk. Every
+              restaurant page carries the nearest, and says whether there is somewhere to pray
+              inside.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <NearestMosqueButton />
+            <Link href="/prayer-spaces" className={ctaSecondary}>
+              Browse by borough
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ACTION. One dominant, unambiguous ask. There is nothing to buy on
           this page, so the ask is the thing this site actually runs on:

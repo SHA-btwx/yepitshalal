@@ -7,7 +7,7 @@ type Tone = 'good' | 'warn' | 'neutral';
 function triLabel(value: TriState, yesLabel = 'Yes', noLabel = 'No'): string {
   if (value === true) return yesLabel;
   if (value === false) return noLabel;
-  return 'Unknown';
+  return 'Not known';
 }
 
 function toneFor(value: TriState, positiveWhenFalse: boolean): Tone {
@@ -24,7 +24,7 @@ const TONE_CLASSES: Record<Tone, string> = {
 
 // Each answer carries a glyph as well as a colour: green-vs-amber alone is the
 // exact pairing colour-blind readers lose. The 'warn' glyph is a warning sign
-// rather than a cross, because these answers are already yes/no words — a cross
+// rather than a cross, because these answers are already yes/no words: a cross
 // beside the word 'Yes' reads as a contradiction, a warning sign reads as
 // 'worth knowing', which is what an amber row actually means.
 const TONE_ICON: Record<Tone, typeof CheckIcon> = {
@@ -49,7 +49,7 @@ function Row({ label, value, tone }: { label: string; value: string; tone: Tone 
 export function HalalFactsPanel({ facts }: { facts: HalalFactsPublic | null }) {
   const allMeatHalal = facts?.all_meat_halal ?? null;
   const halalFoodLabel =
-    allMeatHalal === true ? 'All' : allMeatHalal === false ? 'Selected options' : 'Unknown';
+    allMeatHalal === true ? 'All' : allMeatHalal === false ? 'Selected options' : 'Not known';
   const halalFoodTone: Tone =
     allMeatHalal === true ? 'good' : allMeatHalal === false ? 'warn' : 'neutral';
 
@@ -83,7 +83,7 @@ export function HalalFactsPanel({ facts }: { facts: HalalFactsPublic | null }) {
         <p className="mt-3 text-xs text-muted">Certified by {facts.certification_body}.</p>
       )}
       <p className="mt-3 text-xs leading-relaxed text-muted">
-        We only show what we actually know. &ldquo;Unknown&rdquo; doesn&apos;t mean
+        We only show what we actually know. &ldquo;Not known&rdquo; doesn&apos;t mean
         &ldquo;no.&rdquo;
       </p>
     </div>

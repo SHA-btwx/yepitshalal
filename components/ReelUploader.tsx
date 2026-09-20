@@ -9,7 +9,7 @@ import { PlusIcon } from './icons';
 /**
  * Two-step upload: the server mints a signed URL only after it has checked
  * ownership and allowance, then the file goes straight from the browser to
- * storage. The video never passes through a serverless function — a 100 MB
+ * storage. The video never passes through a serverless function: a 100 MB
  * body through a route handler is exactly how you hit a platform limit.
  */
 export function ReelUploader({

@@ -116,7 +116,7 @@ interface RestaurantLite {
 /**
  * Discovery feed.
  *
- * Fairness rules, deliberately simple — no recommender, no ranking model:
+ * Fairness rules, deliberately simple, with no recommender and no ranking model:
  *
  *  1. Every published, discovery-eligible reel is an independent candidate, so
  *     publishing more reels genuinely creates more chances to be seen.
@@ -272,7 +272,7 @@ async function getActivePartnerIds(restaurantIds: string[]): Promise<Set<string>
   );
 }
 
-/** Photo cards for restaurants that have no reel — keeps the feed populated. */
+/** Photo cards for restaurants that have no reel, which keeps the feed populated. */
 async function getPhotoCards(
   count: number,
   excludeRestaurantIds: string[]
@@ -333,7 +333,7 @@ export interface FeaturedReel {
 }
 
 /**
- * A small set of real reels for the homepage strip — one per restaurant, so the
+ * A small set of real reels for the homepage strip, one per restaurant, so the
  * row shows breadth rather than one partner's library.
  *
  * Returns [] when nothing is published. The homepage is required to handle that

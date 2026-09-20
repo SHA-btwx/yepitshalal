@@ -5,7 +5,7 @@ import { createAdminSupabase } from './supabase/admin';
 import { requireAdmin } from './require-admin';
 
 /**
- * Two records describe the same physical place. The loser is not deleted — it
+ * Two records describe the same physical place. The loser is not deleted: it
  * keeps its provenance and gains a pointer to the survivor, so the decision is
  * reversible and a future ingest that rediscovers the business can match
  * against it rather than creating a third copy.

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Service-role client — server-only, bypasses RLS entirely.
+// Service-role client: server-only, bypasses RLS entirely.
 // Used exclusively by admin/verification API routes. Never import this
 // from a Client Component or expose SUPABASE_SERVICE_ROLE_KEY to the browser.
 export function createAdminSupabase() {

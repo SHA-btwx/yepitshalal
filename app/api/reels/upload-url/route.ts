@@ -13,7 +13,7 @@ const ALLOWED = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
  * means any visitor can push files into it. This bucket deliberately has no
  * public insert policy at all: the only way in is a signed URL, and one is only
  * issued after ownership and allowance have both been checked here. That keeps
- * the limit server-side, where the brief requires it — hiding the upload button
+ * the limit server-side, where the brief requires it: hiding the upload button
  * would not.
  */
 export async function POST(request: Request) {

@@ -32,7 +32,7 @@ interface RestaurantMapProps {
   onSelectPrayerSpace?: (space: MapPrayerSpace) => void;
   selectedId: string | null;
   onSelect: (restaurant: SearchResultRestaurant) => void;
-  /** Bump to make the map re-measure — e.g. after it is revealed from display:none. */
+  /** Bump to make the map re-measure, e.g. after it is revealed from display:none. */
   resizeSignal?: number;
   /**
    * The area actually being searched, in metres. Comes from the same clamp the
@@ -195,7 +195,7 @@ export function RestaurantMap({
         if (!basemapArrived) setBasemapFailed(true);
       }, 6000);
     } catch {
-      // Tile source unreachable — the map simply doesn't render.
+      // Tile source unreachable: the map simply doesn't render.
       // Search/list results are independent of this and keep working.
     }
 
@@ -264,7 +264,7 @@ export function RestaurantMap({
 
   // MapLibre measures its container once, at construction. On mobile the map
   // starts inside a display:none column, so it comes up with a zero-height
-  // canvas and stays blank when the List/Map toggle reveals it — unless it is
+  // canvas and stays blank when the List/Map toggle reveals it, unless it is
   // told to re-read the container size at that moment.
   useEffect(() => {
     if (!resizeSignal) return;
@@ -453,7 +453,7 @@ function renderMarkers(
 
       const marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
       // MapLibre stamps its own generic 'Map marker' label on the element it is
-      // handed, so ours has to be written back afterwards — otherwise every pin
+      // handed, so ours has to be written back afterwards, otherwise every pin
       // and cluster on the map announces the identical name.
       el.setAttribute('aria-label', `${count} restaurants in this area. Tap to see them`);
       markersRef.current.push(marker);
@@ -463,7 +463,7 @@ function renderMarkers(
     const restaurant = props.restaurant!;
     const isSelected = restaurant.id === selectedId;
     // The visible dot stays small so a dense high street stays readable, but the
-    // button around it is 40px — a 22px tap target is a coin-flip on a phone.
+    // button around it is 40px: a 22px tap target is a coin-flip on a phone.
     // 40 rather than 44 because these boxes overlap each other, and an oversized
     // one swallows the drag gesture used to pan the map.
     const size = isSelected ? 30 : 22;

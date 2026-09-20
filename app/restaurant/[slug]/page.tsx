@@ -19,6 +19,7 @@ import { OffersList } from '@/components/OffersList';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { ShareButton } from '@/components/ShareButton';
 import { cleanRestaurantName } from '@/lib/restaurantName';
+import { tidyAddress } from '@/lib/address';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { isOwnStorage } from '@/lib/imageUrl';
 import { halalAnswerFor } from '@/lib/halalAnswer';
@@ -292,7 +293,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
                 <span className="mx-1.5 text-subtle" aria-hidden="true">·</span>
               </>
             )}
-            {restaurant.address}
+            {tidyAddress(restaurant.address)}
           </span>
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -343,7 +344,15 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           checkedByUs={hasGenuineCheck}
         />
 
-        <NearestPrayerSpace spaces={prayerSpaces} placeName={title} />
+        <NearestPrayerSpace
+          spaces={prayerSpaces}
+          placeName={title}
+          slug={restaurant.slug}
+          facility={restaurant.prayerFacility}
+          facilityNote={restaurant.prayerFacilityNote}
+          facilitySource={restaurant.prayerFacilitySource}
+          facilityAt={restaurant.prayerFacilityAt}
+        />
       </div>
 
       {restaurant.description && (
@@ -400,7 +409,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
             <dl className="mt-3 space-y-3 text-sm">
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-subtle">Address</dt>
-                <dd className="mt-0.5 text-ink/80">{restaurant.address}</dd>
+                <dd className="mt-0.5 text-ink/80">{tidyAddress(restaurant.address)}</dd>
               </div>
               {restaurant.borough && (
                 <div>

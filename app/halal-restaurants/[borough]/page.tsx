@@ -6,6 +6,7 @@ import { ArrowRightIcon, MapPinIcon } from '@/components/icons';
 import { ctaPrimary } from '@/components/cta';
 import { getAreaBySlug, getAreasWithPages, type AreaListing } from '@/lib/areas';
 import { cleanRestaurantName } from '@/lib/restaurantName';
+import { tidyAddress } from '@/lib/address';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
 import type { HalalClassification } from '@/lib/types';
@@ -51,7 +52,7 @@ function title(r: AreaListing) {
 }
 
 function shortAddress(r: AreaListing) {
-  const first = r.address.split(',')[0]?.trim();
+  const first = tidyAddress(r.address).split(',')[0]?.trim();
   if (!first || /street address not known/i.test(r.address)) return r.postcode ?? null;
   return r.postcode && !first.includes(r.postcode) ? `${first}, ${r.postcode}` : first;
 }
@@ -107,8 +108,8 @@ export default async function AreaPage({ params }: { params: { borough: string }
         {area.not_checked > 0 && (
           <>
             {' '}
-            There are also {area.not_checked.toLocaleString('en-GB')} places here we haven&apos;t checked
-            yet, on the map.
+            Another {area.not_checked.toLocaleString('en-GB')} here serve the kind of food that is often
+            halal, and are on the map as worth asking about.
           </>
         )}
       </p>

@@ -447,13 +447,18 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             </button>
           )}
           {/* The other half of eating out, offered where the count is rather
-              than on a line of its own. It makes no claim about the food. */}
+              than on a line of its own. It makes no claim about the food.
+              A pill rather than a text link: it is an action, and as an
+              underlined phrase it read as a footnote about the results. */}
           {!loading && !failed && totalCount > 0 && (
             <Link
               href={`/prayer-spaces?lat=${lat}&lng=${lng}&label=${encodeURIComponent(label)}`}
-              className="text-[12.5px] font-medium text-muted underline decoration-black/15 underline-offset-4 transition hover:text-ink hover:decoration-ink/40"
+              className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-ink shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] transition hover:text-accent-ink active:scale-[0.97]"
             >
-              Somewhere to pray
+              <span aria-hidden="true" className="text-[13px] leading-none">
+                &#1645;
+              </span>
+              Nearest mosque
             </Link>
           )}
         </span>

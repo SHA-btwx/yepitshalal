@@ -3,7 +3,7 @@ import { getStripe } from '@/lib/stripe';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { SITE_URL } from '@/lib/site';
 
-// Live-mode Stripe account — price IDs stay unset until you're ready to test
+// Live-mode Stripe account: price IDs stay unset until you're ready to test
 // real payments (see .env.local). Until then this redirects back with a
 // clear "not configured" message rather than erroring.
 export async function POST(request: Request) {

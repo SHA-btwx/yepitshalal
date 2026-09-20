@@ -33,12 +33,12 @@ const LABELS = [
 ];
 
 const SOURCES = [
-  ['The restaurant’s own website', 'We read what restaurants publish about themselves and quote it, with a link and the date we read it.'],
+  ["The restaurant's own website", 'We read what restaurants publish about themselves and quote it, with a link and the date we read it.'],
   ['Certification', 'Only shown as certification when it has been confirmed with the certifier. A restaurant saying it is certified is shown as exactly that.'],
   ['Our own checks', 'When we have checked a place ourselves, the page says how and when.'],
   ['OpenStreetMap', 'Community mappers sometimes tag places as halal. Useful, but it counts as weak evidence.'],
   ['Public place data', 'Datasets from the Overture Maps Foundation sometimes categorise places as halal. Also weak evidence.'],
-  ['People who tell us', 'Owners and customers can send us details. We review every submission, and it stays marked as not yet checked.'],
+  ['People who tell us', 'Owners and customers can send us details. We review every submission, and a listing that rests on one alone stays Unverified until something stronger arrives.'],
 ];
 
 export default function HowWeCheckPage() {
@@ -116,6 +116,28 @@ export default function HowWeCheckPage() {
             image credits
           </Link>{' '}
           page.
+        </p>
+      </section>
+
+      {/* Two different questions, kept apart here as they are everywhere else:
+          one of them is about meat, the other is about a room. */}
+      <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold text-ink">Somewhere to pray</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Mosques and prayer spaces come from OpenStreetMap, the same open source as much of the
+          restaurant data, and none of it touches a halal label: a mosque being near a restaurant
+          says nothing about that restaurant&apos;s food. Hardly any of them carry opening times, a
+          mosque listed as open may still be locked, and the doors being open is not the same as
+          jamaat, so ring ahead for a particular prayer.{' '}
+          <Link href="/prayer-spaces" className="font-semibold text-accent-ink hover:underline">
+            All prayer spaces
+          </Link>
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Whether a restaurant has somewhere to pray inside comes from the people who go, through
+          the same form as everything else. It shows who told us and when, and it is never
+          confirmed by us unless the page says so. Nobody having told us is shown as exactly that,
+          never as a no.
         </p>
       </section>
 

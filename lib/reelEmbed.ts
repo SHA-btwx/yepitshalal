@@ -6,7 +6,7 @@ import type { VideoProvider } from './reels';
  * Every provider here publishes a plain-iframe embed endpoint, so none of this
  * needs their JS SDK or an API token, and the creator deleting the post breaks
  * the embed exactly as it should. We only ever embed URLs a restaurant has
- * handed us for their own content — nothing is discovered by crawling.
+ * handed us for their own content. Nothing is discovered by crawling.
  */
 export function toEmbedUrl(provider: VideoProvider, url: string, autoplay = false): string | null {
   try {

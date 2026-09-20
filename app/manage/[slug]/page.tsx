@@ -89,7 +89,7 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
       </div>
 
       {/* The commercial message lives here. It states what the free tier gives
-          you before it mentions what more costs — a free restaurant should feel
+          you before it mentions what more costs: a free restaurant should feel
           included, not throttled. */}
       <section className="mt-6 rounded-2xl border border-line bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">

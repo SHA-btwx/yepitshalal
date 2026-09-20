@@ -4,7 +4,7 @@ import { getStripe } from '@/lib/stripe';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { addWorkingHours } from '@/lib/workingHours';
 
-// This is the ONLY place `subscriptions` is ever written from the Stripe side —
+// This is the ONLY place `subscriptions` is ever written from the Stripe side.
 // search_restaurants() and offers_public read that table directly, never Stripe,
 // so this handler being correct is what keeps radius/voucher entitlement honest.
 export async function POST(request: Request) {
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }
 
     // Covers renewals, cancellations, plan changes, and payment-failure status
-    // changes — the same upsert path as the initial checkout.
+    // changes: the same upsert path as the initial checkout.
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     // Refunds are only ever initiated manually by an admin (from the Stripe
-    // dashboard, per §16 — payment purchases priority, not a guaranteed
+    // dashboard, per §16: payment purchases priority, not a guaranteed
     // outcome, so this never happens automatically). This just reflects that
     // decision back into our own records once it happens.
     case 'charge.refunded': {

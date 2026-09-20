@@ -17,7 +17,7 @@ interface ReelShowcaseProps {
 }
 
 /**
- * "Latest from X" — the reel layer on a restaurant page.
+ * "Latest from X": the reel layer on a restaurant page.
  *
  * The brief is explicit that reels must not push the halal information aside,
  * so this sits *below* the verification panel in the page order, and the viewer
@@ -172,7 +172,7 @@ function ReelViewer({
       aria-label={`Reels from ${restaurantName}`}
       className="fixed inset-0 z-50 flex flex-col bg-ink/95 backdrop-blur"
     >
-      {/* Identity and halal status stay visible for the whole session — the
+      {/* Identity and halal status stay visible for the whole session: the
           promotional content never displaces the trust signal. */}
       <div className="flex items-start justify-between gap-3 px-4 pt-4 sm:px-6">
         <div className="min-w-0">

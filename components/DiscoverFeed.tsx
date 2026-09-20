@@ -8,8 +8,9 @@ import { ForkKnifeIcon, ArrowRightIcon, SparkleIcon } from './icons';
 import { toEmbedUrl, canAutoplay } from '@/lib/reelEmbed';
 import { isStockPhoto } from '@/lib/types';
 import type { DiscoverItem } from '@/lib/reels';
+import { tidyAddress } from '@/lib/address';
 
-// One card per viewport, minus the header (56px) and — on phones — the bottom
+// One card per viewport, minus the header (56px) and, on phones, the bottom
 // tab bar (64px).
 const CARD_HEIGHT = 'h-[calc(100dvh-120px)] sm:h-[calc(100dvh-56px)]';
 
@@ -78,7 +79,7 @@ function DiscoverCard({
     if (active) {
       v.play().catch(() => {
         // Autoplay can still be refused (low power mode, data saver). The
-        // controls remain, so the card is not broken — just not automatic.
+        // controls remain, so the card is not broken, just not automatic.
       });
     } else {
       v.pause();
@@ -153,7 +154,7 @@ function DiscoverCard({
 
       {item.kind === 'photo' && isStockPhoto(item.mediaUrl) && (
         <span className="absolute right-4 top-4 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-          Representative photo
+          Example photo
         </span>
       )}
 
@@ -177,7 +178,7 @@ function DiscoverCard({
           <span className="mx-1.5 text-white/50" aria-hidden="true">
             ·
           </span>
-          {item.address}
+          {tidyAddress(item.address)}
         </p>
         <Link
           href={`/restaurant/${item.slug}`}

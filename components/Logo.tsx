@@ -1,6 +1,6 @@
 // Inline mark echoing the real YepItsHalal brand icon (pin + checkmark) used on
 // Instagram and social. Swap for the actual logo file once it's dropped into
-// /public — this is a lightweight stand-in, not the final asset.
+// /public: this is a lightweight stand-in, not the final asset.
 export function LogoMark({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>

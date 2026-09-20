@@ -21,7 +21,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 // A lightweight "for you" style feed: pulls a randomised window of restaurants
-// (all of which have at least a representative photo, real or stock — see
+// (all of which have at least a representative photo, real or stock, see
 // scripts/assign-stock-photos.mjs) rather than every restaurant in London, so
 // the page loads fast and still feels different on each visit.
 export async function getDiscoverFeed(limit = 24): Promise<DiscoverCard[]> {

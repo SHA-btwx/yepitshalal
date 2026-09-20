@@ -1,6 +1,6 @@
 // Inline SVG icon set, drawn on a 24px grid in the Phosphor outline idiom
 // (round caps/joins, 1.75 stroke). Inline rather than a package because the
-// product needs ~15 glyphs — shipping an icon library for that would cost more
+// product needs ~15 glyphs: shipping an icon library for that would cost more
 // bytes than the whole set.
 //
 // Every icon is `aria-hidden` by default: an icon is decoration unless the
@@ -261,7 +261,7 @@ export function StarIcon(p: IconProps) {
 // carry the meaning themselves: solid-with-a-tick = we checked and it's all
 // halal; half-filled = some of the menu; dashed-and-empty = we haven't looked.
 // That reads before the words do, and the three are still distinguishable with
-// no colour at all — which colour-coded dots were not.
+// no colour at all, which colour-coded dots were not.
 export function HalalFullMark({ className = 'h-4 w-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true" focusable="false">
@@ -281,7 +281,7 @@ export function HalalFullMark({ className = 'h-4 w-4' }: { className?: string })
 export function HalalPartialMark({ className = 'h-4 w-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true" focusable="false">
-      {/* Left half solid, right half open — "some of the menu, not all of it". */}
+      {/* Left half solid, right half open: "some of the menu, not all of it". */}
       <path d="M10 1.4a8.6 8.6 0 0 0 0 17.2Z" fill="currentColor" />
       <circle cx="10" cy="10" r="8.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
     </svg>

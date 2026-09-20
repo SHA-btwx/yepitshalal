@@ -109,7 +109,12 @@ for (const el of raw.elements ?? []) {
   if (tags.amenity === 'prayer_room' && tags.religion && tags.religion !== 'muslim') continue;
   if (NOT_A_PRAYER_SPACE.test(name) && tags.religion !== 'muslim' && tags.building !== 'mosque') continue;
 
-  const address = [tags['addr:housenumber'], tags['addr:street'], tags['addr:city']].filter(Boolean).join(' ').trim() || null;
+  // "33 Brookes Court London" read as a typo. Number and street run
+  // together; the town is comma'd on, and dropped when it is just London,
+  // because the borough is already shown beside it.
+  const street = [tags['addr:housenumber'], tags['addr:street']].filter(Boolean).join(' ').trim();
+  const town = /^london$/i.test(tags['addr:city'] || '') ? null : (tags['addr:city'] || null);
+  const address = [street, town].filter(Boolean).join(', ') || null;
 
   spaces.push({
     name,
@@ -122,6 +127,10 @@ for (const el of raw.elements ?? []) {
     kind: tags.amenity === 'prayer_room' ? 'prayer room' : 'mosque',
     website_url: tags.website || tags['contact:website'] || null,
     phone: tags.phone || tags['contact:phone'] || null,
+    // Raw OSM strings, never parsed into an open/closed state: a wrong
+    // 'open now' at maghrib is worse than no answer.
+    opening_hours: tags.opening_hours || null,
+    service_times: tags.service_times || tags['service_times:muslim'] || null,
     has_womens_area: triBool(tags['female'] ?? tags['prayer_room:female'] ?? tags['women']),
     wheelchair: triBool(tags.wheelchair),
     source: 'osm',
@@ -136,7 +145,7 @@ for (const s of spaces) {
   const twin = kept.find((k) => normaliseName(k.name) === normaliseName(s.name) && metersBetween(k.lat, k.lng, s.lat, s.lng) < 120);
   if (twin) {
     // Prefer the record that carries more detail.
-    const score = (x) => [x.address, x.postcode, x.website_url, x.phone].filter(Boolean).length;
+    const score = (x) => [x.address, x.postcode, x.website_url, x.phone, x.opening_hours, x.service_times].filter(Boolean).length;
     if (score(s) > score(twin)) Object.assign(twin, s);
     continue;
   }
@@ -176,6 +185,8 @@ for (let i = 0; i < inLondon.length; i += 100) {
     kind: s.kind,
     website_url: s.website_url,
     phone: s.phone,
+    opening_hours: s.opening_hours,
+    service_times: s.service_times,
     has_womens_area: s.has_womens_area,
     wheelchair: s.wheelchair,
     source: s.source,

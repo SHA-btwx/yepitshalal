@@ -7,7 +7,7 @@
  *
  * The motion here is deliberately almost nothing: a 1px lift and a shadow step
  * on hover, a small press on active, both over 200ms. Enough to say "this is
- * pressable", not enough to notice as an animation. Transform and shadow only —
+ * pressable", not enough to notice as an animation. Transform and shadow only,
  * both composite on the GPU, so a hover never costs a layout pass. The global
  * prefers-reduced-motion rule in globals.css removes all of it.
  */
@@ -15,7 +15,7 @@
 const base =
   'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition duration-200 ease-out disabled:pointer-events-none disabled:opacity-60';
 
-/** Filled. One per view — the thing we actually want pressed. */
+/** Filled. One per view: the thing we actually want pressed. */
 export const ctaPrimary = `${base} min-h-[48px] bg-ink px-6 text-sm text-white shadow-sm hover:-translate-y-px hover:bg-accent-ink hover:shadow-md active:translate-y-0 active:scale-[0.985] active:shadow-sm`;
 
 /** Outlined. Sits beside a primary without competing with it. */

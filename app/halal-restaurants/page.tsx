@@ -32,7 +32,7 @@ export default async function LondonAreasPage() {
       <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
         {total.toLocaleString('en-GB')} places with evidence of halal food, including{' '}
         {fully.toLocaleString('en-GB')} Fully Halal and {options.toLocaleString('en-GB')} with Halal
-        Options, plus {notChecked.toLocaleString('en-GB')} places we haven&apos;t checked yet. Pick a
+        Options, plus {notChecked.toLocaleString('en-GB')} more that are worth asking about. Pick a
         borough, or{' '}
         <Link href="/" className="font-semibold text-accent-ink hover:underline">
           search by postcode

@@ -33,7 +33,7 @@ const FREE_FOR_EVERYONE = [
 const SUPPORTER_GETS: { title: string; body: string }[] = [
   {
     title: 'A meal, every month',
-    body: 'For every month of support we receive, we donate a meal through ShareTheMeal, the UN World Food Programme’s hunger app.',
+    body: "For every month of support we receive, we donate a meal through ShareTheMeal, the UN World Food Programme's hunger app.",
   },
   {
     title: 'You choose where we check next',

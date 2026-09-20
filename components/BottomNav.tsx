@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { SearchIcon, MapIcon, PlusIcon, UserIcon } from './icons';
 
 // Mobile-only tab bar. The header hides "Add your restaurant" and "Sign in"
-// below sm, which previously left those routes unreachable on a phone — this is
+// below sm, which previously left those routes unreachable on a phone, so this is
 // where they live now. Four destinations, under the five-item ceiling that
 // keeps a tab bar scannable.
 const TABS = [

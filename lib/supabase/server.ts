@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// Public, RLS-respecting server client — used for server-rendered pages
+// Public, RLS-respecting server client: used for server-rendered pages
 // (search, restaurant detail) that read only publicly-readable data.
 export function createServerSupabase() {
   const cookieStore = cookies();
@@ -19,7 +19,7 @@ export function createServerSupabase() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // called from a Server Component with no request context to write to — safe to ignore
+            // called from a Server Component with no request context to write to, safe to ignore
           }
         },
       },

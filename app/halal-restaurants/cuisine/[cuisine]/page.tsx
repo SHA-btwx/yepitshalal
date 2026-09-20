@@ -6,6 +6,7 @@ import { ArrowRightIcon } from '@/components/icons';
 import { getCuisineBySlug, getCuisines, type CuisineListing } from '@/lib/cuisines';
 import { getAreasWithPages, boroughSlug } from '@/lib/areas';
 import { cleanRestaurantName } from '@/lib/restaurantName';
+import { tidyAddress } from '@/lib/address';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
 import type { HalalClassification } from '@/lib/types';
@@ -20,7 +21,9 @@ export async function generateMetadata({ params }: { params: { cuisine: string }
   const found = await getCuisineBySlug(params.cuisine);
   if (!found) return { title: 'Not found', robots: { index: false } };
   const { cuisine } = found;
-  const name = cuisine.cuisine.toLowerCase();
+  // Kept exactly as stored: most of these are proper adjectives, and "halal
+  // indian" in a page title reads like a mistake.
+  const name = cuisine.cuisine;
   return {
     title: `Halal ${name} in London`,
     description: `${cuisine.listed} halal ${name} places across London with evidence behind the label: ${cuisine.fully_halal} Fully Halal and ${cuisine.halal_options} with halal options. See what each label is based on and when it was checked.`,
@@ -44,7 +47,7 @@ function title(r: CuisineListing) {
 }
 
 function shortAddress(r: CuisineListing) {
-  const first = r.address.split(',')[0]?.trim();
+  const first = tidyAddress(r.address).split(',')[0]?.trim();
   if (!first || /street address not known/i.test(r.address)) return r.postcode ?? null;
   return r.postcode && !first.includes(r.postcode) ? `${first}, ${r.postcode}` : first;
 }
@@ -53,7 +56,9 @@ export default async function CuisinePage({ params }: { params: { cuisine: strin
   const found = await getCuisineBySlug(params.cuisine);
   if (!found) notFound();
   const { cuisine, listings } = found;
-  const name = cuisine.cuisine.toLowerCase();
+  // Kept exactly as stored: most of these are proper adjectives, and "halal
+  // indian" in a page title reads like a mistake.
+  const name = cuisine.cuisine;
 
   // The other axis: the same food, narrowed to where somebody actually is.
   // A directory page is only useful if it hands you the next, smaller question.
@@ -121,8 +126,8 @@ export default async function CuisinePage({ params }: { params: { cuisine: strin
         {cuisine.not_checked > 0 && (
           <>
             {' '}
-            Another {cuisine.not_checked.toLocaleString('en-GB')} serve this food but haven&apos;t been
-            checked by anyone yet.
+            Another {cuisine.not_checked.toLocaleString('en-GB')} serve this food and are worth
+            asking about: nobody has checked those.
           </>
         )}
       </p>

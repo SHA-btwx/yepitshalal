@@ -86,7 +86,7 @@ export function List({ children, empty }: { children?: React.ReactNode; empty: s
 }
 
 /** `padded={false}` when the row's whole area is a link or button that should
- *  own the padding — otherwise the tap target stops short of the row edges. */
+ *  own the padding, otherwise the tap target stops short of the row edges. */
 export function Row({
   children,
   className,
@@ -109,7 +109,7 @@ export function Row({
   );
 }
 
-/** Labelled field wrapper — admin inputs were placeholder-only, which leaves a
+/** Labelled field wrapper. Admin inputs were placeholder-only, which leaves a
  *  field with no accessible name once anything is typed into it. */
 export function Field({
   label,

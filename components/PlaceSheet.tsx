@@ -10,6 +10,7 @@ import { displayName } from './RestaurantCard';
 import { getOpenStatus } from '@/lib/openingStatus';
 import { coverFor } from '@/lib/representativeImages';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
+import { tidyAddress } from '@/lib/address';
 import { isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
 import { whyListed } from '@/lib/whyListed';
 import type { PlacePreview } from '@/lib/placePreview';
@@ -153,7 +154,7 @@ export function PlaceSheet({
   // blindly produced "312 Bancroft Road, London, E1 4BU, E1 4BU".
   const addressLine = (() => {
     if (!detail) return null;
-    const street = detail.address.replace(/street address not known,?\s*/i, '').replace(/[,\s]+$/, '');
+    const street = tidyAddress(detail.address).replace(/street address not known,?\s*/i, '').replace(/[,\s]+$/, '');
     const pc = detail.postcode;
     if (!pc) return street || null;
     if (street.toUpperCase().includes(pc.toUpperCase())) return street;

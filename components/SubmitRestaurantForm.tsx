@@ -240,8 +240,8 @@ export function SubmitRestaurantForm({
         <div>
           <h2 className="font-display text-lg font-semibold text-ink">Halal information</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted">
-            Tell us what you know. We show where information came from, so a listing from a form
-            stays marked as not yet checked until we can confirm it.
+            Tell us what you know. We show where information came from, so a listing that rests on
+            a form alone can never show as more than Unverified until something stronger arrives.
           </p>
         </div>
         <Choice
@@ -263,6 +263,36 @@ export function SubmitRestaurantForm({
           inputMode="url"
           placeholder="https://"
           hint="A menu, certificate or post that mentions halal. This is what lets us check it quickly."
+        />
+      </section>
+
+      {/* Nobody publishes this and everybody wants to know it, so it comes from
+          the people who actually go. Kept out of the halal section on purpose:
+          a prayer room is not evidence about meat, and putting the two
+          questions in one box would invite somebody to read it as if it were. */}
+      <section className="space-y-4 rounded-2xl border border-black/10 p-4 sm:p-5">
+        <div>
+          <h2 className="font-display text-lg font-semibold text-ink">Somewhere to pray</h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            If you&apos;ve been, this is the thing nobody else will tell you. It goes on the listing
+            as something a visitor said, with the date, and it never affects the halal label.
+          </p>
+        </div>
+        <Choice
+          name="prayer_facility"
+          label="Is there anywhere to pray inside?"
+          options={[
+            { value: 'prayer_room', label: 'A prayer room' },
+            { value: 'space', label: 'Somewhere, not a room' },
+            { value: 'none', label: 'Nowhere' },
+            { value: 'unknown', label: "Didn't notice" },
+          ]}
+        />
+        <Field
+          label="Where is it, and anything worth knowing?"
+          name="prayer_facility_note"
+          maxLength={200}
+          placeholder="Upstairs past the counter, ask a member of staff"
         />
       </section>
 

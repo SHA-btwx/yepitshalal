@@ -31,7 +31,7 @@ async function revalidateFor(restaurantId: string) {
 
 /**
  * Owner or admin adds an external reel (Instagram / TikTok / YouTube).
- * Goes straight to pending_review — a partnership buys capacity, never a
+ * Goes straight to pending_review: a partnership buys capacity, never a
  * shortcut past moderation.
  */
 export async function addEmbedReel(restaurantId: string, formData: FormData) {
@@ -47,7 +47,7 @@ export async function addEmbedReel(restaurantId: string, formData: FormData) {
     throw new Error('That link is not an Instagram, TikTok or YouTube URL.');
   }
   if (!cover) {
-    throw new Error('An embedded reel needs a cover image — there is nothing to show before it plays.');
+    throw new Error('An embedded reel needs a cover image: there is nothing to show before it plays.');
   }
 
   await assertSlotAvailable(restaurantId);
@@ -211,7 +211,7 @@ export async function rejectReel(reelId: string, formData: FormData) {
 }
 
 // ============================================================================
-// Ownership and partnership — both admin acts.
+// Ownership and partnership: both admin acts.
 // ============================================================================
 
 /** Admin links a signed-up user to a restaurant, granting management rights. */
@@ -274,7 +274,7 @@ export async function reviewOwnershipClaim(claimId: string, approve: boolean) {
 
 /**
  * Partnership status is set by an admin (and, once Stripe prices exist, by the
- * webhook). It changes reel capacity only — there is deliberately no path from
+ * webhook). It changes reel capacity only: there is deliberately no path from
  * here to halal_classification or to the verification queue.
  */
 export async function setPartnership(restaurantId: string, formData: FormData) {

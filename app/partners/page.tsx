@@ -12,13 +12,13 @@ export const metadata: Metadata = {
 const FREE = [
   'Your listing, with halal information',
   '1 reel, live on your page',
-  'That reel is eligible for Discovery',
+  'That reel can surface in Discover',
   'Request verification',
 ];
 
 const PARTNER = [
   'More reels: signature dishes, prep, atmosphere, new menu items',
-  'Every reel is independently eligible for Discovery',
+  'Every reel can surface in Discover on its own',
   'A "Latest from you" section on your restaurant page',
   'Seasonal and promotional content, swapped whenever you like',
 ];
@@ -80,9 +80,9 @@ export default function PartnersPage() {
           What a partnership does not buy
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          It has no effect on your halal classification, on whether you get verified, or on how
-          quickly your verification is reviewed. Those work the same way for every restaurant on
-          the platform, paying or not. Reels are reviewed before they go live either way. Paying
+          It has no effect on your halal label, on whether you get verified, or on how
+          quickly your verification is reviewed. Those work the same way for every restaurant
+          here, paying or not. Reels are reviewed before they go live either way. Paying
           buys room to market yourself, and nothing about how we describe your food.
         </p>
       </div>

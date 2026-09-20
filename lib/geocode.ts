@@ -18,7 +18,7 @@ export function isInLondon(lat: number, lng: number): boolean {
   );
 }
 
-// postcodes.io — free, keyless, UK-only. Used for manual "search another location."
+// postcodes.io: free, keyless, UK-only. Used for manual "search another location."
 export async function geocodePostcode(query: string): Promise<GeocodeResult | null> {
   const cleaned = query.trim();
   if (!cleaned) return null;

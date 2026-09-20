@@ -32,7 +32,27 @@ interface Submission {
   serves_alcohol: boolean | null;
   certification_body: string | null;
   evidence_url: string | null;
+  prayer_facility: 'prayer_room' | 'space' | 'none' | null;
+  prayer_facility_note: string | null;
   notes: string | null;
+}
+
+/**
+ * Somewhere to pray, as reported by whoever sent the form.
+ *
+ * Kept apart from the halal evidence on purpose. It is a fact about the room,
+ * not about the meat, and refresh_halal_status never reads it. Nothing is
+ * written when the submitter did not answer: silence stays silence, and the
+ * page says "nobody has told us" rather than "nowhere".
+ */
+function prayerPatch(sub: Submission): Record<string, unknown> {
+  if (!sub.prayer_facility) return {};
+  return {
+    prayer_facility: sub.prayer_facility,
+    prayer_facility_note: sub.prayer_facility_note,
+    prayer_facility_source: sub.relationship,
+    prayer_facility_at: new Date().toISOString(),
+  };
 }
 
 async function loadPending(id: string): Promise<Submission> {
@@ -112,6 +132,7 @@ export async function approveSubmission(id: string) {
       // Nothing said about halal: listed as Worth asking rather than given a label.
       is_candidate: !saysSomethingHalal(sub),
       location: `SRID=4326;POINT(${sub.lng} ${sub.lat})`,
+      ...prayerPatch(sub),
     })
     .select('id, slug')
     .single();
@@ -164,6 +185,10 @@ export async function mergeSubmission(id: string, restaurantId: string) {
   if (!existing.cuisine_label && sub.cuisine) patch.cuisine_label = sub.cuisine;
   const ig = instagramUrl(sub.instagram);
   if (ig && !(existing.socials ?? []).includes(ig)) patch.socials = [...(existing.socials ?? []), ig];
+  // The prayer facility is the one thing a merge does overwrite: a more recent
+  // visit beats an older one, and a room that has closed should stop being
+  // advertised. Only when this submission actually answered.
+  Object.assign(patch, prayerPatch(sub));
   if (Object.keys(patch).length) await supabase.from('restaurants').update(patch).eq('id', restaurantId);
 
   if (saysSomethingHalal(sub)) {

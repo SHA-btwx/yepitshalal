@@ -37,6 +37,8 @@ interface Body {
   serves_alcohol?: string;
   certification_body?: string;
   evidence_url?: string;
+  prayer_facility?: string;
+  prayer_facility_note?: string;
   notes?: string;
 }
 
@@ -175,6 +177,11 @@ export async function POST(request: Request) {
   const likely = candidates.find((c) => c.similarity >= 0.6 && c.distance_meters <= 150);
 
   const claim = body.halal_claim === 'fully_halal' || body.halal_claim === 'halal_options' ? body.halal_claim : null;
+  // "Didn't notice" is stored as nothing, the same as not answering: silence
+  // must never reach a listing as "nowhere to pray".
+  const prayerFacility = ['prayer_room', 'space', 'none'].includes(String(body.prayer_facility))
+    ? String(body.prayer_facility)
+    : null;
 
   const { data: inserted, error } = await supabase
     .from('restaurant_submissions')
@@ -198,6 +205,8 @@ export async function POST(request: Request) {
       serves_alcohol: tri(body.serves_alcohol),
       certification_body: clean(body.certification_body, 80),
       evidence_url: validUrl(clean(body.evidence_url, 500)),
+      prayer_facility: prayerFacility,
+      prayer_facility_note: clean(body.prayer_facility_note, 200),
       notes: clean(body.notes, 1000),
       duplicate_candidates: candidates,
       ip_hash: ipHash,

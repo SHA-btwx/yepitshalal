@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRightIcon, MapPinIcon, NavigationIcon } from '@/components/icons';
+import { ArrowUpRightIcon, ClockIcon, MapPinIcon, NavigationIcon, PhoneIcon } from '@/components/icons';
+import { NearestMosqueButton } from '@/components/NearestMosqueButton';
 import { boroughSlug } from '@/lib/areas';
+import { formatUkPhone, splitPhones } from '@/lib/phone';
 import {
   countPrayerSpaces,
+  countPrayerSpacesWithHours,
   formatMetres,
+  formatOsmHours,
   getNearestPrayerSpaces,
   getPrayerSpaceBoroughs,
   walkingMinutes,
@@ -17,7 +21,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: 'Mosques and prayer spaces in London',
   description:
-    'Mosques and prayer rooms across London, from OpenStreetMap, with how far each one is to walk. Separate from the halal listings: a place to pray, not a claim about food.',
+    'Mosques across London, from OpenStreetMap, with how far each one is to walk and what hours anyone has recorded. Separate from the halal listings: a place to pray, not a claim about food.',
   alternates: { canonical: '/prayer-spaces' },
 };
 
@@ -39,8 +43,9 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
   const hasPoint = Number.isFinite(lat) && Number.isFinite(lng);
   const label = searchParams.label?.slice(0, 80);
 
-  const [total, boroughs, nearby] = await Promise.all([
+  const [total, withHours, boroughs, nearby] = await Promise.all([
     countPrayerSpaces(),
+    countPrayerSpacesWithHours(),
     getPrayerSpaceBoroughs(),
     hasPoint ? getNearestPrayerSpaces(lat, lng, 20, 8000) : Promise.resolve([]),
   ]);
@@ -65,7 +70,25 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
         {total} places to pray across London, from OpenStreetMap. Every restaurant page also says how
         far the nearest one is to walk.
       </p>
-      <p className="mt-2 text-pretty text-sm leading-relaxed text-muted">
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <NearestMosqueButton />
+        <span className="text-[13px] text-subtle">Uses your location. We never store it.</span>
+      </div>
+
+      {/* Said at the top, not buried at the bottom, because it changes how you
+          use the page: a mosque listed as open may well be locked. */}
+      <p className="mt-5 flex items-start gap-2 rounded-xl bg-sand p-4 text-sm leading-relaxed text-ink/80">
+        <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
+        <span>
+          <span className="font-semibold text-ink">Opening times are the weak part.</span> Only{' '}
+          {withHours} of these {total} carry any hours in OpenStreetMap, a mosque listed as open may
+          still be locked, and the doors being open is not the same as jamaat. For a particular
+          prayer, ring them or check their own website.
+        </span>
+      </p>
+
+      <p className="mt-4 text-pretty text-sm leading-relaxed text-muted">
         This is separate from the halal listings on purpose. A mosque being near a restaurant says
         nothing about that restaurant&apos;s food, and a halal label says nothing about the mosque.
       </p>
@@ -82,43 +105,71 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
             </p>
           )}
           <ul className="mt-3 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
-            {nearby.map((s) => (
-              <li key={s.id} className="px-4 py-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                  <p className="font-display text-[15px] font-semibold text-ink">{s.name}</p>
-                  <p className="text-[13px] font-semibold text-accent-ink">
-                    about {walkingMinutes(s.distance_meters)} min walk
+            {nearby.map((s) => {
+              const hours = formatOsmHours(s.opening_hours);
+              const services = formatOsmHours(s.service_times);
+              const phone = splitPhones(s.phone)[0] ?? null;
+              return (
+                <li key={s.id} className="px-4 py-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                    <p className="font-display text-[15px] font-semibold text-ink">{s.name}</p>
+                    <p className="text-[13px] font-semibold text-accent-ink">
+                      about {walkingMinutes(s.distance_meters)} min walk
+                    </p>
+                  </div>
+                  <p className="mt-0.5 text-[13px] text-muted">
+                    {formatMetres(s.distance_meters)}
+                    {s.address ? ` · ${s.address}` : s.postcode ? ` · ${s.postcode}` : ''}
+                    {s.borough ? ` · ${s.borough}` : ''}
                   </p>
-                </div>
-                <p className="mt-0.5 text-[13px] text-muted">
-                  {formatMetres(s.distance_meters)}
-                  {s.address ? ` · ${s.address}` : s.postcode ? ` · ${s.postcode}` : ''}
-                  {s.borough ? ` · ${s.borough}` : ''}
-                </p>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 font-semibold text-accent-ink hover:underline"
-                  >
-                    <NavigationIcon className="h-4 w-4" aria-hidden="true" />
-                    Directions
-                  </a>
-                  {s.website_url && (
-                    <a
-                      href={s.website_url}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="inline-flex items-center gap-1 font-medium text-muted hover:text-ink hover:underline"
-                    >
-                      Website
-                      <ArrowUpRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </a>
+
+                  {/* Hours only when a mapper recorded them, and always as
+                      "listed as", never as "open now". */}
+                  {(hours || services) && (
+                    <p className="mt-1.5 flex items-start gap-1.5 text-[13px] leading-relaxed text-ink/75">
+                      <ClockIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-subtle" aria-hidden="true" />
+                      <span>
+                        {hours && <>Listed as open {hours}. </>}
+                        {services && <>Prayer times listed as {services}. </>}
+                        <span className="text-subtle">Worth confirming before you set off.</span>
+                      </span>
+                    </p>
                   )}
-                </div>
-              </li>
-            ))}
+
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-semibold text-accent-ink hover:underline"
+                    >
+                      <NavigationIcon className="h-4 w-4" aria-hidden="true" />
+                      Directions
+                    </a>
+                    {phone && (
+                      <a
+                        href={`tel:${phone}`}
+                        className="inline-flex items-center gap-1.5 font-semibold text-accent-ink hover:underline"
+                      >
+                        <PhoneIcon className="h-4 w-4" aria-hidden="true" />
+                        {formatUkPhone(phone)}
+                      </a>
+                    )}
+                    {s.website_url && (
+                      <a
+                        href={s.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="inline-flex items-center gap-1 font-medium text-muted hover:text-ink hover:underline"
+                      >
+                        Website
+                        <ArrowUpRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
@@ -158,9 +209,9 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
           >
             OpenStreetMap contributors
           </a>
-          , under the Open Database Licence. We haven&apos;t visited any of them, and opening times
-          vary, so ring ahead for a particular prayer. Know one we&apos;re missing, or something
-          that&apos;s wrong?{' '}
+          , under the Open Database Licence. That is OpenStreetMap&apos;s coverage of London, not
+          a complete list of its mosques, and we haven&apos;t visited any of them. Know one
+          we&apos;re missing, or something that&apos;s wrong?{' '}
           <Link href="/submit-restaurant" className="font-semibold text-accent-ink hover:underline">
             Tell us
           </Link>

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 /**
  * Submit button for a Server Action form that asks first. Deleting an offer or
- * a photo was a single unguarded click with no undo — and the photo delete sat
+ * a photo was a single unguarded click with no undo, and the photo delete sat
  * inside a hover overlay, where the pointer is already moving.
  *
  * Server-side this is still just a submit button: with JS off the form posts as

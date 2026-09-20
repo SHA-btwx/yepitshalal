@@ -23,11 +23,41 @@ export interface PrayerSpace {
   borough: string | null;
   kind: string;
   website_url: string | null;
+  phone: string | null;
+  /** The raw OpenStreetMap opening_hours tag, or null, which is most of them. */
+  opening_hours: string | null;
+  /** The raw OpenStreetMap service_times tag: when prayers are held. */
+  service_times: string | null;
   has_womens_area: boolean | null;
   wheelchair: boolean | null;
   lat: number;
   lng: number;
   distance_meters: number;
+}
+
+const DAYS: Record<string, string> = {
+  Mo: 'Mon', Tu: 'Tue', We: 'Wed', Th: 'Thu', Fr: 'Fri', Sa: 'Sat', Su: 'Sun',
+};
+
+/**
+ * An OpenStreetMap time string, made readable, and nothing more.
+ *
+ * It is never turned into "open now". A mosque's doors and its jamaat times
+ * are not the same thing, hardly any of these are maintained, and telling
+ * somebody a mosque is open at maghrib when it is locked is worse than telling
+ * them nothing. So: expand the day codes, leave everything else exactly as the
+ * mapper wrote it, and let the caveat beside it do the rest.
+ */
+export function formatOsmHours(raw: string | null): string | null {
+  if (!raw) return null;
+  const tidy = raw.trim();
+  if (!tidy) return null;
+  if (tidy === '24/7') return 'Listed as open at all hours';
+  return tidy
+    .replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su)\b/g, (d) => DAYS[d] ?? d)
+    .replace(/\bPH\b/g, 'bank holidays')
+    .replace(/\s*;\s*/g, ' · ')
+    .replace(/\s*,\s*/g, ', ');
 }
 
 /**
@@ -76,5 +106,14 @@ export const getPrayerSpaceBoroughs = cache(async function getPrayerSpaceBorough
 
 export async function countPrayerSpaces(): Promise<number> {
   const { count } = await publicClient().from('prayer_spaces').select('id', { count: 'exact', head: true });
+  return count ?? 0;
+}
+
+/** How many carry any hours at all. It is a small number, and the page says so. */
+export async function countPrayerSpacesWithHours(): Promise<number> {
+  const { count } = await publicClient()
+    .from('prayer_spaces')
+    .select('id', { count: 'exact', head: true })
+    .or('opening_hours.not.is.null,service_times.not.is.null');
   return count ?? 0;
 }

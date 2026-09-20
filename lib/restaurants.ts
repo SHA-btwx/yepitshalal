@@ -44,6 +44,11 @@ export interface FullRestaurant {
   cuisineLabel: string | null;
   brandName: string | null;
   branchLabel: string | null;
+  /** Somewhere to pray at the restaurant itself. null is 'nobody has told us'. */
+  prayerFacility: 'prayer_room' | 'space' | 'none' | null;
+  prayerFacilityNote: string | null;
+  prayerFacilitySource: 'owner' | 'staff' | 'customer' | 'yepitshalal' | null;
+  prayerFacilityAt: string | null;
   photos: RestaurantPhoto[];
   videos: RestaurantVideo[];
   openingHours: (OpeningHour & { source?: string | null; checked_at?: string | null })[];
@@ -77,7 +82,7 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
   const { data: restaurant } = await supabase
     .from('restaurants_with_coords')
     .select(
-      'id, name, slug, description, address, postcode, borough, phone, website_url, menu_url, socials, halal_classification, halal_evidence_strength, halal_summary, halal_checked_at, is_listed, is_searchable, is_candidate, catalogue_status, lat, lng, branch_label, cuisine_label, brand_id'
+      'id, name, slug, description, address, postcode, borough, phone, website_url, menu_url, socials, halal_classification, halal_evidence_strength, halal_summary, halal_checked_at, is_listed, is_searchable, is_candidate, catalogue_status, lat, lng, branch_label, cuisine_label, brand_id, prayer_facility, prayer_facility_note, prayer_facility_source, prayer_facility_at'
     )
     .eq('slug', slug)
     .maybeSingle();
@@ -156,6 +161,10 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     catalogueStatus: restaurant.catalogue_status,
     brandName: (brand as { name: string } | null)?.name ?? null,
     branchLabel: restaurant.branch_label ?? null,
+    prayerFacility: restaurant.prayer_facility ?? null,
+    prayerFacilityNote: restaurant.prayer_facility_note ?? null,
+    prayerFacilitySource: restaurant.prayer_facility_source ?? null,
+    prayerFacilityAt: restaurant.prayer_facility_at ?? null,
     lat: restaurant.lat,
     lng: restaurant.lng,
     cuisines: (cuisineRows ?? [])

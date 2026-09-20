@@ -16,7 +16,7 @@ export function VerificationBadge({ facts }: { facts: HalalFactsPublic | null })
         <InfoIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-subtle" />
         <span>
           <span className="font-semibold text-ink">Not yet verified by YepItsHalal.</span> The
-          restaurant may well be halal — we simply haven&apos;t checked it ourselves.
+          restaurant may well be halal. We simply haven&apos;t checked it ourselves.
         </span>
       </div>
     );

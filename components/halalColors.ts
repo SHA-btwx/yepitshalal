@@ -10,7 +10,7 @@ export const HALAL_DOT_COLOR: Record<HalalStatus, string> = {
   unknown: '#8A918D',
 };
 
-// Map pins are imperative DOM, outside React, so they can't reuse HalalBadge —
+// Map pins are imperative DOM, outside React, so they can't reuse HalalBadge,
 // but a pin that announces only its colour is useless to a screen reader, and
 // this keeps the wording identical to the badge.
 export const HALAL_PIN_LABEL: Record<HalalStatus, string> = {

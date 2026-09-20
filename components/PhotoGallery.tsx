@@ -38,7 +38,7 @@ export function PhotoGallery({
         />
         {isStockPhoto(photos[active].storage_path) && (
           <span className="absolute bottom-2 right-2 rounded-full bg-ink/80 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-            Representative photo
+            Example photo
           </span>
         )}
       </div>

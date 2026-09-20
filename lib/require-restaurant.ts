@@ -12,7 +12,7 @@ export interface RestaurantAccess {
  * page AND inside every Server Action, because actions are reachable over the
  * network whether or not the page that renders their form was ever loaded.
  *
- * Throws rather than redirects — callers are actions, and a redirect from an
+ * Throws rather than redirects: callers are actions, and a redirect from an
  * action is not the error the caller needs to see.
  */
 export async function requireRestaurantAccess(restaurantId: string): Promise<RestaurantAccess> {
@@ -43,7 +43,7 @@ export async function requireRestaurantAccess(restaurantId: string): Promise<Res
 
 /**
  * A reel occupies a slot while it is live or waiting to go live. Drafts are
- * free, so a restaurant can prepare a replacement without paying — but it
+ * free, so a restaurant can prepare a replacement without paying, but it
  * cannot queue up more live content than its tier allows.
  *
  * The database trigger is the real backstop on publish; this exists so an owner
