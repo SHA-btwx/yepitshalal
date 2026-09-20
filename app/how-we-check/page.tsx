@@ -5,7 +5,7 @@ import { HalalBadge } from '@/components/HalalBadge';
 export const metadata: Metadata = {
   title: 'How we label halal places',
   description:
-    'What Fully Halal, Halal Options, Unverified and Not checked yet mean on YepItsHalal, where the evidence comes from, and what we do not know.',
+    'What Fully Halal, Halal Options, Unverified and Worth asking mean on YepItsHalal, where the evidence comes from, and what we do not know.',
   alternates: { canonical: '/how-we-check' },
 };
 
@@ -27,8 +27,8 @@ const LABELS = [
   },
   {
     classification: 'unknown' as const,
-    needs: 'No evidence either way, yet.',
-    examples: 'A place that serves a kind of food often halal in London (a kebab shop, a Pakistani grill, a peri peri chicken shop), which nobody has checked. It is a reason to ask, not an answer. Places that say they are not halal are never shown.',
+    needs: 'It serves a kind of food often halal in London, and nobody has checked it.',
+    examples: 'A kebab shop, a Pakistani grill, a peri peri chicken shop. It is why the place is here at all, and it is a reason to ask, not an answer. Places that say they are not halal are never shown.',
   },
 ];
 
@@ -89,7 +89,7 @@ export default function HowWeCheckPage() {
           ))}
         </dl>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Unverified and Not checked yet never mean a place isn&apos;t halal. When a restaurant, or a
+          Unverified and Worth asking never mean a place isn&apos;t halal. When a restaurant, or a
           person who mapped it, says it doesn&apos;t serve halal food, we don&apos;t show it at all.
         </p>
       </section>

@@ -160,7 +160,7 @@ export default async function AdminCoveragePage() {
               ['Fully Halal', totals.fully_halal],
               ['Halal Options', totals.halal_options],
               ['Unverified', totals.unverified],
-              ['Not checked yet', totals.not_checked],
+              ['Worth asking', totals.not_checked],
               ['Hidden', totals.no_evidence],
             ].map(([label, n]) => (
               <div key={label} className="rounded-xl border border-line px-3.5 py-3">
@@ -255,7 +255,7 @@ export default async function AdminCoveragePage() {
         <p className="flex items-start gap-2 px-1 text-xs leading-relaxed text-muted">
           <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
           Listed means shown in search with at least some evidence of halal food. Not checked counts
-          places shown as Not checked yet. Hidden counts active records we hold but do not show. Districts come
+          places shown as Worth asking. Hidden counts active records we hold but do not show. Districts come
           from each record&apos;s postcode, so records without one group under ??.
         </p>
       </div>

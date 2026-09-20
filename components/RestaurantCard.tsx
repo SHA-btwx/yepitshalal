@@ -9,6 +9,7 @@ import { cleanRestaurantName } from '@/lib/restaurantName';
 import { getOpenStatus } from '@/lib/openingStatus';
 import { coverFor } from '@/lib/representativeImages';
 import { isBusinessLogo, isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
+import { whyListed } from '@/lib/whyListed';
 
 function formatDistance(meters: number): string {
   const miles = meters / 1609.34;
@@ -47,9 +48,12 @@ export function RestaurantCard({
   const open = restaurant.opening_hours?.length ? getOpenStatus(restaurant.opening_hours) : null;
   const cover = coverFor(restaurant, (url) => !isStockPhoto(url));
   const logo = cover.own && isBusinessLogo(cover.src);
-  // The reason line: what the label rests on, or for a place not checked yet,
-  // that nobody has confirmed anything.
-  const reason = restaurant.halal_summary ?? (status === 'unknown' ? "We don't know yet if the food is halal" : null);
+  // The reason line: what the label rests on, or, for a place nobody has
+  // checked, why it is in front of you at all. Saying only that we hadn't
+  // checked read as "we have no idea about this place", when the reason it is
+  // here is perfectly good and easy to state: it serves the kind of food that
+  // is often halal in London.
+  const reason = restaurant.halal_summary ?? (status === 'unknown' ? whyListed(restaurant).line : null);
 
   return (
     // No outline. A hairline ring plus a shadow plus a border on the thing
@@ -121,7 +125,9 @@ export function RestaurantCard({
           {restaurant.checked_by_us && <CheckedByUsBadge size="sm" />}
         </span>
         {reason && (
-          <span className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-subtle">{reason}</span>
+          <span className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-subtle">
+            {reason.replace(/\.$/, '')}.
+          </span>
         )}
       </div>
 

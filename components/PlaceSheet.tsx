@@ -11,6 +11,7 @@ import { getOpenStatus } from '@/lib/openingStatus';
 import { coverFor } from '@/lib/representativeImages';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
 import { isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
+import { whyListed } from '@/lib/whyListed';
 import type { PlacePreview } from '@/lib/placePreview';
 import {
   ArrowRightIcon,
@@ -118,8 +119,9 @@ export function PlaceSheet({
   const open = hours.length ? getOpenStatus(hours) : null;
   const today = hours.length ? hoursToday(hours) : null;
   const phones = splitPhones(detail?.phone);
-  const reason =
-    restaurant.halal_summary ?? (status === 'unknown' ? "Nobody has checked whether the food here is halal" : null);
+  // Same words as the card: the label, and under it why this place is on a
+  // halal site when nobody has checked it. See lib/whyListed.
+  const reason = restaurant.halal_summary ?? (status === 'unknown' ? whyListed(restaurant).full : null);
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${restaurant.lat},${restaurant.lng}`;
 
   useEffect(() => {
@@ -239,7 +241,11 @@ export function PlaceSheet({
             )}
           </div>
 
-          {reason && <p className="mt-2.5 text-[13px] leading-relaxed text-muted">{reason}.</p>}
+          {/* Evidence summaries come out of the database without a full stop;
+              the "why it's here" line is a sentence and has one already. */}
+          {reason && (
+            <p className="mt-2.5 text-[13px] leading-relaxed text-muted">{reason.replace(/\.$/, '')}.</p>
+          )}
 
           {/* What the label rests on, in one line, with the way to see all of it. */}
           {detail && detail.evidence_count > 0 && (

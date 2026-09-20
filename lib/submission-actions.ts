@@ -109,7 +109,7 @@ export async function approveSubmission(id: string) {
       data_source: 'owner_submitted',
       catalogue_status: 'active',
       halal_classification: 'unverified',
-      // Nothing said about halal: listed as Not checked yet rather than given a label.
+      // Nothing said about halal: listed as Worth asking rather than given a label.
       is_candidate: !saysSomethingHalal(sub),
       location: `SRID=4326;POINT(${sub.lng} ${sub.lat})`,
     })

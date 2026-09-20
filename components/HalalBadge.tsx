@@ -43,9 +43,12 @@ const CONFIG: Record<
     bg: 'bg-halal-unverifiedSoft',
     ring: 'ring-halal-unverified/20',
   },
+  // "Not checked yet" said what we had not done and left the obvious question
+  // unanswered: then why am I looking at it? A place is here because the food
+  // it serves is often halal in London, which is a reason to ask. Say that.
   unknown: {
-    label: 'Not checked yet',
-    hint: "We don't know yet",
+    label: 'Worth asking',
+    hint: 'The kind of place that often is',
     Mark: HalalNotCheckedMark,
     text: 'text-subtle',
     bg: 'bg-white',

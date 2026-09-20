@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { HalalBadge } from './HalalBadge';
 import { ArrowUpRightIcon, InfoIcon } from './icons';
+import { foodKind } from '@/lib/whyListed';
 import type { EvidenceStrength, HalalClassification, HalalEvidence } from '@/lib/types';
 
 // The answer to "is this actually halal, and how do you know?", in the order a
@@ -103,7 +104,7 @@ export function HalalEvidencePanel({
   summary: string | null;
   evidence: HalalEvidence[];
   isListed: boolean;
-  /** In search as a place not checked yet. */
+  /** In search as a place nobody has checked: shown as Worth asking. */
   isSearchable?: boolean;
   cuisine?: string | null;
   slug: string;
@@ -121,17 +122,20 @@ export function HalalEvidencePanel({
           </h2>
           <HalalBadge classification="unknown" size="md" variant="solid" />
         </div>
+        {/* The reason first, the gap second. Opening with what we hadn't done
+            read as "we know nothing about this place", when there is a plain
+            reason it is here and the reader deserves to have it first. */}
         <p className="mt-1.5 text-sm leading-relaxed text-muted">
-          We don&apos;t know yet whether this place serves halal food. Nobody has checked, and we
-          haven&apos;t found anything it or anyone else has said about it.
+          {cuisine
+            ? `It serves ${foodKind(cuisine)}, which is often halal in London. That is why it's here.`
+            : "Its name suggests food that is often served halal in London. That is why it's here."}{' '}
+          It is a reason to ask, not an answer.
         </p>
         <div className="mt-4 rounded-xl bg-sand p-4 text-sm leading-relaxed text-ink/80">
-          <h3 className="font-semibold text-ink">Why it&apos;s on YepItsHalal</h3>
+          <h3 className="font-semibold text-ink">What we don&apos;t know</h3>
           <p className="mt-1">
-            {cuisine
-              ? `It's listed under ${cuisine}, a kind of food often served halal in London.`
-              : 'Its name suggests food that is often served halal in London.'}{' '}
-            That is a reason to ask, not an answer. Check with the restaurant before you order.
+            Nobody from YepItsHalal has been here, and we haven&apos;t found anything this place or
+            anyone else has said about its meat. Check with the restaurant before you order.
           </p>
         </div>
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">

@@ -55,7 +55,7 @@ const CLASSIFICATION_FILTERS: {
   { value: 'fully_halal', label: 'Fully Halal', Mark: HalalFullMark, tone: 'text-halal-full' },
   { value: 'halal_options', label: 'Halal Options', Mark: HalalPartialMark, tone: 'text-halal-partial' },
   { value: 'unverified', label: 'Unverified', Mark: HalalUnknownMark, tone: 'text-halal-unverified' },
-  { value: 'unknown', label: 'Not checked yet', Mark: HalalNotCheckedMark, tone: 'text-subtle' },
+  { value: 'unknown', label: 'Worth asking', Mark: HalalNotCheckedMark, tone: 'text-subtle' },
 ];
 
 const PAGE = 30;

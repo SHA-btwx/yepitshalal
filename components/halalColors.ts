@@ -17,5 +17,5 @@ export const HALAL_PIN_LABEL: Record<HalalStatus, string> = {
   fully_halal: 'Fully Halal',
   halal_options: 'Halal Options',
   unverified: 'Unverified',
-  unknown: 'Not checked yet',
+  unknown: 'Worth asking',
 };

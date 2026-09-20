@@ -1,5 +1,6 @@
 import { formatCheckedDate } from '@/components/HalalEvidencePanel';
 import type { HalalStatus } from './types';
+import { foodKind } from './whyListed';
 
 /**
  * The answer to "is this halal?", in one sentence, in the same words everywhere.
@@ -15,7 +16,7 @@ import type { HalalStatus } from './types';
  */
 
 export interface HalalAnswer {
-  /** "Yes", "Partly", "Not confirmed", "Not checked yet". The short answer. */
+  /** "Yes", "Partly", "Not confirmed", "Worth asking". The short answer. */
   verdict: string;
   /** A full sentence, 20 to 40 words, safe to publish anywhere. */
   sentence: string;
@@ -26,6 +27,8 @@ export function halalAnswerFor(options: {
   status: HalalStatus | null;
   summary: string | null;
   checkedAt: string | null;
+  /** Why an unchecked place is here at all. Ignored for every other status. */
+  cuisine?: string | null;
 }): HalalAnswer {
   const { name, status, summary } = options;
   const because = summary ? `${summary.replace(/\.$/, '')}.` : '';
@@ -47,11 +50,17 @@ export function halalAnswerFor(options: {
         verdict: 'Not confirmed',
         sentence: `We cannot confirm it. There are signs that ${name} serves halal food, but nobody has verified it. ${because}${checked} Unverified never means not halal: ask the restaurant.`.replace(/\s+/g, ' '),
       };
-    case 'unknown':
+    case 'unknown': {
+      // Lead with the reason it is on a halal site, because the reader's real
+      // question here is not "have you checked" but "why am I looking at this".
+      const why = options.cuisine
+        ? `It serves ${foodKind(options.cuisine)}, which is often halal in London.`
+        : 'It serves a kind of food that is often halal in London.';
       return {
-        verdict: 'Not checked yet',
-        sentence: `We do not know yet. Nobody has checked ${name}, and we have found nothing it or anyone else has said about its meat. That is a reason to ask, not an answer.`,
+        verdict: 'Worth asking',
+        sentence: `Worth asking. ${why} Nobody has checked ${name}, and we have found nothing it or anyone else has said about its meat. That is a reason to ask, not an answer.`,
       };
+    }
     default:
       return {
         verdict: 'Not known',

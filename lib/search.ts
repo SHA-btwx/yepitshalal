@@ -21,7 +21,7 @@ import {
 // Search is the same for everyone. There is no radius entitlement: anybody can
 // look anywhere in London, signed in or not. See migration 0033.
 //
-// Search includes places nobody has checked yet ("Not checked yet"), alongside
+// Search includes places nobody has checked yet ("Worth asking"), alongside
 // places with halal evidence. Each result carries halal_status to tell them apart,
 // and each radius count says how many of its places have evidence.
 

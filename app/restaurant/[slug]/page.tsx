@@ -60,7 +60,7 @@ function hostOf(url: string): string | null {
   }
 }
 
-/** What a visitor is told: a label from evidence, Not checked yet, or nothing. */
+/** What a visitor is told: a label from evidence, Worth asking, or nothing. */
 function statusFor(r: { isListed: boolean; isSearchable: boolean; halal_classification: HalalStatus }): HalalStatus | null {
   if (r.isListed) return r.halal_classification;
   if (r.isSearchable) return 'unknown';
@@ -84,10 +84,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     status: statusFor(restaurant),
     summary: restaurant.halal_summary,
     checkedAt: restaurant.halal_checked_at,
+    cuisine,
   });
   const description = listed
     ? `${answer.sentence} See the evidence, the address and today's hours.`.slice(0, 300)
-    : `${title}${cuisine ? `, ${cuisine}` : ''} in ${where}. We haven't checked whether this place serves halal food yet.`;
+    : `${title}${cuisine ? `, ${cuisine}` : ''} in ${where}. ${answer.sentence}`.slice(0, 300);
 
   return {
     title: listed ? `Is ${title} halal? ${halalLabel(restaurant.halal_classification)}, ${where}` : `${title}, ${where}`,
@@ -181,6 +182,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
     status,
     summary: restaurant.halal_summary,
     checkedAt: restaurant.halal_checked_at,
+    cuisine: restaurant.cuisines[0] ?? restaurant.cuisineLabel,
   });
   const sources = [...new Set(restaurant.evidence.map((e) => e.source_name))].slice(0, 3).join(', ');
   const alcohol = restaurant.halalFacts?.serves_alcohol;

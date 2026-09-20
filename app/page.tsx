@@ -49,7 +49,7 @@ const LABELS = [
   },
   {
     classification: 'unknown' as const,
-    body: "Nobody has checked yet. We show it because it serves a kind of food that's often halal, so it's worth asking.",
+    body: "It serves a kind of food that is often halal in London, so it is worth asking. Nobody has checked this one yet.",
   },
 ];
 
@@ -235,7 +235,7 @@ export default async function HomePage() {
         </dl>
 
         <p className="mt-4 text-center text-sm leading-relaxed text-muted">
-          Neither &ldquo;Unverified&rdquo; nor &ldquo;Not checked yet&rdquo; means a place isn&apos;t
+          Neither &ldquo;Unverified&rdquo; nor &ldquo;Worth asking&rdquo; means a place isn&apos;t
           halal. If it matters to you, ask the restaurant.
         </p>
 

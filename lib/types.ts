@@ -80,7 +80,7 @@ export interface TierCount {
   miles: number;
   meters: number;
   places: number;
-  /** Of those, how many have halal evidence (any label but Not checked yet). */
+  /** Of those, how many have halal evidence (any label but Worth asking). */
   withEvidence: number;
 }
 
