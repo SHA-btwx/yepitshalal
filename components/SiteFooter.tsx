@@ -39,7 +39,7 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm sm:gap-x-14">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm sm:grid-cols-3 sm:gap-x-12">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-subtle">Explore</h2>
               <ul className="mt-3 space-y-2">
@@ -98,6 +98,33 @@ export function SiteFooter() {
                 <li>
                   <Link href="/account" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
                     My account
+                  </Link>
+                </li>
+                {/* Owners look here first when something about their own place
+                    is wrong, so the route out of a bad label sits with them. */}
+                <li>
+                  <Link href="/corrections" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Something wrong?
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-subtle">Legal</h2>
+              <ul className="mt-3 space-y-2">
+                <li>
+                  <Link href="/privacy" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Privacy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/corrections" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                    Corrections
                   </Link>
                 </li>
               </ul>

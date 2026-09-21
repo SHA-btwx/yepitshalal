@@ -30,3 +30,14 @@ function resolveSiteUrl(): string {
 }
 
 export const SITE_URL = resolveSiteUrl();
+
+/**
+ * The address a visitor writes to about their data, a wrong halal label, or
+ * anything else that needs a person.
+ *
+ * It is published on /privacy, /terms and /corrections, so it has to receive
+ * mail. Set up forwarding before those pages go live: a privacy notice naming
+ * an address that bounces is worse than one that names none, because it is the
+ * first thing an ICO complaint checks.
+ */
+export const CONTACT_EMAIL = 'hello@yepitshalal.com';

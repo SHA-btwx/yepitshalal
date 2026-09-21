@@ -16,7 +16,7 @@ export const revalidate = 3600;
  * that claims a change every hour (build time would) gets its dates ignored,
  * so this is a date somebody sets on purpose.
  */
-const CONTENT_UPDATED = new Date('2026-09-19');
+const CONTENT_UPDATED = new Date('2026-09-21');
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [areas, restaurants, cuisines] = await Promise.all([
     getAreasWithPages(),
@@ -39,6 +39,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/prayer-spaces`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${siteUrl}/how-we-check`, lastModified: CONTENT_UPDATED, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${siteUrl}/image-credits`, lastModified: CONTENT_UPDATED, changeFrequency: 'monthly', priority: 0.2 },
+    // Worth crawling even though nobody searches for them: an owner looking for
+    // a way to dispute a label often arrives from a search engine, not the site.
+    { url: `${siteUrl}/corrections`, lastModified: CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.4 },
+    { url: `${siteUrl}/privacy`, lastModified: CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${siteUrl}/terms`, lastModified: CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${siteUrl}/submit-restaurant`, lastModified: CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.4 },
     { url: `${siteUrl}/yep-plus`, lastModified: CONTENT_UPDATED, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${siteUrl}/partners`, changeFrequency: 'monthly', priority: 0.3 },
