@@ -76,8 +76,11 @@ const config: Config = {
         'safe-b': 'env(safe-area-inset-bottom, 0px)',
       },
       transitionTimingFunction: {
-        // Decelerating curve — things arrive quickly then settle.
+        // Decelerating curve: things arrive quickly then settle.
         out: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        // One step softer, with a touch of overshoot. For things that appear
+        // rather than move: a modal, a stage change, a revealed section.
+        arrive: 'cubic-bezier(0.22, 1.12, 0.36, 1)',
       },
       keyframes: {
         'fade-up': {
@@ -88,10 +91,32 @@ const config: Config = {
           from: { opacity: '0', transform: 'translateY(12px)' },
           to: { opacity: '1', transform: 'none' },
         },
+        // The intro. A scrim that fades, a card that rises into it, and stage
+        // copy that slides the way the reader is travelling.
+        'scrim-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'modal-in': {
+          from: { opacity: '0', transform: 'translateY(18px) scale(0.985)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+        'stage-next': {
+          from: { opacity: '0', transform: 'translateX(20px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+        'stage-back': {
+          from: { opacity: '0', transform: 'translateX(-20px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both',
         'sheet-up': 'sheet-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'scrim-in': 'scrim-in 220ms ease-out both',
+        'modal-in': 'modal-in 380ms cubic-bezier(0.22, 1.12, 0.36, 1) both',
+        'stage-next': 'stage-next 300ms cubic-bezier(0.22, 1.12, 0.36, 1) both',
+        'stage-back': 'stage-back 300ms cubic-bezier(0.22, 1.12, 0.36, 1) both',
       },
     },
   },

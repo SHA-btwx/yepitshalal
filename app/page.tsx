@@ -15,6 +15,10 @@ import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
 import { hreflangAlternates } from '@/lib/locales';
+import { getSiteCounts } from '@/lib/siteCounts';
+import { introStages } from '@/lib/introStages';
+import { IntroSequence } from '@/components/IntroSequence';
+import { Reveal } from '@/components/Reveal';
 
 // The English homepage is the x-default and the canonical target every
 // translated landing page points back to. See lib/locales.
@@ -93,11 +97,12 @@ const SITE_LD = {
 };
 
 export default async function HomePage() {
-  const [featuredReels, areas, cuisines, prayerSpaceCount] = await Promise.all([
+  const [featuredReels, areas, cuisines, prayerSpaceCount, counts] = await Promise.all([
     getFeaturedReels(),
     getAreasWithPages(),
     getCuisines(),
     countPrayerSpaces(),
+    getSiteCounts(),
   ]);
   // The borough pages are the indexable half of this site. Every prominent link
   // on this page went to /search, which is noindexed and disallowed in
@@ -110,6 +115,9 @@ export default async function HomePage() {
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(SITE_LD) }} />
+      {/* Front door only, once per person, mounted after hydration so it is
+          never in the server HTML and never delays the page behind it. */}
+      {counts && <IntroSequence stages={introStages(counts)} />}
       {/* ATTENTION. A sign in a window is a claim; this page's entire pitch is
           that we don't stop there. The headline names the customer's actual
           state (guessing, whether they'd admit it or not) rather than
@@ -119,7 +127,7 @@ export default async function HomePage() {
           rest of the page is for everyone else, who needs Interest and Desire
           first. Photos sit in square frames rather than a stretched banner
           crop, so contrast on the text never has to fight a scrim. */}
-      <section className="relative overflow-hidden bg-forest-deep">
+      <section className="grain relative overflow-hidden bg-forest-deep">
         {/* Three lights rather than one: green from the top right, a deeper
             green from the bottom left, and a warm ember between them. The old
             near-black ground with a single green wash read as careful and also
@@ -205,38 +213,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Straight under the hero, because this is the first thing a visitor
-          from Manchester or Toronto needs and the moment they would otherwise
-          leave. It is also the honest version of "coming soon": we are not
-          pretending to cover their city, we are asking which one to do next
-          and saying what decides the order. */}
-      <section id="next-cities" className="scroll-mt-20 border-b border-sand-line bg-sand">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 px-5 py-6 sm:gap-6 sm:px-6 sm:py-11 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
-          <div>
-            {/* No second Beta pill: the hero's is two inches above this, and
-                the headline is the same admission said in plainer words. */}
-            <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
-              Not in London? Tell us where you&apos;re looking.
-            </h2>
-            <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-muted">
-              We&apos;ll email you the moment we get there. We expand where the most people are
-              asking.
-            </p>
-          </div>
-
-          <div>
-            <NotifyMeForm source="homepage expansion band" />
-          </div>
-        </div>
-      </section>
-
       {/* INTEREST. Before any proof of food or ease of use, the visitor needs
           the one idea the rest of the site leans on: a label isn't a rating,
           it's an answer to three specific questions. This used to sit after
           the reel strip, as a dry legend; it belongs here, because Desire
           (the reels, the three-step journey) only lands once someone has a
           reason to trust the label under the food. */}
-      <section className="mx-auto max-w-2xl px-5 pb-10 pt-12 sm:px-6 sm:pb-12 sm:pt-20">
+      <Reveal as="section" className="mx-auto max-w-2xl px-5 pb-10 pt-12 sm:px-6 sm:pb-12 sm:pt-20">
         <div className="text-center">
           <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
             A &ldquo;halal&rdquo; sign only tells you so much
@@ -276,7 +259,7 @@ export default async function HomePage() {
             How we label places
           </Link>
         </p>
-      </section>
+      </Reveal>
 
       {/* DESIRE, beat one: proof, not a promise. Deliberately still rather
           than autoplaying: the brief rules that out, and it would fight the
@@ -285,7 +268,7 @@ export default async function HomePage() {
 
       {/* DESIRE, beat two: the journey is short, which is itself part of the
           pitch. Genuinely a sequence, so it earns the step markers. */}
-      <section className="border-y border-sand-line bg-sand">
+      <Reveal as="section" className="border-y border-sand-line bg-sand">
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6 sm:py-14">
           <h2 className="text-sm font-semibold text-spice-ink">How it works</h2>
           <ol className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
@@ -327,13 +310,13 @@ export default async function HomePage() {
             ))}
           </ol>
         </div>
-      </section>
+      </Reveal>
 
       {/* For the visitor who has not decided anything yet. A directory is only
           useful if it offers the question a reader is actually asking, and that
           question is usually a kind of food rather than a postcode. */}
       {topCuisines.length > 0 && (
-        <section className="border-b border-sand-line bg-sand-soft">
+        <Reveal as="section" className="border-b border-sand-line bg-sand-soft">
           <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6 sm:py-14">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <h2 className="font-display text-2xl font-semibold text-ink">What do you fancy?</h2>
@@ -358,14 +341,14 @@ export default async function HomePage() {
               ))}
             </ul>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* The other half of eating out. Its own band rather than a line in the
           footer, because it is a thing people leave the site to go and look up,
           and one tap is faster than typing "mosque near me" somewhere else.
           It says nothing about any restaurant's food and never could. */}
-      <section className="border-b border-sand-line bg-white">
+      <Reveal as="section" className="border-b border-sand-line bg-white">
         <div className="mx-auto flex max-w-5xl flex-col gap-5 px-5 py-11 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
             <h2 className="font-display text-xl font-semibold text-ink sm:text-2xl">
@@ -384,13 +367,13 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ACTION. One dominant, unambiguous ask. There is nothing to buy on
           this page, so the ask is the thing this site actually runs on:
           keep looking. The headline deliberately echoes the hero's, closing
           the loop it opened rather than introducing a new one. */}
-      <section className="mx-auto max-w-2xl px-5 pb-14 pt-14 text-center sm:px-6 sm:pb-16 sm:pt-16">
+      <Reveal as="section" className="mx-auto max-w-2xl px-5 pb-14 pt-14 text-center sm:px-6 sm:pb-16 sm:pt-16">
         <h2 className="text-balance font-display text-2xl font-semibold text-ink sm:text-3xl">
           So, where are you eating?
         </h2>
@@ -424,13 +407,13 @@ export default async function HomePage() {
             </Link>
           </p>
         )}
-      </section>
+      </Reveal>
 
       {/* P.S. There is nothing to buy on this site, so the support ask and the
           restaurant-owner path do not get a second hero. A postscript is the
           most-read line in a direct-response letter, which is exactly the job
           here: seen by everyone, pushed on no one. */}
-      <section className="border-t border-line">
+      <Reveal as="section" className="border-t border-line">
         <div className="mx-auto max-w-4xl px-5 py-12 sm:px-6 sm:py-14">
           <p className="font-display text-sm font-semibold text-ink">P.S.</p>
           <div className="mt-3 grid grid-cols-1 gap-x-10 gap-y-7 sm:grid-cols-2">
@@ -469,7 +452,28 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
+
+      {/* The expansion ask, demoted. It sat directly under the hero, where it
+          took the second screen of a London site to tell a London visitor that
+          we only do London. Down here it reaches the person who scrolled to the
+          end without a city of their own and found nothing for them, which is
+          the only person it was ever for. One line, no headline weight, and the
+          form only unfolds if they want it. */}
+      <Reveal as="section" id="next-cities" className="scroll-mt-24 border-t border-sand-line bg-sand-soft">
+        <div className="mx-auto max-w-4xl px-5 py-9 sm:px-6">
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13.5px] leading-relaxed text-muted">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
+              <MapPinIcon className="h-3.5 w-3.5 text-spice-ink" aria-hidden="true" />
+              London only, for now.
+            </span>
+            <span>Tell us where you&apos;re looking and we&apos;ll email you when we get there.</span>
+          </p>
+          <div className="mt-3 max-w-xl">
+            <NotifyMeForm source="homepage expansion footer" />
+          </div>
+        </div>
+      </Reveal>
     </div>
   );
 }

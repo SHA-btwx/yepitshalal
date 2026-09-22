@@ -86,6 +86,16 @@ export default function YepPlusPage({ searchParams }: { searchParams: { checkout
       {searchParams.checkout === 'not_configured' && (
         <Notice tone="warn">Support payments aren&apos;t switched on yet. Please check back soon.</Notice>
       )}
+      {/* The price on this page and the price in Stripe disagree, so nothing
+          was charged. Says what happened rather than blaming the card, and
+          does not repeat a number we have just admitted we cannot honour. */}
+      {searchParams.checkout === 'price_mismatch' && (
+        <Notice tone="warn">
+          We stopped that before anything was charged: our payment setup doesn&apos;t match the price
+          on this page, and we won&apos;t take money on a number we haven&apos;t got right. It is
+          being fixed. Nothing left your account.
+        </Notice>
+      )}
 
       {/* ATTENTION. The headline is the promise itself, not a description of a
           product, because the promise is the surprising part. */}

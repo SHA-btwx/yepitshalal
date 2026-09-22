@@ -70,6 +70,15 @@ export const viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-GB" className={`${fraunces.variable} ${inter.variable}`}>
+      <head>
+        {/* Scroll reveals start hidden and are shown by a script. Without one,
+            everything must simply be there: a decorative entrance is never a
+            good enough reason for a blank page. */}
+        <noscript>
+          {/* eslint-disable-next-line react/no-danger */}
+          <style dangerouslySetInnerHTML={{ __html: '.reveal{opacity:1!important;transform:none!important}' }} />
+        </noscript>
+      </head>
       <body className="min-h-screen bg-sand-soft font-sans text-ink antialiased">
         <a
           href="#main"
