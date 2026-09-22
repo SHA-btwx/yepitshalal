@@ -15,9 +15,6 @@ import { ctaPrimary, ctaSecondary, ctaGhost } from '@/components/cta';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
 import { hreflangAlternates } from '@/lib/locales';
-import { getSiteCounts } from '@/lib/siteCounts';
-import { introStages } from '@/lib/introStages';
-import { IntroSequence } from '@/components/IntroSequence';
 import { Reveal } from '@/components/Reveal';
 
 // The English homepage is the x-default and the canonical target every
@@ -97,12 +94,11 @@ const SITE_LD = {
 };
 
 export default async function HomePage() {
-  const [featuredReels, areas, cuisines, prayerSpaceCount, counts] = await Promise.all([
+  const [featuredReels, areas, cuisines, prayerSpaceCount] = await Promise.all([
     getFeaturedReels(),
     getAreasWithPages(),
     getCuisines(),
     countPrayerSpaces(),
-    getSiteCounts(),
   ]);
   // The borough pages are the indexable half of this site. Every prominent link
   // on this page went to /search, which is noindexed and disallowed in
@@ -115,9 +111,6 @@ export default async function HomePage() {
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(SITE_LD) }} />
-      {/* Front door only, once per person, mounted after hydration so it is
-          never in the server HTML and never delays the page behind it. */}
-      {counts && <IntroSequence stages={introStages(counts)} />}
       {/* ATTENTION. A sign in a window is a claim; this page's entire pitch is
           that we don't stop there. The headline names the customer's actual
           state (guessing, whether they'd admit it or not) rather than
@@ -161,8 +154,14 @@ export default async function HomePage() {
                 paragraph that used to sit under it said the same thing again
                 in smaller type, and the section below the fold says it
                 properly, so it went. */}
-            <h1 className="mt-4 text-balance font-display text-[2.6rem] min-[390px]:text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.25rem]">
-              Find halal food, wherever you are.
+            {/* Two lines, on every width, because the break is a decision and
+                not something to leave to the container. At 2.75rem the phrase
+                wrapped to three on a phone and ate the screen the search box
+                needs; the size below is the largest that keeps "wherever you
+                are." on one line at 375px. */}
+            <h1 className="mt-4 font-display text-[2rem] font-semibold leading-[1.06] min-[360px]:text-[2.2rem] tracking-[-0.02em] text-white min-[390px]:text-[2.35rem] sm:text-[3.1rem] lg:text-[3.6rem] xl:text-[4rem]">
+              <span className="block">Find halal food,</span>
+              <span className="block">wherever you are.</span>
             </h1>
 
             <div id="search" className="mt-5 flex justify-center sm:mt-8 lg:justify-start">
@@ -210,6 +209,29 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* Seen on arrival, and still quiet.
+          Two instructions that look opposed and are not. The band that used to
+          sit here had a headline, a paragraph and a form, and spent the second
+          screen of a London site telling a London visitor we only do London,
+          which is why it was cut down. What it needed was not to be lower, it
+          was to be lighter: this is one line at 13.5px directly under the hero,
+          where somebody who is not in London meets it immediately and everybody
+          else reads past it in a second. */}
+      <section id="next-cities" className="scroll-mt-20 border-b border-sand-line bg-sand">
+        <div className="mx-auto max-w-4xl px-5 py-5 sm:px-6 sm:py-6">
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13.5px] leading-relaxed text-muted">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
+              <MapPinIcon className="h-3.5 w-3.5 text-spice-ink" aria-hidden="true" />
+              London only, for now.
+            </span>
+            <span>Tell us where you&apos;re looking and we&apos;ll email you when we get there.</span>
+          </p>
+          <div className="mt-3 max-w-xl">
+            <NotifyMeForm source="homepage expansion band" />
+          </div>
         </div>
       </section>
 
@@ -450,27 +472,6 @@ export default async function HomePage() {
                 </Link>
               </div>
             </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* The expansion ask, demoted. It sat directly under the hero, where it
-          took the second screen of a London site to tell a London visitor that
-          we only do London. Down here it reaches the person who scrolled to the
-          end without a city of their own and found nothing for them, which is
-          the only person it was ever for. One line, no headline weight, and the
-          form only unfolds if they want it. */}
-      <Reveal as="section" id="next-cities" className="scroll-mt-24 border-t border-sand-line bg-sand-soft">
-        <div className="mx-auto max-w-4xl px-5 py-9 sm:px-6">
-          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13.5px] leading-relaxed text-muted">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
-              <MapPinIcon className="h-3.5 w-3.5 text-spice-ink" aria-hidden="true" />
-              London only, for now.
-            </span>
-            <span>Tell us where you&apos;re looking and we&apos;ll email you when we get there.</span>
-          </p>
-          <div className="mt-3 max-w-xl">
-            <NotifyMeForm source="homepage expansion footer" />
           </div>
         </div>
       </Reveal>
