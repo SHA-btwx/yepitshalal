@@ -46,19 +46,19 @@ const HERO_PHOTOS = [
 const LABELS = [
   {
     classification: 'fully_halal' as const,
-    body: 'Strong evidence that all the meat is halal, such as certification or the restaurant saying so clearly.',
+    body: 'Strong evidence that all the meat is halal.',
   },
   {
     classification: 'halal_options' as const,
-    body: 'Halal food is served here, alongside food that is not halal.',
+    body: 'Halal food served alongside food that is not.',
   },
   {
     classification: 'unverified' as const,
-    body: "There are signs of halal food, but it hasn't been confirmed. It never means not halal.",
+    body: "Signs of halal food, not confirmed. Never means not halal.",
   },
   {
     classification: 'unknown' as const,
-    body: "It serves a kind of food that is often halal in London, so it is worth asking. Nobody has checked this one yet.",
+    body: 'The kind of food that is usually halal. Nobody has checked this one.',
   },
 ];
 
@@ -247,8 +247,7 @@ export default async function HomePage() {
             A &ldquo;halal&rdquo; sign only tells you so much
           </h2>
           <p className="mx-auto mt-2.5 max-w-lg text-pretty text-[15px] leading-relaxed text-muted">
-            It doesn&apos;t say who said so, or when. So every place here shows its
-            label, the evidence behind it, and the date it was checked.
+            It doesn&apos;t say who, or when. Every place here shows both.
           </p>
         </div>
 
@@ -275,8 +274,7 @@ export default async function HomePage() {
             where a reader decides how much to trust them. */}
         <p className="mx-auto mt-4 max-w-lg text-pretty text-center text-sm leading-relaxed text-muted">
           <span className="font-semibold text-ink">We haven&apos;t visited any of them yet.</span>{' '}
-          Every label so far comes from what a restaurant publishes and from open data. The ones we
-          check ourselves will carry our badge.{' '}
+          Every label comes from what a place publishes, or from open data. Ours will carry a badge.{' '}
           <Link href="/how-we-check" className="font-semibold text-accent-ink underline underline-offset-2">
             How we label places
           </Link>
@@ -347,7 +345,7 @@ export default async function HomePage() {
               </Link>
             </div>
             <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
-              Every one of these shows what its halal label is based on, and when it was checked.
+              Each one shows what its label rests on, and when.
             </p>
             <ul className="mt-5 flex flex-wrap gap-2.5">
               {topCuisines.map((c) => (
@@ -377,9 +375,7 @@ export default async function HomePage() {
               Praying while you&apos;re out?
             </h2>
             <p className="mt-1.5 max-w-lg text-pretty text-[15px] leading-relaxed text-muted">
-              {prayerSpaceCount} mosques across London, with how far each one is to walk. Every
-              restaurant page carries the nearest, and says whether there is somewhere to pray
-              inside.
+              {prayerSpaceCount} across London, with the walk from wherever you are eating.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-3">
@@ -400,7 +396,7 @@ export default async function HomePage() {
           So, where are you eating?
         </h2>
         <p className="mx-auto mt-2.5 max-w-md text-pretty text-[15px] leading-relaxed text-muted">
-          Search your area. Every place shows its halal label and the evidence behind it.
+          Every place shows its label, and what it rests on.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <a href="#search" className={ctaPrimary}>
@@ -442,9 +438,7 @@ export default async function HomePage() {
             <div>
               <p className="text-pretty text-sm leading-relaxed text-muted">
                 <span className="font-semibold text-ink">Checking places costs money.</span>{' '}
-                Finding out whether food is halal is free here and always will be: no locked
-                distance, no members-only listing, no paywall on an answer. If you want to help
-                pay for that work, you can support it from £2.99 a month.
+                Knowing what is halal never will. Support pays for the checking, from £2.99 a month.
               </p>
               <p className="mt-2 flex items-start gap-1.5 text-pretty text-sm leading-relaxed text-muted">
                 <HeartHandIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-accent-ink" />
@@ -459,8 +453,7 @@ export default async function HomePage() {
             <div>
               <p className="text-pretty text-sm leading-relaxed text-muted">
                 <span className="font-semibold text-ink">Run a halal restaurant?</span>{' '}
-                Listing is free. So is your first reel: a short clip of your food that
-                shows on your page and can surface in Discover.
+                Listing is free, and so is your first reel.
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 <Link href="/submit-restaurant" className={`${ctaGhost} -ml-4`}>

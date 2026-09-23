@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Fraunces, Inter } from 'next/font/google';
+import { IBM_Plex_Sans, Newsreader } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -7,14 +7,32 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { BottomNav } from '@/components/BottomNav';
 import { SITE_URL } from '@/lib/site';
 
-const fraunces = Fraunces({
+// Newsreader and IBM Plex Sans, replacing Fraunces and Inter on 2026-09-22.
+//
+// Inter was the one that had to go. It is the default of nearly every site
+// built quickly in the last three years, to the point that it reads as a
+// signal about how a site was made rather than about what it is for, and this
+// site's whole argument is that somebody actually did the work.
+//
+// IBM Plex Sans is the deliberate answer to that: humanist, a little tighter
+// than Inter, with letterforms that have an opinion, and a register that reads
+// institutional rather than launched. It is a typeface commissioned to sit on
+// documentation, which is what most of this site is.
+//
+// Newsreader replaces Fraunces for the same reason in the other direction.
+// Fraunces is a lovely, slightly boutique display serif, and boutique is the
+// wrong note for a site whose pitch is "here is the evidence and the date it
+// was read". Newsreader was drawn for long-form reading, carries an optical
+// size axis, and puts the headings in the same register as a newspaper
+// standfirst. That is the voice the copy has always had.
+const newsreader = Newsreader({
   subsets: ['latin'],
   variable: '--font-display',
   weight: ['500', '600', '700'],
   display: 'swap',
 });
 
-const inter = Inter({
+const plex = IBM_Plex_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
   weight: ['400', '500', '600', '700'],
@@ -69,7 +87,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="en-GB" className={`${newsreader.variable} ${plex.variable}`}>
       <head>
         {/* Scroll reveals start hidden and are shown by a script. Without one,
             everything must simply be there: a decorative entrance is never a
