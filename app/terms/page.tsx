@@ -48,7 +48,7 @@ export default function TermsPage() {
           go out of date, and a kitchen can change its supplier the day after we check.
           <span className="font-semibold text-ink">
             {' '}
-            If it matters to you, and it does, ask the restaurant.
+            Ask the restaurant.
           </span>{' '}
           Our label is a starting point for that question, not a substitute for it.
         </p>

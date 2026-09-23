@@ -251,7 +251,7 @@ export default async function HomePage() {
 
         <p className="mt-4 text-center text-sm leading-relaxed text-muted">
           Neither &ldquo;Unverified&rdquo; nor &ldquo;Worth asking&rdquo; means a place isn&apos;t
-          halal. If it matters to you, ask the restaurant.
+          halal. Ask them when you order.
         </p>
 
         {/* Said here, on the page that explains the labels, because this is

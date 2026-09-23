@@ -145,8 +145,9 @@ export default function HowWeCheckPage() {
         <h2 className="font-display text-xl font-semibold text-ink">What a label can&apos;t tell you</h2>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           Standards differ. Some people only eat hand-slaughtered meat, some avoid places that
-          serve alcohol, and restaurants change suppliers. A label is a starting point based on
-          the evidence we can see. If it matters to you, ask the restaurant.
+          serve alcohol, and restaurants change suppliers. A label is a starting point built from
+          the evidence we can see. The kitchen is the only one who can tell you for certain, so
+          ask them.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           Restaurant locations and details come from the Food Standards Agency food hygiene

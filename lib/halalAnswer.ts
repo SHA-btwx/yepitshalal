@@ -38,7 +38,7 @@ export function halalAnswerFor(options: {
     case 'fully_halal':
       return {
         verdict: 'Yes',
-        sentence: `Yes. There is strong evidence that all the meat served at ${name} is halal. ${because}${checked} If it matters to you, confirm it with the restaurant when you order.`.replace(/\s+/g, ' '),
+        sentence: `Yes. There is strong evidence that all the meat served at ${name} is halal. ${because}${checked} Confirm it with them when you order.`.replace(/\s+/g, ' '),
       };
     case 'halal_options':
       return {
