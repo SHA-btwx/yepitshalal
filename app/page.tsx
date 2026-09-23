@@ -129,12 +129,18 @@ export default async function HomePage() {
           aria-hidden="true"
           className="absolute inset-0 bg-[radial-gradient(120%_90%_at_82%_-10%,rgba(52,197,107,0.38),transparent_58%),radial-gradient(95%_85%_at_-5%_105%,rgba(11,61,34,0.95),transparent_62%),radial-gradient(70%_60%_at_15%_15%,rgba(194,84,43,0.22),transparent_60%)]"
         />
+        {/* Softens the edge between the dark hero and the cream below, and
+            nothing more. It used to be 64px tall with the area chips sitting
+            42px inside it: those chips are 10% white, so the cream came
+            straight through them and took the white label with it. Now it is
+            40px, and the section's bottom padding keeps every element clear of
+            it. A fade with content in it is not a fade, it is a smudge. */}
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-sand-soft"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-sand-soft"
         />
 
-        <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-5 pt-7 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 pb-12 pt-7 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
           <div className="text-center lg:text-left">
             {/* Two facts, not one hedge. "London, for now" as a grey whisper
                 left people to work out for themselves whether the site was
@@ -212,28 +218,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Seen on arrival, and still quiet.
-          Two instructions that look opposed and are not. The band that used to
-          sit here had a headline, a paragraph and a form, and spent the second
-          screen of a London site telling a London visitor we only do London,
-          which is why it was cut down. What it needed was not to be lower, it
-          was to be lighter: this is one line at 13.5px directly under the hero,
-          where somebody who is not in London meets it immediately and everybody
-          else reads past it in a second. */}
-      <section id="next-cities" className="scroll-mt-20 border-b border-sand-line bg-sand">
-        <div className="mx-auto max-w-4xl px-5 py-5 sm:px-6 sm:py-6">
-          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13.5px] leading-relaxed text-muted">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
-              <MapPinIcon className="h-3.5 w-3.5 text-spice-ink" aria-hidden="true" />
-              London only, for now.
-            </span>
-            <span>Tell us where you&apos;re looking and we&apos;ll email you when we get there.</span>
-          </p>
-          <div className="mt-3 max-w-xl">
-            <NotifyMeForm source="homepage expansion band" />
-          </div>
-        </div>
-      </section>
 
       {/* INTEREST. Before any proof of food or ease of use, the visitor needs
           the one idea the rest of the site leans on: a label isn't a rating,
@@ -468,6 +452,29 @@ export default async function HomePage() {
           </div>
         </div>
       </Reveal>
+
+      {/* Last thing on the page, and deliberately so. It is for the visitor who
+          read everything and found no city of their own, which is the only
+          person it was ever for, and keeping the email fields down here means
+          the first screen is a search box rather than a form.
+
+          No Reveal on this one. Everything else on the page can afford to
+          arrive; the one section a reader reaches by scrolling to the very
+          bottom should never be caught mid-fade, so it is simply there. */}
+      <section id="next-cities" className="scroll-mt-24 border-t border-sand-line bg-sand">
+        <div className="mx-auto max-w-4xl px-5 py-10 sm:px-6 sm:py-12">
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm leading-relaxed text-ink/75">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
+              <MapPinIcon className="h-4 w-4 text-spice-ink" aria-hidden="true" />
+              London only, for now.
+            </span>
+            <span>Tell us where you&apos;re looking and we&apos;ll email you when we get there.</span>
+          </p>
+          <div className="mt-4 max-w-xl">
+            <NotifyMeForm source="homepage expansion footer" />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
