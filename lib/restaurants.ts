@@ -43,6 +43,9 @@ export interface FullRestaurant {
   cuisines: string[];
   cuisineLabel: string | null;
   brandName: string | null;
+  /** For the chain's "Is it halal?" page, when the place belongs to one. */
+  brandId: string | null;
+  brandSlug: string | null;
   branchLabel: string | null;
   /** Somewhere to pray at the restaurant itself. null is 'nobody has told us'. */
   prayerFacility: 'prayer_room' | 'space' | 'none' | null;
@@ -101,7 +104,7 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     { data: sources },
   ] = await Promise.all([
     restaurant.brand_id
-      ? supabase.from('brands').select('name').eq('id', restaurant.brand_id).maybeSingle()
+      ? supabase.from('brands').select('name, slug').eq('id', restaurant.brand_id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase.from('restaurant_cuisines').select('cuisines(name)').eq('restaurant_id', restaurant.id),
     supabase
@@ -160,6 +163,8 @@ export const getRestaurantBySlug = cache(async function getRestaurantBySlug(
     isCandidate: Boolean(restaurant.is_candidate),
     catalogueStatus: restaurant.catalogue_status,
     brandName: (brand as { name: string } | null)?.name ?? null,
+    brandId: restaurant.brand_id ?? null,
+    brandSlug: (brand as { slug: string | null } | null)?.slug ?? null,
     branchLabel: restaurant.branch_label ?? null,
     prayerFacility: restaurant.prayer_facility ?? null,
     prayerFacilityNote: restaurant.prayer_facility_note ?? null,

@@ -61,11 +61,19 @@ export const metadata: Metadata = {
   // was declared 32x32, which is below the 48px Google will use, so the one
   // icon sitting at the root of the domain was advertising itself as too small
   // to show.
+  //
+  // Moved once, on 2026-09-24, to new addresses: Google Search was still
+  // showing the old green pin with a tick hours after the new logo went live,
+  // and a fresh address cannot be answered from its cache. Every size is the
+  // halal pin with حلال on the teal disc (48px and up is what Google shows); the
+  // Arabic-free "C" of the first set is gone. Keep these addresses from now on.
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
-      { url: '/icon-96.png', sizes: '96x96', type: 'image/png' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48', type: 'image/x-icon' },
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
     shortcut: ['/favicon.ico'],

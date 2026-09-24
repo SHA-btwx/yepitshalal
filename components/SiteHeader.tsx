@@ -7,6 +7,12 @@ import { createServerSupabase } from '@/lib/supabase/server';
 
 // The header is the logo's own ground since 2026-09-24: its deep teal, with
 // the lockup in the logo's white and lime, and the one button in lime.
+//
+// Solid, and the full width of the window. It was 85 to 95% opaque, which over
+// the page's light ground turned the teal a washed-out grey and the logo with
+// it; and it sat inside the 1152px content column, so on a wide screen the logo
+// floated 200 to 400px in from the corner. Shabir, 2026-09-24: put the logo on
+// the top left and make sure it is properly visible.
 export async function SiteHeader() {
   const supabase = createServerSupabase();
   const {
@@ -14,8 +20,8 @@ export async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="ground-dark sticky top-0 z-30 border-b border-white/10 bg-forest-deep/95 text-white backdrop-blur supports-[backdrop-filter]:bg-forest-deep/85">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6">
+    <header className="ground-dark sticky top-0 z-30 border-b border-white/10 bg-forest-deep text-white">
+      <div className="flex h-14 w-full items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
         <span className="inline-flex min-w-0 items-center gap-2">
           <Link
             href="/"

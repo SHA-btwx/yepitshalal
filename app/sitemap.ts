@@ -1,13 +1,21 @@
 import type { MetadataRoute } from 'next';
-import { getAreasWithPages, getListedRestaurantSlugs } from '@/lib/areas';
+import { getAreasWithPages } from '@/lib/areas';
 import { getCuisines } from '@/lib/cuisines';
+import { getChainIndex, getSearchableSlugs } from '@/lib/halalPages';
 import { SITE_URL as siteUrl } from '@/lib/site';
 import { LOCALES } from '@/lib/locales';
 
 export const revalidate = 3600;
 
-// Only pages worth landing on: listed places and areas with enough of them.
-// Unlisted places, search results and Discover (still a holding page) are left out.
+// Only pages worth landing on. Search results and Discover (still a holding
+// page) are left out.
+//
+// Since 2026-09-24 every place in search has an "Is it halal?" page here, the
+// ones nobody has checked included, and every chain with two or more branches
+// in search: rebuilt from the database every hour, so a place added later is
+// listed without anybody touching this file. A restaurant's own page is listed
+// only when it has evidence and is in search; a listing taken out of search
+// (sent to review, closed, merged) drops out of both.
 
 /**
  * When the fixed pages last actually changed. Bump it when one of them does.
@@ -16,13 +24,15 @@ export const revalidate = 3600;
  * that claims a change every hour (build time would) gets its dates ignored,
  * so this is a date somebody sets on purpose.
  */
-const CONTENT_UPDATED = new Date('2026-09-21');
+const CONTENT_UPDATED = new Date('2026-09-24');
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [areas, restaurants, cuisines] = await Promise.all([
+  const [areas, places, cuisines, chains] = await Promise.all([
     getAreasWithPages(),
-    getListedRestaurantSlugs(),
+    getSearchableSlugs(),
     getCuisines(),
+    getChainIndex(),
   ]);
+  const restaurants = places.filter((p) => p.isListed);
 
   return [
     { url: `${siteUrl}/`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 1 },
@@ -64,6 +74,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(r.updated ? { lastModified: new Date(r.updated) } : {}),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
+    })),
+    { url: `${siteUrl}/is-it-halal`, lastModified: CONTENT_UPDATED, changeFrequency: 'weekly', priority: 0.8 },
+    ...chains.map((c) => ({
+      url: `${siteUrl}/is-it-halal/chain/${c.slug}`,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    ...places.map((p) => ({
+      url: `${siteUrl}/is-it-halal/${p.slug}`,
+      ...(p.updated ? { lastModified: new Date(p.updated) } : {}),
+      changeFrequency: 'monthly' as const,
+      // The ones with evidence answer more than the ones nobody has checked.
+      priority: p.isListed ? 0.7 : 0.5,
     })),
   ];
 }

@@ -11,7 +11,9 @@
 // Three forms of it, each used where it can be read:
 //
 //  - LogoMark: the pin and حلال on the teal disc, no English, for 32 to 64px
-//    (the header). The favicon's two smallest sizes drop the Arabic too.
+//    (the header). The favicons (public/favicon*) are the same pin and word,
+//    larger on the disc and without the white ring, at every size: the
+//    Arabic-free pin reads as a "C" (2026-09-24).
 //  - LogoLockup: the mark beside YEP ITS HALAL, for navigation. The logo
 //    writes halal in Arabic; the lockup spells it out so the name reads.
 //  - LogoBadge: the whole logo, from about 96px up (the footer, the support
@@ -52,12 +54,18 @@ export function LogoWordmark({ tone = 'dark', className }: { tone?: 'dark' | 'li
   );
 }
 
-/** The mark and the wordmark. `tone` is the ground it sits on. */
+/**
+ * The mark and the wordmark. `tone` is the ground it sits on.
+ *
+ * Sized for the 56px header (2026-09-24, "ensure it's properly visible"): the
+ * mark fills 40 of its 56px from 640px up, and the wordmark's capitals are set
+ * to match the pin's head rather than sit small beside it.
+ */
 export function LogoLockup({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
   return (
-    <span className="inline-flex items-center gap-2">
-      <LogoMark size={34} className="h-[34px] w-[34px] shrink-0" />
-      <LogoWordmark tone={tone} className="h-[14px] w-auto min-[380px]:h-4 sm:h-[17px]" />
+    <span className="inline-flex items-center gap-2 sm:gap-2.5">
+      <LogoMark size={40} className="h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
+      <LogoWordmark tone={tone} className="h-[15px] w-auto min-[380px]:h-4 sm:h-[19px]" />
     </span>
   );
 }

@@ -51,7 +51,9 @@ export function formatCheckedDate(iso: string): string {
 function EvidenceItem({ e, lead = false }: { e: HalalEvidence; lead?: boolean }) {
   return (
     <div className={lead ? '' : 'border-t border-line pt-3'}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-subtle">{KIND_LABEL[e.kind] ?? 'Evidence'}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-subtle">
+        {e.source_name === "The chain's website" ? "The chain's own words" : KIND_LABEL[e.kind] ?? 'Evidence'}
+      </p>
       {e.excerpt && (
         <blockquote className="mt-1.5 border-l-2 border-accent/40 pl-3 text-sm italic leading-relaxed text-ink/80">
           &ldquo;{e.excerpt}&rdquo;
@@ -98,6 +100,7 @@ export function HalalEvidencePanel({
   slug,
   name,
   checkedByUs = false,
+  title,
 }: {
   classification: HalalClassification;
   strength: EvidenceStrength | null;
@@ -112,13 +115,16 @@ export function HalalEvidencePanel({
   name: string;
   /** Somebody from YepItsHalal went, rang, or read the certificate. */
   checkedByUs?: boolean;
+  /** The panel's heading. On an "Is it halal?" page the question is already the page's own heading. */
+  title?: string;
 }) {
+  const heading = title ?? `Is ${name} halal?`;
   if (!isListed && isSearchable && !strength) {
     return (
       <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="halal-status" className="text-balance font-display text-lg font-semibold text-ink">
-            Is {name} halal?
+            {heading}
           </h2>
           <HalalBadge classification="unknown" size="md" variant="solid" />
         </div>
@@ -157,7 +163,7 @@ export function HalalEvidencePanel({
     return (
       <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
         <h2 id="halal-status" className="text-balance font-display text-lg font-semibold text-ink">
-          Is {name} halal?
+          {heading}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           {summary ??
@@ -179,7 +185,7 @@ export function HalalEvidencePanel({
     <section aria-labelledby="halal-status" className="rounded-2xl border border-line bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="halal-status" className="text-balance font-display text-lg font-semibold text-ink">
-          Is {name} halal?
+          {heading}
         </h2>
         <HalalBadge classification={classification} size="md" variant="solid" />
       </div>

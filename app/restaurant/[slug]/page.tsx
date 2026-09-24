@@ -18,7 +18,7 @@ import { OpeningHoursList } from '@/components/OpeningHoursList';
 import { OffersList } from '@/components/OffersList';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { ShareButton } from '@/components/ShareButton';
-import { cleanRestaurantName } from '@/lib/restaurantName';
+import { placeTitle as displayTitle, statusFor, summaryFor } from '@/lib/halalPages';
 import { tidyAddress } from '@/lib/address';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { isUnsplash, skipOptimiser, unsplashSized } from '@/lib/imageUrl';
@@ -26,7 +26,7 @@ import { halalAnswerFor } from '@/lib/halalAnswer';
 import { SITE_URL } from '@/lib/site';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
 import { creditLine, representativeImageFor } from '@/lib/representativeImages';
-import { isStockPhoto, DAY_NAMES, type HalalStatus, type SearchResultRestaurant } from '@/lib/types';
+import { isStockPhoto, DAY_NAMES, type SearchResultRestaurant } from '@/lib/types';
 import {
   NavigationIcon,
   PhoneIcon,
@@ -48,24 +48,12 @@ const SOURCE_CREDIT: Record<string, string> = {
 const BUTTON =
   'inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full border border-line bg-white px-5 text-sm font-semibold text-ink transition hover:border-ink/30 active:scale-[0.98] sm:flex-none';
 
-function displayTitle(r: { name: string; brandName: string | null; branchLabel: string | null }) {
-  const base = cleanRestaurantName(r.brandName ?? r.name);
-  return r.branchLabel ? `${base}, ${r.branchLabel}` : base;
-}
-
 function hostOf(url: string): string | null {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch {
     return null;
   }
-}
-
-/** What a visitor is told: a label from evidence, Worth asking, or nothing. */
-function statusFor(r: { isListed: boolean; isSearchable: boolean; halal_classification: HalalStatus }): HalalStatus | null {
-  if (r.isListed) return r.halal_classification;
-  if (r.isSearchable) return 'unknown';
-  return null;
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -78,12 +66,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const cuisine = restaurant.cuisines[0] ?? restaurant.cuisineLabel;
   // Only a listed place makes a halal statement, and that statement is the
   // label plus the reason for it, never the label alone.
-  // "is X halal" is the question people actually type, so it is the question
-  // the title asks and the description answers, in the site's own words.
   const answer = halalAnswerFor({
     name: title,
     status: statusFor(restaurant),
-    summary: restaurant.halal_summary,
+    summary: summaryFor(restaurant.halal_summary, restaurant.evidence),
     checkedAt: restaurant.halal_checked_at,
     cuisine,
   });
@@ -92,12 +78,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     : `${title}${cuisine ? `, ${cuisine}` : ''} in ${where}. ${answer.sentence}`.slice(0, 300);
 
   return {
-    title: listed ? `Is ${title} halal? ${halalLabel(restaurant.halal_classification)}, ${where}` : `${title}, ${where}`,
+    // "Is X halal?" is asked by the place's own question page
+    // (/is-it-halal/<slug>, since 2026-09-24). This page is the listing, so its
+    // title says what a listing has, and the two do not compete for one search.
+    title: listed ? `${title}, ${where}: ${halalLabel(restaurant.halal_classification)}, hours and directions` : `${title}, ${where}`,
     description,
     alternates: { canonical: `/restaurant/${restaurant.slug}` },
-    // Only places with evidence are sent to search engines: a page that can
-    // only say "we don't know" is not worth landing on from Google.
-    robots: listed ? undefined : { index: false, follow: true },
+    // A listing with evidence that is in search. Places nobody has checked are
+    // found through their question page instead, which says so honestly and
+    // points to the places nearby that do have evidence.
+    robots: listed && restaurant.isSearchable ? undefined : { index: false, follow: true },
   };
 }
 
@@ -174,65 +164,15 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
     ...(hoursSpec.length ? { openingHoursSpecification: hoursSpec } : {}),
   };
 
-  // The question this page exists to answer, marked up as a question. Google
-  // stopped showing FAQ rich results in May 2026, but the assistants people now
-  // ask still read FAQPage when they extract an answer, and this is the answer
-  // we want them to give: ours, with its caveats attached.
-  const answer = halalAnswerFor({
-    name: title,
-    status,
-    summary: restaurant.halal_summary,
-    checkedAt: restaurant.halal_checked_at,
-    cuisine: restaurant.cuisines[0] ?? restaurant.cuisineLabel,
-  });
-  const sources = [...new Set(restaurant.evidence.map((e) => e.source_name))].slice(0, 3).join(', ');
-  const alcohol = restaurant.halalFacts?.serves_alcohol;
-  const pork = restaurant.halalFacts?.serves_pork;
-  const faqLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: `Is ${title} halal?`,
-        acceptedAnswer: { '@type': 'Answer', text: answer.sentence },
-      },
-      ...(restaurant.evidence.length
-        ? [
-            {
-              '@type': 'Question',
-              name: `How do you know whether ${title} is halal?`,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: `From ${restaurant.evidence.length === 1 ? 'one source' : restaurant.evidence.length + ' sources'} listed on this page, each with the date it was checked: ${sources}. We never label a place from its name or its cuisine alone.`,
-              },
-            },
-          ]
-        : []),
-      ...(alcohol !== undefined || pork !== undefined
-        ? [
-            {
-              '@type': 'Question',
-              name: `Does ${title} serve alcohol or pork?`,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: [
-                  alcohol === true ? 'Alcohol is served.' : alcohol === false ? 'No alcohol is served.' : 'We have not confirmed whether alcohol is served.',
-                  pork === true ? 'Pork is served.' : pork === false ? 'No pork is served.' : 'We have not confirmed whether pork is served.',
-                ].join(' '),
-              },
-            },
-          ]
-        : []),
-    ],
-  };
+  // The question itself ("Is X halal?") is marked up on the place's own
+  // question page, /is-it-halal/<slug>, which exists to answer it. One page
+  // per question: two pages carrying the same FAQ would compete for it.
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-8">
       {restaurant.isListed && (
         <>
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }} />
         </>
       )}
 
@@ -334,7 +274,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
         <HalalEvidencePanel
           classification={restaurant.halal_classification}
           strength={restaurant.halal_evidence_strength}
-          summary={restaurant.halal_summary}
+          summary={summaryFor(restaurant.halal_summary, restaurant.evidence)}
           evidence={restaurant.evidence}
           isListed={restaurant.isListed}
           isSearchable={restaurant.isSearchable}
@@ -343,6 +283,14 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           name={title}
           checkedByUs={hasGenuineCheck}
         />
+
+        {restaurant.isSearchable && (
+          <p className="mt-2 px-1 text-sm">
+            <Link href={`/is-it-halal/${restaurant.slug}`} className="font-semibold text-accent-ink hover:underline">
+              Is {title} halal? The short answer, to share
+            </Link>
+          </p>
+        )}
 
         <NearestPrayerSpace
           spaces={prayerSpaces}

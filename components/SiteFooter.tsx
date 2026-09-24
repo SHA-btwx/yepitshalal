@@ -63,6 +63,11 @@ export function SiteFooter() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/is-it-halal" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
+                    Is it halal? Chains A to Z
+                  </Link>
+                </li>
+                <li>
                   <Link href="/prayer-spaces" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Prayer spaces
                   </Link>

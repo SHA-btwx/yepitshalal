@@ -69,20 +69,3 @@ export const getAreaBySlug = cache(async function getAreaBySlug(slug: string) {
   const { data } = await publicClient().rpc('borough_listings', { p_borough: area.borough });
   return { area, listings: (data ?? []) as AreaListing[] };
 });
-
-export async function getListedRestaurantSlugs(): Promise<{ slug: string; updated: string | null }[]> {
-  const client = publicClient();
-  const rows: { slug: string; updated: string | null }[] = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await client
-      .from('restaurants')
-      .select('slug, halal_checked_at')
-      .eq('is_listed', true)
-      .order('slug')
-      .range(from, from + 999);
-    if (error || !data) break;
-    rows.push(...data.map((r) => ({ slug: r.slug as string, updated: (r.halal_checked_at as string | null) ?? null })));
-    if (data.length < 1000) break;
-  }
-  return rows;
-}
