@@ -41,3 +41,28 @@ export const SITE_URL = resolveSiteUrl();
  * first thing an ICO complaint checks.
  */
 export const CONTACT_EMAIL = 'hello@yepitshalal.com';
+
+/**
+ * The three inboxes, and the only three. Each is a Namecheap forwarding alias,
+ * and all three were confirmed as accepting mail from Resend on 2026-09-23.
+ *
+ *   hello  anything general: site feedback, city and language requests
+ *   info   business: new restaurants, ownership claims, partnerships
+ *   help   support: verification requests, corrections, edits to a listing
+ *
+ * Where a form's email lands is decided here and in lib/notify.ts, never in the
+ * page, so a visitor is never shown the routing.
+ */
+export const INBOX = {
+  hello: 'hello@yepitshalal.com',
+  info: 'info@yepitshalal.com',
+  help: 'help@yepitshalal.com',
+} as const;
+
+export type Inbox = keyof typeof INBOX;
+
+/** Where somebody writes about a wrong label or a wrong detail. */
+export const CORRECTIONS_EMAIL = INBOX.help;
+
+/** Where a restaurant writes about a partnership. */
+export const PARTNERS_EMAIL = INBOX.info;

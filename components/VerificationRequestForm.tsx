@@ -2,9 +2,12 @@
 
 import { useId, useState } from 'react';
 import { SealCheckIcon } from './icons';
+import { fieldInput } from './form';
+import { Free } from './Free';
 
-const FIELD_CLASS =
-  'w-full rounded-xl border border-black/15 bg-white px-3.5 py-3 text-[16px] text-ink placeholder:text-subtle transition focus:border-accent-ink focus:outline-none focus:ring-2 focus:ring-accent-ink/20 sm:text-sm';
+// The shared field from components/form.ts. Only the look is shared; the
+// wording of this form is deliberate and stays exactly as it is.
+const FIELD_CLASS = fieldInput;
 
 export function VerificationRequestForm({
   restaurantId,
@@ -84,9 +87,11 @@ export function VerificationRequestForm({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col rounded-2xl border border-line bg-white p-4">
-          <h3 className="text-sm font-semibold text-ink">Free verification</h3>
+          <h3 className="text-sm font-semibold text-ink">
+            <Free>Free</Free> verification
+          </h3>
           <p className="mt-1 flex-1 text-xs leading-relaxed text-muted">
-            Joins the normal queue. There&apos;s no set timeframe: we take on about 3 free
+            Joins the normal queue. There&apos;s no set timeframe: we take on about 3 <Free>free</Free>{' '}
             checks a day.
           </p>
           <button

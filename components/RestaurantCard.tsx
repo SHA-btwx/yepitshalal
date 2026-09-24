@@ -62,7 +62,7 @@ export function RestaurantCard({
     // the eye is then free to land on the photograph and the name.
     <Link
       href={`/restaurant/${restaurant.slug}`}
-      className="group flex items-center gap-4 rounded-[22px] bg-white p-3 shadow-[0_1px_2px_rgba(20,24,26,0.04),0_10px_28px_-14px_rgba(20,24,26,0.18)] transition duration-200 active:scale-[0.995] hover:-translate-y-[2px] hover:shadow-[0_2px_4px_rgba(20,24,26,0.05),0_18px_38px_-16px_rgba(20,24,26,0.26)] sm:p-3.5"
+      className="group flex items-center gap-4 rounded-[22px] bg-white p-3 shadow-[0_1px_2px_rgba(15,37,43,0.04),0_10px_28px_-14px_rgba(15,37,43,0.18)] transition duration-200 active:scale-[0.995] hover:-translate-y-[2px] hover:shadow-[0_2px_4px_rgba(15,37,43,0.05),0_18px_38px_-16px_rgba(15,37,43,0.26)] sm:p-3.5"
     >
       <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] bg-halal-unverifiedSoft sm:h-[116px] sm:w-[116px]">
         <CoverImage

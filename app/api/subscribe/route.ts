@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { ipHashFor, overIpLimit, RATE_LIMITED_MESSAGE } from '@/lib/rateLimit';
+import { notifyInbox } from '@/lib/notify';
 
 // "Tell me when you reach my city."
 //
@@ -98,6 +99,22 @@ export async function POST(request: Request) {
     if (error.code === '23505') return NextResponse.json({ ok: true });
     return NextResponse.json({ error: "That didn't save. Please try again." }, { status: 500 });
   }
+
+  // Somebody asking for their city or country. General, so hello@.
+  const wanted = str(p?.label, 200) ?? str(p?.name, 120) ?? clean(body.wanted_city, 120);
+  await notifyInbox({
+    inbox: 'hello',
+    subject: wanted ? `Where next: ${wanted}` : 'Where next: somebody outside London, no place given',
+    fields: [
+      ['Email', email],
+      ['Asked for', wanted ?? 'Not given'],
+      ['Picked from the list', p ? 'Yes' : 'No, typed'],
+      ['Country', str(p?.country, 120)],
+      ['Where on the site', clean(body.source, 200)],
+      ['Page language', clean(body.locale, 8) ?? 'en'],
+    ],
+    replyTo: email,
+  });
 
   return NextResponse.json({ ok: true });
 }

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
-import { notifyAdmin } from '@/lib/notify';
+import { notifyInbox } from '@/lib/notify';
 import { SITE_URL } from '@/lib/site';
 
 // "Add a restaurant" creates a submission, never a listing.
@@ -219,18 +219,44 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'We could not save that just now. Please try again.' }, { status: 500 });
   }
 
-  await notifyAdmin(
-    target ? `Edit suggested for ${target.name}` : `New restaurant submission: ${name}`,
-    [
-      `${name}`,
-      `${address}, ${postcode} (${borough})`,
-      `Submitted by: ${relationship}${contactEmail ? `, ${contactEmail}` : ''}`,
-      `Halal: ${claim ?? 'not stated'}`,
-      target ? `Edit to: ${target.name} (${SITE_URL}/restaurant/${target.slug})` : likely ? `Possible duplicate of: ${likely.name} (${SITE_URL}/restaurant/${likely.slug})` : 'No likely duplicate found.',
-      '',
-      `Review: ${SITE_URL}/admin/submissions/${inserted.id}`,
-    ].join('\n')
-  );
+  // A new restaurant is business, so info@. A change to a place we already list
+  // is a correction, so help@, the same inbox the corrections page names.
+  const TRI: Record<string, string> = { yes: 'Yes', no: 'No' };
+  const CLAIM: Record<string, string> = { fully_halal: 'All the meat is halal', halal_options: 'Some halal options' };
+  const PRAYER: Record<string, string> = { prayer_room: 'A prayer room', space: 'Somewhere to pray', none: 'Nowhere to pray' };
+  await notifyInbox({
+    inbox: target ? 'help' : 'info',
+    subject: target ? `Edit suggested for ${target.name}` : `New restaurant: ${name}, ${borough}`,
+    fields: [
+      ['Restaurant', name],
+      ['Address', `${address}, ${postcode}`],
+      ['Borough', borough],
+      ['Phone', phone],
+      ['Website', validUrl(clean(body.website, 300))],
+      ['Instagram', clean(body.instagram, 100)],
+      ['Cuisine', clean(body.cuisine, 60)],
+      ['Halal, as they say it', claim ? CLAIM[claim] : 'Not stated'],
+      ['Serves pork', TRI[String(body.serves_pork)] ?? 'Not stated'],
+      ['Serves alcohol', TRI[String(body.serves_alcohol)] ?? 'Not stated'],
+      ['Certification body', clean(body.certification_body, 80)],
+      ['Evidence link', validUrl(clean(body.evidence_url, 500))],
+      ['Prayer space', prayerFacility ? PRAYER[prayerFacility] : null],
+      ['Prayer note', clean(body.prayer_facility_note, 200)],
+      ['Notes', clean(body.notes, 1000)],
+      ['Sent by', `${contactName} (${relationship})`],
+      ['Their email', contactEmail],
+      [
+        target ? 'Edit to' : 'Possible duplicate',
+        target
+          ? `${target.name}, ${SITE_URL}/restaurant/${target.slug}`
+          : likely
+            ? `${likely.name}, ${SITE_URL}/restaurant/${likely.slug}`
+            : 'None found',
+      ],
+    ],
+    replyTo: contactEmail,
+    action: { label: 'Review the submission', href: `${SITE_URL}/admin/submissions/${inserted.id}` },
+  });
 
   return NextResponse.json({
     ok: true,

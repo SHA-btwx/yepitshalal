@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { skipOptimiser } from '@/lib/imageUrl';
 import clsx from 'clsx';
 import { ForkKnifeIcon } from './icons';
 import type { RestaurantPhoto } from '@/lib/types';
@@ -30,6 +31,7 @@ export function PhotoGallery({
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-halal-unverifiedSoft sm:aspect-[16/9]">
         <Image
           src={photos[active].storage_path}
+          unoptimized={skipOptimiser(photos[active].storage_path)}
           alt={`${restaurantName}, photo ${active + 1} of ${photos.length}`}
           fill
           priority
@@ -61,7 +63,7 @@ export function PhotoGallery({
                 i === active ? 'ring-ink' : 'opacity-70 ring-transparent hover:opacity-100'
               )}
             >
-              <Image src={photo.storage_path} alt="" fill sizes="64px" className="object-cover" />
+              <Image src={photo.storage_path} alt="" fill sizes="64px" unoptimized={skipOptimiser(photo.storage_path)} className="object-cover" />
             </button>
           ))}
         </div>

@@ -2,13 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fallbacks only: next/font sets both variables to Newsreader and IBM Plex
+   Sans on <html>. These used to name Fraunces and Inter, which were retired on
+   2026-09-22. */
 :root {
-  --font-display: 'Fraunces', ui-serif, Georgia, serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --focus: #0f5e2e;
+  --font-display: ui-serif, Georgia, serif;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  /* The focus ring's colour on the light grounds: 4.1:1 on the page, 3.8:1
+     on the band, 4.4:1 on white. The teal grounds change it (.ground-dark). */
+  --focus: #2a8a10;
 }
 
 @layer base {
+  /* No 300ms double-tap wait on anything that can be tapped. Pinch zoom is
+     unaffected: this only removes double-tap-to-zoom on controls. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary {
+    touch-action: manipulation;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
     /* Every in-page jump on this site glides instead of teleporting: the "more
@@ -40,10 +57,9 @@
   }
 
   body {
-    /* Warm off-white rather than cool. The difference is two points of hue and
-       it is most of why the site read as clinical. */
-    background: #fbf7f0;
-    color: #14181a;
+    /* The logo's white, cooled a touch toward its teal (2026-09-24). */
+    background: #f3f7f7;
+    color: #0f252b;
     /* iOS Safari: stop form controls inflating text on focus. */
     -webkit-text-size-adjust: 100%;
   }
@@ -57,14 +73,28 @@
     border-radius: 4px;
   }
 
+  /* The ring is drawn on whatever is behind the control, so its colour
+     belongs to that ground, not to the control. No single colour holds 3:1
+     on both the light page and the lit middle of the teal (the green above is
+     2.3:1 there), so a teal ground switches the ring to the logo's lime
+     (5.4:1 at the teal's lightest, 7.6:1 at its edge), and a light surface
+     sitting inside a teal ground, such as the search bar or a story card,
+     switches it back. Only grounds carry these classes, never controls. */
+  .ground-dark {
+    --focus: #6fd52f;
+  }
+  .ground-light {
+    --focus: #2a8a10;
+  }
+
   /* Elements that are already pill-shaped shouldn't get a square focus ring. */
   .rounded-full:focus-visible {
     border-radius: 9999px;
   }
 
   ::selection {
-    background: #e3f5e9;
-    color: #0f5e2e;
+    background: #e8f6dc;
+    color: #1f5a08;
   }
 }
 
@@ -150,6 +180,88 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* ── The homepage's first screen ─────────────────────────────────────────
+   The hero is exactly one screen tall, so its bottom edge is the bottom of
+   the window, which is where "London only, for now" lives (Shabir, 2026-09-23:
+   "the bottom of the initial view", with the input boxes kept out of it).
+
+   On a phone that is the window minus the 56px header and the 56px tab bar
+   (and the iPhone home indicator under it). From 640px up there is no tab
+   bar, and a tall monitor is capped at 60rem so it is not handed a wall of
+   green. vh first, for browsers that do not know svh; svh wins where it is
+   known, so a phone's collapsing address bar never pushes the line off. */
+.hero-screen {
+  min-height: calc(100vh - 7rem);
+  min-height: calc(100svh - 7rem - env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 640px) {
+  .hero-screen {
+    min-height: min(calc(100vh - 3.5rem), 60rem);
+    min-height: min(calc(100svh - 3.5rem), 60rem);
+  }
+}
+
+/* ── Free (components/Free) ───────────────────────────────────────────────
+   A highlighter stroke under the lower part of the word, so "free" is seen
+   without becoming a badge. It wraps with the word across lines. The lime is
+   kept light enough that the green word still clears 4.5:1 through it. On
+   the teal the stroke drops below the letters instead: lime text through a
+   lime wash would fall under 4.5:1 where the teal is at its lightest. */
+.free-mark {
+  padding: 0 0.12em;
+  margin: 0 -0.04em;
+  border-radius: 0.2em;
+  background-image: linear-gradient(transparent 58%, rgba(95, 203, 30, 0.24) 58%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.free-mark-dark {
+  background-image: linear-gradient(transparent 80%, rgba(95, 203, 30, 0.5) 80%);
+}
+
+/* ── Scene media (components/media/SceneMedia) ───────────────────────────
+   A picture with no edge of its own. Each side it shares with the page fades
+   out through a mask, one axis per wrapper so two edges can fade without
+   mask-composite. The masks are set per instance as custom properties, with
+   a separate pair from 1024px up, because a phone band fades downward and a
+   desktop panel fades toward the words on its left. */
+.scene-mask-x {
+  -webkit-mask-image: var(--mask-x, none);
+  mask-image: var(--mask-x, none);
+}
+.scene-mask-y {
+  -webkit-mask-image: var(--mask-y, none);
+  mask-image: var(--mask-y, none);
+}
+.scene-fit {
+  object-fit: cover;
+  object-position: var(--scene-pos, center);
+}
+@media (min-width: 1024px) {
+  .scene-mask-x {
+    -webkit-mask-image: var(--mask-x-lg, none);
+    mask-image: var(--mask-x-lg, none);
+  }
+  .scene-mask-y {
+    -webkit-mask-image: var(--mask-y-lg, none);
+    mask-image: var(--mask-y-lg, none);
+  }
+  .scene-fit {
+    object-position: var(--scene-pos-lg, var(--scene-pos, center));
+  }
+}
+/* "Pause" is a word in the corner, not a player button on the picture. On a
+   mouse it sits back until it is pointed at; on touch it is always legible. */
+@media (hover: hover) {
+  .scene-control {
+    opacity: 0.72;
+  }
+  .scene-control:hover,
+  .scene-control:focus-visible {
+    opacity: 1;
   }
 }
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { skipOptimiser } from '@/lib/imageUrl';
 import { HalalBadge } from './HalalBadge';
 import { ArrowRightIcon } from './icons';
 import { ctaSecondarySm } from './cta';
@@ -48,6 +49,7 @@ export function HomeReelStrip({ reels }: { reels: FeaturedReel[] }) {
               {reel.coverUrl ? (
                 <Image
                   src={reel.coverUrl}
+                  unoptimized={skipOptimiser(reel.coverUrl)}
                   alt=""
                   fill
                   sizes="172px"

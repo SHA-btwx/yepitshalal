@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { skipOptimiser } from '@/lib/imageUrl';
 import clsx from 'clsx';
 import { HalalBadge } from './HalalBadge';
 import { XIcon, ArrowRightIcon, SparkleIcon } from './icons';
@@ -94,6 +95,7 @@ function ReelPoster({ reel, alt }: { reel: Reel; alt: string }) {
     return (
       <Image
         src={reel.cover_url}
+        unoptimized={skipOptimiser(reel.cover_url)}
         alt={alt}
         fill
         sizes="168px"

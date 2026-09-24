@@ -2,11 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogoMark } from './Logo';
+import { LogoBadge, LogoWordmark } from './Logo';
 import { HeartHandIcon } from './icons';
 import { FeedbackBox } from './FeedbackBox';
-import { LanguageSwitcher } from './LanguageSwitcher';
-import { LOCALE_CODES } from '@/lib/locales';
 
 // Hidden on the two routes that own the full viewport: the Discover feed is a
 // snap-scrolling column, and admin has its own chrome.
@@ -26,60 +24,61 @@ export function SiteFooter() {
         </div>
 
         <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
-          <div className="max-w-xs">
-            <span className="inline-flex items-center gap-1.5">
-              <LogoMark />
-              <span className="font-display text-base font-semibold tracking-tight text-ink">
-                Yep<span className="text-accent-ink">Its</span>Halal
-              </span>
-            </span>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              Clear halal information for London: what we know, how we know it, and what we
-              haven&apos;t checked yet.
-            </p>
+          <div className="flex max-w-sm items-start gap-4">
+            {/* The whole logo: the one place on every page with room for it.
+                The wordmark beside it carries the name, so the logo itself is
+                decorative here. */}
+            <LogoBadge size={88} decorative className="h-[88px] w-[88px] shrink-0 drop-shadow-[0_8px_14px_rgba(11,47,58,0.22)]" />
+            <div className="pt-2">
+              <LogoWordmark tone="light" className="h-4 w-auto" />
+              <p className="mt-2.5 text-sm leading-relaxed text-muted">
+                Clear halal information for London: what we know, how we know it, and what we
+                haven&apos;t checked yet.
+              </p>
+            </div>
           </div>
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm sm:grid-cols-3 sm:gap-x-12">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-subtle">Explore</h2>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-2 space-y-0.5 sm:mt-3 sm:space-y-2">
                 <li>
-                  <Link href="/" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Search
                   </Link>
                 </li>
                 <li>
-                  <Link href="/halal-restaurants" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/halal-restaurants" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Browse by borough
                   </Link>
                 </li>
                 <li>
-                  <Link href="/how-we-check" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/how-we-check" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     How we label places
                   </Link>
                 </li>
                 <li>
-                  <Link href="/halal-restaurants/cuisine" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/halal-restaurants/cuisine" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     By kind of food
                   </Link>
                 </li>
                 <li>
-                  <Link href="/prayer-spaces" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/prayer-spaces" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Prayer spaces
                   </Link>
                 </li>
                 <li>
-                  <Link href="/image-credits" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/image-credits" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Image credits
                   </Link>
                 </li>
                 <li>
-                  <Link href="/discover" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/discover" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Discover
                   </Link>
                 </li>
                 <li>
-                  <Link href="/yep-plus" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/yep-plus" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Support us
                   </Link>
                 </li>
@@ -89,21 +88,21 @@ export function SiteFooter() {
               <h2 className="text-xs font-semibold uppercase tracking-wide text-subtle">
                 For restaurants
               </h2>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-2 space-y-0.5 sm:mt-3 sm:space-y-2">
                 <li>
-                  <Link href="/submit-restaurant" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/submit-restaurant" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Add your restaurant
                   </Link>
                 </li>
                 <li>
-                  <Link href="/account" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/account" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     My account
                   </Link>
                 </li>
                 {/* Owners look here first when something about their own place
                     is wrong, so the route out of a bad label sits with them. */}
                 <li>
-                  <Link href="/corrections" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/corrections" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Something wrong?
                   </Link>
                 </li>
@@ -111,19 +110,19 @@ export function SiteFooter() {
             </div>
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-subtle">Legal</h2>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-2 space-y-0.5 sm:mt-3 sm:space-y-2">
                 <li>
-                  <Link href="/privacy" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/privacy" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/terms" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Terms
                   </Link>
                 </li>
                 <li>
-                  <Link href="/corrections" className="inline-flex min-h-[32px] items-center text-muted hover:text-ink">
+                  <Link href="/corrections" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Corrections
                   </Link>
                 </li>
@@ -132,29 +131,33 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        {/* In the footer rather than the header: a reader who needs it will
-            look for it, and a control most visitors never touch does not earn
-            space beside the search box. */}
-        <div className="mt-8 border-t border-line pt-6">
-          <LanguageSwitcher current={LOCALE_CODES.find((c) => pathname === `/${c}`) ?? 'en'} />
-        </div>
-
+        {/* The language used to be chosen here. Since 2026-09-24 it is in the
+            header, and in the bottom bar on a phone (components/LanguageMenu):
+            at the foot of the page it was too hard to find. */}
         <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} YepItsHalal · Made in London</p>
-          <p className="inline-flex items-center gap-1.5">
-            <HeartHandIcon className="h-4 w-4 text-accent-ink" />
-            We donate a meal for every month of support, through{' '}
-            <a
-              href="https://sharethemeal.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-accent-ink underline underline-offset-2"
-            >
-              ShareTheMeal
-            </a>
+          {/* One sentence that wraps as a sentence. As an inline-flex row the
+              link became its own column and floated away from its words. */}
+          <p className="flex items-start gap-1.5">
+            <HeartHandIcon className="mt-px h-4 w-4 shrink-0 text-accent-ink" />
+            <span>
+              We donate a meal for every month of support, through{' '}
+              <a
+                href="https://sharethemeal.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-accent-ink underline underline-offset-2"
+              >
+                ShareTheMeal
+              </a>
+            </span>
           </p>
         </div>
       </div>
+      {/* The tab bar is fixed over the bottom of a phone screen. Main already
+          leaves room for it, but the footer comes after main, so without this
+          its last line sat underneath the bar. */}
+      <div aria-hidden="true" className="h-[calc(3.5rem+env(safe-area-inset-bottom))] sm:hidden" />
     </footer>
   );
 }

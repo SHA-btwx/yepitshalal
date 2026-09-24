@@ -8,6 +8,9 @@ import { getAreasWithPages, boroughSlug } from '@/lib/areas';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { tidyAddress } from '@/lib/address';
 import { jsonLdHtml } from '@/lib/jsonLd';
+import { PageHero } from '@/components/PageHero';
+import { Reveal } from '@/components/Reveal';
+import { inlineLink, pageShell, panel, sectionTitle } from '@/components/prose';
 import { SITE_URL } from '@/lib/site';
 import type { HalalClassification } from '@/lib/types';
 
@@ -102,54 +105,52 @@ export default async function CuisinePage({ params }: { params: { cuisine: strin
   ];
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-16 pt-8 sm:px-6 sm:pt-12">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
-
-      <nav aria-label="Breadcrumb" className="text-xs text-subtle">
-        <Link href="/halal-restaurants" className="hover:text-ink hover:underline">
-          London
-        </Link>
-        <span className="mx-1.5" aria-hidden="true">/</span>
-        <Link href="/halal-restaurants/cuisine" className="hover:text-ink hover:underline">
-          By kind of food
-        </Link>
-        <span className="mx-1.5" aria-hidden="true">/</span>
-        <span className="text-muted">{cuisine.cuisine}</span>
-      </nav>
-
-      <h1 className="mt-3 text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Halal {name} in London
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        {cuisine.listed} {name} places across London with evidence that they serve halal food. Each
-        one shows its label, what the label is based on, and when it was checked.
-        {cuisine.not_checked > 0 && (
+      <PageHero
+        crumbs={[
+          { label: 'London', href: '/halal-restaurants' },
+          { label: 'By kind of food', href: '/halal-restaurants/cuisine' },
+          { label: cuisine.cuisine },
+        ]}
+        title={`Halal ${name} in London`}
+        lede={
           <>
-            {' '}
-            Another {cuisine.not_checked.toLocaleString('en-GB')} serve this food and are worth
-            asking about: nobody has checked those.
+            {cuisine.listed} {name} places across London with evidence that they serve halal food. Each
+            one shows its label, what the label is based on, and when it was checked.
           </>
-        )}
-      </p>
+        }
+      >
+        {/* The three counts, read as one line of facts rather than three cards. */}
+        <dl className="flex flex-wrap gap-x-8 gap-y-3">
+          {GROUPS.map((g) => (
+            <div key={g.classification}>
+              <dt className="text-xs font-medium text-white/65">{g.heading}</dt>
+              <dd className="font-display text-[1.75rem] font-semibold leading-tight tabular-nums text-white">
+                {cuisine[g.classification]}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </PageHero>
 
-      <dl className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-        {GROUPS.map((g) => (
-          <div key={g.classification} className="rounded-xl border border-line bg-white px-3 py-3 sm:px-4">
-            <dt className="text-[11px] font-medium uppercase tracking-wide text-subtle sm:text-xs">{g.heading}</dt>
-            <dd className="mt-0.5 font-display text-xl font-semibold text-ink sm:text-2xl">{cuisine[g.classification]}</dd>
-          </div>
-        ))}
-      </dl>
-
+      <div className={`${pageShell} pb-4 pt-8 sm:pt-10`}>
+      <div className="max-w-3xl">
+      {cuisine.not_checked > 0 && (
+        <p className="mb-6 max-w-2xl text-pretty text-[15px] leading-relaxed text-muted">
+          Another {cuisine.not_checked.toLocaleString('en-GB')} serve this food and are worth
+          asking about: nobody has checked those.
+        </p>
+      )}
       {topBoroughs.length > 0 && (
-        <nav aria-label="By area" className="mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-subtle">Where they are</h2>
+        <nav aria-label="By area">
+          <h2 className="text-sm font-semibold text-ink">Where they are</h2>
           <ul className="mt-2 flex flex-wrap gap-2">
             {topBoroughs.map(([borough, n]) => (
               <li key={borough}>
                 <Link
                   href={`/halal-restaurants/${boroughSlug(borough)}`}
-                  className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-line bg-white px-3.5 text-[13px] font-medium text-ink/80 transition hover:border-ink/30 hover:text-ink"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-line bg-white px-4 text-[14px] font-medium text-ink/85 transition duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:bg-accent-soft hover:text-ink hover:shadow-sm"
                 >
                   {borough}
                   <span className="text-subtle">{n}</span>
@@ -164,12 +165,12 @@ export default async function CuisinePage({ params }: { params: { cuisine: strin
         const rows = listings.filter((r) => r.halal_classification === g.classification && r.halal_evidence_strength);
         if (!rows.length) return null;
         return (
-          <section key={g.classification} aria-labelledby={`group-${g.classification}`} className="mt-10">
-            <h2 id={`group-${g.classification}`} className="font-display text-xl font-semibold text-ink">
+          <Reveal as="section" key={g.classification} aria-labelledby={`group-${g.classification}`} className="mt-10">
+            <h2 id={`group-${g.classification}`} className={sectionTitle}>
               {g.heading} <span className="text-base font-medium text-subtle">({rows.length})</span>
             </h2>
             <p className="mt-1 text-sm text-muted">{g.blurb}</p>
-            <ul className="mt-3 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+            <ul className={`mt-4 divide-y divide-line overflow-hidden ${panel}`}>
               {rows.map((r) => {
                 const where = [shortAddress(r), r.borough].filter(Boolean).join(' · ');
                 return (
@@ -194,21 +195,23 @@ export default async function CuisinePage({ params }: { params: { cuisine: strin
                 );
               })}
             </ul>
-          </section>
+          </Reveal>
         );
       })}
 
-      <p className="mt-10 text-sm leading-relaxed text-muted">
+      <p className="mt-12 border-t border-line pt-6 text-sm leading-relaxed text-muted">
         Know a halal {name} place we&apos;re missing?{' '}
-        <Link href="/submit-restaurant" className="font-semibold text-accent-ink hover:underline">
+        <Link href="/submit-restaurant" className={inlineLink}>
           Add it
         </Link>
         , or see{' '}
-        <Link href="/how-we-check" className="font-semibold text-accent-ink hover:underline">
+        <Link href="/how-we-check" className={inlineLink}>
           how we label places
         </Link>
         .
       </p>
-    </div>
+      </div>
+      </div>
+    </>
   );
 }

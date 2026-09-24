@@ -6,6 +6,8 @@ import { createServerSupabase } from './supabase/server';
 import { requireAdmin } from './require-admin';
 import { requireRestaurantAccess, assertSlotAvailable } from './require-restaurant';
 import type { VideoProvider } from './reels';
+import { notifyInbox } from './notify';
+import { SITE_URL } from './site';
 
 function providerFor(url: string): VideoProvider | null {
   if (/instagram\.com/i.test(url)) return 'instagram';
@@ -326,9 +328,23 @@ export async function submitOwnershipClaim(restaurantId: string, formData: FormD
 
   const { data: r } = await admin
     .from('restaurants')
-    .select('slug')
+    .select('slug, name')
     .eq('id', restaurantId)
     .maybeSingle();
   if (r?.slug) revalidatePath(`/restaurant/${r.slug}`);
   revalidatePath('/admin/claims');
+
+  // Somebody asking to run a listing is business, so info@.
+  await notifyInbox({
+    inbox: 'info',
+    subject: `Ownership claim: ${r?.name ?? 'a restaurant'}`,
+    fields: [
+      ['Restaurant', r?.name],
+      ['Page', r?.slug ? `${SITE_URL}/restaurant/${r.slug}` : null],
+      ['Signed in as', user.email],
+      ['Their note', String(formData.get('contact_note') ?? '').trim() || null],
+    ],
+    replyTo: user.email,
+    action: { label: 'Review claims', href: `${SITE_URL}/admin/claims` },
+  });
 }

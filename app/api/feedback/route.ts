@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { ipHashFor, overIpLimit, RATE_LIMITED_MESSAGE } from '@/lib/rateLimit';
+import { notifyInbox } from '@/lib/notify';
+import { SITE_URL } from '@/lib/site';
 
 // Feedback about the site itself. Written with the service role because nobody
 // should be able to read this table back out, including the person who wrote
@@ -60,6 +62,19 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: "That didn't save. Please try again." }, { status: 500 });
   }
+
+  // General, so hello@. The reply goes straight back to the person.
+  await notifyInbox({
+    inbox: 'hello',
+    subject: `Feedback: ${message.slice(0, 60)}${message.length > 60 ? '…' : ''}`,
+    fields: [
+      ['From', email],
+      ['Page', clean(body.page_url, 500)],
+      ['Message', message],
+    ],
+    replyTo: email,
+    action: { label: 'All feedback', href: `${SITE_URL}/admin/feedback` },
+  });
 
   return NextResponse.json({ ok: true });
 }

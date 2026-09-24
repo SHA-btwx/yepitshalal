@@ -5,7 +5,7 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { ForkKnifeIcon } from './icons';
 import { isBusinessLogo } from '@/lib/types';
-import { isOwnStorage, thumbUrl } from '@/lib/imageUrl';
+import { isOwnStorage, isUnsplash, thumbUrl, unsplashSized } from '@/lib/imageUrl';
 
 // Every picture on this site is one of three things: the restaurant's own photo,
 // the restaurant's own logo taken from its website, or a labelled example of
@@ -44,7 +44,16 @@ export function CoverImage({
   const failed = attempt > 1;
   const logo = isBusinessLogo(src);
   const ours = isOwnStorage(src);
-  const chosen = thumb && ours ? thumbUrl(src) : src;
+  const unsplash = isUnsplash(src);
+  // Ours: the stored copy at the right size. Unsplash: sized by Unsplash's own
+  // CDN. Neither goes near the image optimiser.
+  const chosen = ours
+    ? thumb
+      ? thumbUrl(src)
+      : src
+    : unsplash
+      ? unsplashSized(src, thumb ? 480 : 960, thumb ? 360 : 720)
+      : src;
 
   if (failed) {
     return (
@@ -62,7 +71,7 @@ export function CoverImage({
       fill
       sizes={sizes}
       priority={priority}
-      unoptimized={ours}
+      unoptimized={ours || unsplash}
       onError={() => setAttempt((n) => n + 1)}
       className={clsx(logo ? 'bg-white object-contain p-2' : 'object-cover', className)}
     />

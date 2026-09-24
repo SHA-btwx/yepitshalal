@@ -21,7 +21,7 @@ import { ShareButton } from '@/components/ShareButton';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { tidyAddress } from '@/lib/address';
 import { jsonLdHtml } from '@/lib/jsonLd';
-import { isOwnStorage } from '@/lib/imageUrl';
+import { isUnsplash, skipOptimiser, unsplashSized } from '@/lib/imageUrl';
 import { halalAnswerFor } from '@/lib/halalAnswer';
 import { SITE_URL } from '@/lib/site';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
@@ -248,12 +248,12 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
       <figure className="relative -mx-4 overflow-hidden bg-halal-unverifiedSoft sm:mx-0 sm:rounded-2xl">
         <div className="relative aspect-[16/9] sm:aspect-[21/8]">
           <Image
-            src={heroSrc}
+            src={isUnsplash(heroSrc) ? unsplashSized(heroSrc, 1600, 900) : heroSrc}
             alt={representative ? '' : title}
             fill
             priority
             sizes="(max-width: 640px) 100vw, 896px"
-            unoptimized={isOwnStorage(heroSrc)}
+            unoptimized={skipOptimiser(heroSrc)}
             className={heroPhoto?.is_logo ? 'bg-white object-contain p-6' : 'object-cover'}
           />
         </div>

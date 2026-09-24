@@ -241,8 +241,8 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             className={clsx(
               'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition active:scale-[0.98]',
               on
-                ? 'bg-ink text-white shadow-[0_6px_16px_-10px_rgba(20,24,26,0.5)]'
-                : 'bg-white text-ink/75 shadow-[0_1px_2px_rgba(20,24,26,0.04)] hover:text-ink hover:shadow-[0_4px_12px_-8px_rgba(20,24,26,0.25)]'
+                ? 'bg-ink text-white shadow-[0_6px_16px_-10px_rgba(15,37,43,0.5)]'
+                : 'bg-white text-ink/75 shadow-[0_1px_2px_rgba(15,37,43,0.04)] hover:text-ink hover:shadow-[0_4px_12px_-8px_rgba(15,37,43,0.25)]'
             )}
           >
             <f.Mark className={clsx('h-4 w-4 shrink-0', on ? 'text-white' : f.tone)} aria-hidden="true" />
@@ -268,7 +268,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   );
 
   const sortToggle = (
-    <div role="group" aria-label="Sort results" className="flex items-center gap-1 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(20,24,26,0.04)]">
+    <div role="group" aria-label="Sort results" className="flex items-center gap-1 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(15,37,43,0.04)]">
       {(['evidence', 'distance'] as const).map((s) => (
         <button
           key={s}
@@ -290,11 +290,11 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
     <div className="mx-auto max-w-6xl sm:px-6 sm:py-4">
       {/* Two rows on a phone: where, and how far. Everything else is one tap
           away in the sheet, because results matter more than controls. */}
-      <div className="sticky top-14 z-20 bg-sand-soft/92 px-4 pb-3 pt-2.5 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-5 after:bg-gradient-to-b after:from-sand-soft/85 after:to-transparent sm:static sm:rounded-[22px] sm:px-5 sm:py-4 sm:shadow-[0_1px_2px_rgba(20,24,26,0.03),0_10px_28px_-18px_rgba(20,24,26,0.18)] sm:after:hidden">
+      <div className="sticky top-14 z-20 bg-sand-soft/92 px-4 pb-3 pt-2.5 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-5 after:bg-gradient-to-b after:from-sand-soft/85 after:to-transparent sm:static sm:rounded-[22px] sm:px-5 sm:py-4 sm:shadow-[0_1px_2px_rgba(15,37,43,0.03),0_10px_28px_-18px_rgba(15,37,43,0.18)] sm:after:hidden">
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="flex min-h-[46px] min-w-0 flex-1 items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] transition active:scale-[0.99] hover:shadow-[0_2px_4px_rgba(20,24,26,0.05),0_10px_22px_-12px_rgba(20,24,26,0.24)] sm:flex-none sm:pr-4"
+            className="flex min-h-[46px] min-w-0 flex-1 items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition active:scale-[0.99] hover:shadow-[0_2px_4px_rgba(15,37,43,0.05),0_10px_22px_-12px_rgba(15,37,43,0.24)] sm:flex-none sm:pr-4"
             aria-label={`Searching near ${label}. Change location`}
           >
             <MapPinIcon className="h-4 w-4 shrink-0 text-accent-ink" aria-hidden="true" />
@@ -307,7 +307,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             <SearchIcon className="h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
           </Link>
 
-          <div role="group" aria-label="Result view" className="flex shrink-0 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] sm:hidden">
+          <div role="group" aria-label="Result view" className="flex shrink-0 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] sm:hidden">
             {(['list', 'map'] as const).map((v) => (
               <button
                 key={v}
@@ -344,7 +344,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             type="button"
             onClick={() => setFiltersOpen(true)}
             className={clsx(
-              'inline-flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] transition active:scale-[0.98] sm:hidden',
+              'inline-flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition active:scale-[0.98] sm:hidden',
               activeFilterCount > 0 ? 'bg-ink text-white' : 'bg-white text-ink/75'
             )}
           >
@@ -453,7 +453,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           {!loading && !failed && totalCount > 0 && (
             <Link
               href={`/prayer-spaces?lat=${lat}&lng=${lng}&label=${encodeURIComponent(label)}`}
-              className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-ink shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)] transition hover:text-accent-ink active:scale-[0.97]"
+              className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-ink shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition hover:text-accent-ink active:scale-[0.97]"
             >
               <span aria-hidden="true" className="text-[13px] leading-none">
                 &#1645;

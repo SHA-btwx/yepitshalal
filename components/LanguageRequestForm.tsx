@@ -3,6 +3,7 @@
 import { useId, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { CheckIcon } from './icons';
+import { fieldInput } from './form';
 import { searchLanguages, type LanguageOption } from '@/lib/languages';
 
 // "Can you do this in my language?"
@@ -106,15 +107,16 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="mt-2.5 text-[13px] font-medium text-accent-ink underline decoration-accent-ink/30 underline-offset-4 transition hover:decoration-accent-ink"
+        className="mt-1 inline-flex min-h-[44px] items-center text-[13px] font-medium text-accent-ink underline decoration-accent-ink/30 underline-offset-4 transition hover:decoration-accent-ink"
       >
         Not your language? Ask for it
       </button>
     );
   }
 
-  const field =
-    'w-full rounded-full border border-black/15 bg-white px-4 py-2.5 text-[16px] text-ink placeholder:text-subtle transition focus:border-accent-ink focus:outline-none focus:ring-2 focus:ring-accent-ink/20 sm:text-sm';
+  // The shared field, one step shorter because it sits in the footer.
+  const field = fieldInput.replace('py-3', 'py-2.5');
+  const label = 'mb-1 block text-[13px] font-medium text-ink';
 
   return (
     <form action={submit} className="mt-3 max-w-lg">
@@ -124,10 +126,10 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
         Which language should we add? We will read every one of these.
       </p>
 
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+      <div className="mt-3 flex flex-col gap-2.5 sm:flex-row sm:items-end">
         <div ref={boxRef} className="relative sm:flex-1">
-          <label htmlFor={inputId} className="sr-only">
-            Which language should we add?
+          <label htmlFor={inputId} className={label}>
+            Language
           </label>
           <input
             id={inputId}
@@ -158,7 +160,7 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
               id={listId}
               role="listbox"
               aria-label="Languages"
-              className="absolute bottom-full z-40 mb-1.5 max-h-56 w-full overflow-auto rounded-2xl bg-white py-1.5 shadow-[0_8px_30px_rgba(20,24,26,0.18)] ring-1 ring-black/10"
+              className="absolute bottom-full z-40 mb-1.5 max-h-56 w-full overflow-auto rounded-2xl bg-white py-1.5 shadow-[0_8px_30px_rgba(15,37,43,0.18)] ring-1 ring-black/10"
             >
               {matches.map((l, i) => (
                 <li
@@ -189,7 +191,7 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
         </div>
 
         <div className="sm:flex-1">
-          <label htmlFor={emailId} className="sr-only">
+          <label htmlFor={emailId} className={label}>
             Your email, if you want telling when it is ready
           </label>
           <input
@@ -197,8 +199,9 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
             name="email"
             type="email"
             autoComplete="email"
+            spellCheck={false}
             maxLength={200}
-            placeholder="Email (optional)"
+            placeholder="Optional"
             className={field}
           />
         </div>
@@ -206,7 +209,7 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
         <button
           type="submit"
           disabled={sending}
-          className="inline-flex min-h-[42px] shrink-0 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-accent-ink active:scale-[0.98] disabled:opacity-60"
+          className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-px hover:bg-accent-ink active:translate-y-0 active:scale-[0.985] disabled:opacity-60"
         >
           {sending ? 'Sending…' : 'Ask'}
         </button>

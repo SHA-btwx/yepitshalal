@@ -26,7 +26,7 @@ export function RadiusSelector({
       role="radiogroup"
       aria-label="Search radius"
       className={clsx(
-        'flex items-center gap-0.5 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(20,24,26,0.04),0_6px_16px_-10px_rgba(20,24,26,0.18)]',
+        'flex items-center gap-0.5 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)]',
         className
       )}
     >
@@ -43,7 +43,7 @@ export function RadiusSelector({
             className={clsx(
               'min-h-[36px] flex-1 rounded-full px-2 text-[13px] font-semibold transition',
               active
-                ? 'bg-ink text-white shadow-[0_6px_16px_-10px_rgba(20,24,26,0.6)]'
+                ? 'bg-ink text-white shadow-[0_6px_16px_-10px_rgba(15,37,43,0.6)]'
                 : 'text-ink/55 hover:text-ink active:scale-[0.97]'
             )}
           >

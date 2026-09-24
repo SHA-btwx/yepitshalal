@@ -34,12 +34,15 @@ export function PlaceAutocomplete({
   className,
   onChoose,
   noResultsHint,
+  labelClassName = 'sr-only',
 }: {
   /** Name of the hidden input carrying the typed text. */
   name: string;
   label: string;
   placeholder: string;
   className?: string;
+  /** Visible by passing a class; hidden by default for older callers. */
+  labelClassName?: string;
   /** Called with the chosen place, or null when the text no longer matches one. */
   onChoose: (place: ChosenPlace | null) => void;
   noResultsHint?: string;
@@ -125,7 +128,7 @@ export function PlaceAutocomplete({
 
   return (
     <div ref={boxRef} className="relative">
-      <label htmlFor={inputId} className="sr-only">
+      <label htmlFor={inputId} className={labelClassName}>
         {label}
       </label>
       <input
@@ -162,7 +165,7 @@ export function PlaceAutocomplete({
           id={listId}
           role="listbox"
           aria-label={label}
-          className="absolute z-40 mt-1.5 max-h-64 w-full overflow-auto rounded-2xl bg-white py-1.5 text-start shadow-[0_8px_30px_rgba(20,24,26,0.18)] ring-1 ring-black/10"
+          className="absolute z-40 mt-1.5 max-h-64 w-full overflow-auto rounded-2xl bg-white py-1.5 text-start shadow-[0_8px_30px_rgba(15,37,43,0.18)] ring-1 ring-black/10"
         >
           {results.map((r, i) => (
             <li

@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { BottomNav } from '@/components/BottomNav';
 import { SITE_URL } from '@/lib/site';
+import { MotionRoot } from '@/components/motion/MotionRoot';
 
 // Newsreader and IBM Plex Sans, replacing Fraunces and Inter on 2026-09-22.
 //
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: '#FBF7F0',
+  themeColor: '#0B2F3A',
   // Explicitly leaves pinch-zoom enabled: locking it out is an accessibility
   // failure for anyone who needs to magnify a menu photo or address.
   width: 'device-width',
@@ -98,20 +99,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
       </head>
       <body className="min-h-screen bg-sand-soft font-sans text-ink antialiased">
+        {/* It always appears over the teal header, so it is the header's lime
+            button, with the lime ring every control on the teal gets. */}
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-forest-deep focus-visible:outline-accent-onDark"
         >
           Skip to content
         </a>
-        <SiteHeader />
-        {/* The tab bar is fixed over the page on a phone, and on an iPhone it
-            sits above the home indicator, so the page has to end above both. */}
-        <main id="main" className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
-          {children}
-        </main>
-        <SiteFooter />
-        <BottomNav />
+        <MotionRoot>
+          <SiteHeader />
+          {/* The tab bar is fixed over the page on a phone, and on an iPhone it
+              sits above the home indicator, so the page has to end above both. */}
+          <main id="main" className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
+            {children}
+          </main>
+          <SiteFooter />
+          <BottomNav />
+        </MotionRoot>
         <Analytics />
       </body>
     </html>

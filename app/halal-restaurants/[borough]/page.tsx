@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { HalalBadge } from '@/components/HalalBadge';
 import { ArrowRightIcon, MapPinIcon } from '@/components/icons';
-import { ctaPrimary } from '@/components/cta';
+import { PageHero, heroPrimary } from '@/components/PageHero';
+import { Reveal } from '@/components/Reveal';
+import { inlineLink, pageShell, panel, sectionTitle } from '@/components/prose';
 import { getAreaBySlug, getAreasWithPages, type AreaListing } from '@/lib/areas';
 import { cleanRestaurantName } from '@/lib/restaurantName';
 import { tidyAddress } from '@/lib/address';
@@ -88,65 +90,65 @@ export default async function AreaPage({ params }: { params: { borough: string }
   ];
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-16 pt-8 sm:px-6 sm:pt-12">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
-
-      <nav aria-label="Breadcrumb" className="text-xs text-subtle">
-        <Link href="/halal-restaurants" className="hover:text-ink hover:underline">
-          London
-        </Link>
-        <span className="mx-1.5" aria-hidden="true">/</span>
-        <span className="text-muted">{area.borough}</span>
-      </nav>
-
-      <h1 className="mt-3 text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Halal restaurants in {area.borough}
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        {area.listed} places in {area.borough} with evidence that they serve halal food. Each one
-        shows its label, what the label is based on, and when it was checked.
-        {area.not_checked > 0 && (
+      <PageHero
+        crumbs={[{ label: 'London', href: '/halal-restaurants' }, { label: area.borough }]}
+        title={`Halal restaurants in ${area.borough}`}
+        lede={
           <>
-            {' '}
-            Another {area.not_checked.toLocaleString('en-GB')} here serve the kind of food that is often
-            halal, and are on the map as worth asking about.
+            {area.listed} places in {area.borough} with evidence that they serve halal food. Each one
+            shows its label, what the label is based on, and when it was checked.
           </>
-        )}
-      </p>
+        }
+      >
+        {/* The three counts, read as one line of facts rather than three cards. */}
+        <dl className="flex flex-wrap gap-x-8 gap-y-3">
+          {GROUPS.map((g) => (
+            <div key={g.classification}>
+              <dt className="text-xs font-medium text-white/65">{g.heading}</dt>
+              <dd className="font-display text-[1.75rem] font-semibold leading-tight tabular-nums text-white">
+                {area[g.classification]}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link href={searchHref} className={heroPrimary}>
+            <MapPinIcon className="h-4 w-4" />
+            See them on the map
+          </Link>
+          <Link
+            href="/how-we-check"
+            className="inline-flex min-h-[44px] items-center px-1 text-sm font-semibold text-white underline decoration-white/35 underline-offset-4 transition hover:decoration-white"
+          >
+            How we label places
+          </Link>
+        </div>
+      </PageHero>
 
-      <dl className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-        {GROUPS.map((g) => (
-          <div key={g.classification} className="rounded-xl border border-line bg-white px-3 py-3 sm:px-4">
-            <dt className="text-[11px] font-medium uppercase tracking-wide text-subtle sm:text-xs">{g.heading}</dt>
-            <dd className="mt-0.5 font-display text-xl font-semibold text-ink sm:text-2xl">
-              {area[g.classification]}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Link href={searchHref} className={ctaPrimary}>
-          <MapPinIcon className="h-4 w-4" />
-          See them on the map
-        </Link>
-        <Link href="/how-we-check" className="text-sm font-semibold text-accent-ink hover:underline">
-          How we label places
-        </Link>
-      </div>
-
+      <div className={`${pageShell} pb-4 pt-6 sm:pt-8`}>
+      <div className="max-w-3xl">
+      {/* Moved out of the header so it fits a phone's first screen; the
+          same words, one step down. */}
+      {area.not_checked > 0 && (
+        <p className="mt-4 max-w-2xl text-pretty text-[15px] leading-relaxed text-muted">
+          Another {area.not_checked.toLocaleString('en-GB')} here serve the kind of food that is often
+          halal, and are on the map as worth asking about.
+        </p>
+      )}
       {GROUPS.map((g) => {
         const rows = listings.filter((r) => r.halal_classification === g.classification);
         if (!rows.length) return null;
         return (
-          <section key={g.classification} aria-labelledby={`group-${g.classification}`} className="mt-10">
+          <Reveal as="section" key={g.classification} aria-labelledby={`group-${g.classification}`} className="mt-10">
             <div className="flex items-baseline justify-between gap-3">
-              <h2 id={`group-${g.classification}`} className="font-display text-xl font-semibold text-ink">
+              <h2 id={`group-${g.classification}`} className={sectionTitle}>
                 {g.heading} <span className="text-base font-medium text-subtle">({rows.length})</span>
               </h2>
             </div>
             <p className="mt-1 text-sm text-muted">{g.blurb}</p>
-            <ul className="mt-3 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+            <ul className={`mt-4 divide-y divide-line overflow-hidden ${panel}`}>
               {rows.map((r) => {
                 const where = shortAddress(r);
                 return (
@@ -173,18 +175,20 @@ export default async function AreaPage({ params }: { params: { borough: string }
                 );
               })}
             </ul>
-          </section>
+          </Reveal>
         );
       })}
 
-      <p className="mt-10 text-sm leading-relaxed text-muted">
+      <p className="mt-12 border-t border-line pt-6 text-sm leading-relaxed text-muted">
         Missing a place, or think a label is wrong?{' '}
-        <Link href="/submit-restaurant" className="font-semibold text-accent-ink hover:underline">
+        <Link href="/corrections" className={inlineLink}>
           Tell us
         </Link>
         . Locations come from the Food Standards Agency food hygiene register, OpenStreetMap
         contributors and the Overture Maps Foundation.
       </p>
-    </div>
+      </div>
+      </div>
+    </>
   );
 }

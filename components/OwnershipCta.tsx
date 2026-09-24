@@ -3,6 +3,7 @@ import { createServerSupabase } from '@/lib/supabase/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { submitOwnershipClaim } from '@/lib/reel-actions';
 import { SparkleIcon, ArrowRightIcon } from './icons';
+import { Free } from './Free';
 
 /**
  * The self-serve half of restaurant access: an owner asks here, an admin
@@ -58,7 +59,7 @@ export async function OwnershipCta({
             >
               Sign in
             </Link>{' '}
-            to claim it and post a reel. The first one is free.
+            to claim it and post a reel. The first one is <Free>free</Free>.
           </span>
         </p>
       </div>
@@ -92,7 +93,7 @@ export async function OwnershipCta({
         Do you run this restaurant?
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Claim it to post a reel and keep the details right. Your first reel is free.
+        Claim it to post a reel and keep the details right. Your first reel is <Free>free</Free>.
       </p>
       <label htmlFor="contact_note" className="mt-3 block text-sm font-medium text-ink">
         How can we check that with you?

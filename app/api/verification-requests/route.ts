@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getStripe } from '@/lib/stripe';
 import { SITE_URL } from '@/lib/site';
+import { notifyInbox } from '@/lib/notify';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -70,7 +71,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ checkoutUrl: session.url });
   }
 
-  const { data: exists } = await supabase.from('restaurants').select('id').eq('id', restaurantId).maybeSingle();
+  const { data: exists } = await supabase
+    .from('restaurants')
+    .select('id, name, slug')
+    .eq('id', restaurantId)
+    .maybeSingle();
   if (!exists) {
     return NextResponse.json({ error: 'Restaurant not found.' }, { status: 404 });
   }
@@ -103,6 +108,22 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Verification is support work, so help@. Priority requests are paid through
+  // Stripe and recorded by the webhook, which is deliberately left alone.
+  await notifyInbox({
+    inbox: 'help',
+    subject: `Verification request: ${exists.name}`,
+    fields: [
+      ['Restaurant', exists.name],
+      ['Page', `${SITE_URL}/restaurant/${exists.slug}`],
+      ['Queue', admittedToday ? "Free, in today's queue" : "Free, waiting for tomorrow's slot"],
+      ['Name', contactName],
+      ['Email', contactEmail],
+    ],
+    replyTo: contactEmail,
+    action: { label: 'Open the verification queue', href: `${SITE_URL}/admin/verify` },
+  });
 
   return NextResponse.json({ ok: true, status: admittedToday ? 'queued' : 'awaiting_slot' });
 }

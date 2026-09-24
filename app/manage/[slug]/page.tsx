@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { skipOptimiser } from '@/lib/imageUrl';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getAllReelsForOwner, getReelAllowance } from '@/lib/reels';
@@ -10,6 +11,7 @@ import { ReelUploader } from '@/components/ReelUploader';
 import { ConfirmSubmitButton } from '@/components/admin/ConfirmSubmitButton';
 import { HalalBadge } from '@/components/HalalBadge';
 import { SparkleIcon, ArrowUpRightIcon, TrashIcon, InfoIcon } from '@/components/icons';
+import { Free } from '@/components/Free';
 import type { Reel, ReelStatus } from '@/lib/reels';
 
 export const dynamic = 'force-dynamic';
@@ -97,7 +99,14 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
             <h2 className="font-display text-base font-semibold text-ink">Your reels</h2>
             <p className="mt-0.5 text-sm text-muted">
               {live.length} of {allowance.allowance} live
-              {allowance.isPartner ? ' on your partner plan' : ' on the free plan'}
+              {allowance.isPartner ? (
+                ' on your partner plan'
+              ) : (
+                <>
+                  {' '}
+                  on the <Free>free</Free> plan
+                </>
+              )}
             </p>
           </div>
           {allowance.isPartner && (
@@ -125,7 +134,7 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
           <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted">
             <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
             <span>
-              Your free reel appears on your page and can show up in Discovery, same as anyone
+              Your <Free>free</Free> reel appears on your page and can show up in Discovery, same as anyone
               else&apos;s. A partnership adds more slots, and each extra reel is another chance to be
               found by someone deciding where to eat tonight.{' '}
               <Link href="/partners" className="font-semibold text-accent-ink hover:underline">
@@ -151,7 +160,7 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
       <ul className="mt-5 space-y-3">
         {reels.length === 0 && (
           <li className="rounded-2xl border border-dashed border-black/10 px-6 py-10 text-center text-sm text-muted">
-            No reels yet. Your first one is free. A 15-second clip of your signature dish is
+            No reels yet. Your first one is <Free>free</Free>. A 15-second clip of your signature dish is
             usually the one that works.
           </li>
         )}
@@ -226,7 +235,7 @@ function ReelRow({ reel }: { reel: Reel }) {
     <li className="flex gap-3 rounded-2xl border border-line bg-white p-3 shadow-sm">
       <div className="relative aspect-[9/16] w-16 shrink-0 overflow-hidden rounded-xl bg-halal-unverifiedSoft">
         {reel.cover_url ? (
-          <Image src={reel.cover_url} alt="" fill sizes="64px" className="object-cover" />
+          <Image src={reel.cover_url} alt="" fill sizes="64px" unoptimized={skipOptimiser(reel.cover_url)} className="object-cover" />
         ) : (
           <video src={reel.media_url} className="h-full w-full object-cover" muted preload="metadata" />
         )}

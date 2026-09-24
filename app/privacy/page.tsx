@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PageHero } from '@/components/PageHero';
+import { PageBody } from '@/components/PageLayout';
+import { inlineLink, noteWarm, sectionTitle } from '@/components/prose';
 import { CONTACT_EMAIL } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -58,7 +61,7 @@ const PROCESSORS: [string, string, string][] = [
   ['Supabase', 'Database, sign in, and photo storage.', 'https://supabase.com/privacy'],
   ['Vercel', 'Hosting, and privacy friendly visitor analytics.', 'https://vercel.com/legal/privacy-policy'],
   ['Stripe', 'Payments, if you support us or buy a priority verification.', 'https://stripe.com/gb/privacy'],
-  ['Resend', 'Sending the emails that need a person to act on them.', 'https://resend.com/legal/privacy-policy'],
+  ['Resend', 'Delivering what you send through a form on this site to our own inbox, so a person reads it.', 'https://resend.com/legal/privacy-policy'],
 ];
 
 const RIGHTS = [
@@ -72,17 +75,12 @@ const RIGHTS = [
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-16 pt-10 sm:px-6 sm:pt-14">
-      <h1 className="text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Privacy
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        Searching for halal food should not cost you your privacy. This page says exactly
-        what we collect, why, and how to get rid of it. It is short because we collect
-        little.
-      </p>
+    <>
+      <PageHero tone="sand" title="Privacy" lede="Searching for halal food should not cost you your privacy. This page says exactly what we collect, why, and how to get rid of it. It is short because we collect little." />
+      <PageBody>
+      <div>
 
-      <div className="mt-6 rounded-2xl border-2 border-halal-unverified/25 bg-halal-unverifiedSoft p-5">
+      <div className={noteWarm}>
         <h2 className="font-display text-lg font-semibold text-ink">
           You can use the whole site without telling us who you are
         </h2>
@@ -94,14 +92,14 @@ export default function PrivacyPage() {
         </p>
       </div>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">What we collect</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>What we collect</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Only when you do something that needs it. Nothing in this list is collected just
         by visiting.
       </p>
-      <div className="mt-4 space-y-4">
+      <div className="mt-4 border-b border-line">
         {COLLECTED.map(([what, why, kept]) => (
-          <div key={what} className="rounded-2xl border border-line bg-white p-4">
+          <div key={what} className="border-t border-line py-4">
             <h3 className="font-display text-base font-semibold text-ink">{what}</h3>
             <p className="mt-1 text-sm leading-relaxed text-muted">{why}</p>
             <p className="mt-2 text-xs leading-relaxed text-subtle">{kept}</p>
@@ -109,7 +107,7 @@ export default function PrivacyPage() {
         ))}
       </div>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Why we are allowed to</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Why we are allowed to</h2>
       <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted">
         <li>
           <span className="font-medium text-ink">Because you asked us to.</span> Signing in,
@@ -130,7 +128,7 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Cookies</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Cookies</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         We do not use advertising or tracking cookies, and there is no cookie banner
         because there is nothing to ask you about. Our visitor analytics, from Vercel,
@@ -139,7 +137,7 @@ export default function PrivacyPage() {
         there because you asked to be signed in.
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Who else sees it</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Who else sees it</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         We do not sell your data and we do not share it for advertising. These companies
         process it so the site can work:
@@ -151,7 +149,7 @@ export default function PrivacyPage() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-accent-ink underline underline-offset-2"
+              className={inlineLink}
             >
               {name}
             </a>{' '}
@@ -164,7 +162,7 @@ export default function PrivacyPage() {
         on the safeguards in their agreements with us.
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">What you can ask for</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>What you can ask for</h2>
       <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
         {RIGHTS.map((r) => (
           <li key={r}>{r}</li>
@@ -174,7 +172,7 @@ export default function PrivacyPage() {
         Email{' '}
         <a
           href={`mailto:${CONTACT_EMAIL}`}
-          className="font-medium text-accent-ink underline underline-offset-2"
+          className={inlineLink}
         >
           {CONTACT_EMAIL}
         </a>{' '}
@@ -184,30 +182,32 @@ export default function PrivacyPage() {
           href="https://ico.org.uk/make-a-complaint/"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-accent-ink underline underline-offset-2"
+          className={inlineLink}
         >
           ico.org.uk
         </a>
         .
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">
+      <h2 className={`mt-12 ${sectionTitle}`}>
         Restaurants are not covered by this page
       </h2>
       <p className="mt-2 text-pretty text-sm leading-relaxed text-muted">
         Information about a restaurant as a business, its address, its menu, what it says
         about halal, is not personal data and this page does not govern it. If you run a
         place and think we have something wrong,{' '}
-        <Link href="/corrections" className="font-medium text-accent-ink underline underline-offset-2">
+        <Link href="/corrections" className={inlineLink}>
           tell us and we will fix it
         </Link>
         .
       </p>
 
       <p className="mt-10 border-t border-line pt-6 text-xs text-subtle">
-        Last updated 21 September 2026. If we change how any of this works, we will change
+        Last updated 23 September 2026. If we change how any of this works, we will change
         this page on the same day.
       </p>
-    </div>
+      </div>
+      </PageBody>
+    </>
   );
 }

@@ -1,56 +1,66 @@
 import type { Config } from 'tailwindcss';
 
-// Colour tokens are contrast-checked against the two surfaces they actually sit
-// on: paper (#FAF9F6) and card white. Every `*Ink` token clears 4.5:1 on both,
-// so status text stays readable at the 12-13px sizes the badges use. The
-// unsuffixed `full`/`partial`/`unverified` values are the saturated *dot and map
-// pin* colours — they are decoration next to a text label, never text themselves.
+// The logo's colours, sitewide, since 2026-09-24: its deep teal ground, its
+// lime pin and "ITS", and white. Sampled from the artwork Shabir chose
+// (variation 4): teal #124452 in the middle of the disc, #0B2F3A at its edge,
+// lime #5FCB1E.
+//
+// The token names are older than the palette and were kept so nothing had to
+// be renamed: `forest` is now the logo's teal, `accent` its lime, `spice` a
+// quieter teal for small emphasis, and `sand` the cool, teal-tinted neutrals
+// that sit with it (the warm cream is gone).
+//
+// Every text token is contrast-checked against the surfaces it sits on: the
+// page (#F3F7F7), card white and the band (#E4EEEE), and clears 4.5:1 on all
+// three. The logo lime itself is 2:1 on white, so it is for fills, marks and
+// text on the teal only (5.1:1 on #124452, 6.8:1 on #0B2F3A); on a light
+// ground green text uses `accent.ink`. The unsuffixed halal `full`/`partial`/
+// `unverified` values are dot and map pin colours, never text, and the halal
+// colours are deliberately unchanged: they carry meaning, not brand.
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        ink: '#14181A',
-        // Secondary body text. 5.87:1 on paper, 6.18:1 on white.
-        muted: '#5B6360',
-        // Tertiary/meta text — the lightest tone still allowed on text. 4.68:1 / 4.92:1.
-        subtle: '#6B7270',
-        paper: '#FAF9F6',
-        line: 'rgba(20,24,26,0.08)',
+        // Teal-black. 14.7:1 on the page.
+        ink: '#0F252B',
+        // Secondary body text. 6.4:1 on the page, 6.9:1 on white, 5.9:1 on the band.
+        muted: '#4A5D62',
+        // Tertiary/meta text, the lightest tone allowed on text. 5.0 / 5.4 / 4.6:1.
+        subtle: '#5B6D72',
+        paper: '#F7FAFA',
+        line: 'rgba(15,37,43,0.09)',
         accent: {
-          DEFAULT: '#1C9A4B',
-          ink: '#0F5E2E',
-          soft: '#E3F5E9',
-          // Green that still reads on the ink surface (7.95:1) — #1C9A4B only manages 4.91:1.
-          onDark: '#34C56B',
+          // The logo's lime. Fills, marks, and text on the teal only.
+          DEFAULT: '#5FCB1E',
+          // Green for text on a light ground. 5.8:1 on the page, 6.2:1 on white,
+          // 5.3:1 on the band, and still 4.6:1 on the Free highlighter.
+          ink: '#276F0A',
+          soft: '#E8F6DC',
+          // Lime for text on the teal: 5.7:1 on #124452, 7.6:1 on #0B2F3A.
+          onDark: '#6FD52F',
         },
-        // Warmth, and nothing that carries meaning.
-        //
-        // The site was all cream and one green, which read as careful and also
-        // as empty. These are decorative only: a terracotta for emphasis, a
-        // sand for surfaces that want to be warmer than white, and a deep
-        // forest for large dark grounds.
-        //
-        // Terracotta specifically because the obvious warm choice, gold, is
-        // already spoken for: halal.partial is amber and means "Halal Options".
-        // A second gold anywhere near a listing would read as that label.
+        // A second, quieter teal for small emphasis (labels, icons, the loop
+        // steps). Not the lime, so the lime stays the one bright note, and not
+        // gold, which is spoken for: halal.partial is amber and means
+        // "Halal Options".
         spice: {
-          DEFAULT: '#C2542B',
-          // 6.43:1 on paper, 6.77:1 on white, 5.91:1 on sand. Safe for text.
-          // The DEFAULT below is 4.34:1 on paper, so it is for fills and marks,
-          // never for small text.
-          ink: '#9A3F1D',
-          soft: '#FBEDE6',
-          onDark: '#F0956D',
+          // 5.5:1 against white text, so it can carry a small white label.
+          DEFAULT: '#1E7384',
+          // 7.9:1 on the page.
+          ink: '#135463',
+          soft: '#E1EEF0',
+          onDark: '#8ED1DC',
         },
         sand: {
-          DEFAULT: '#F5EFE4',
-          soft: '#FBF7F0',
-          line: 'rgba(120,85,45,0.12)',
+          DEFAULT: '#E4EEEE',
+          soft: '#F3F7F7',
+          line: 'rgba(18,68,82,0.14)',
         },
         forest: {
-          DEFAULT: '#0B3D22',
-          deep: '#072A17',
+          // The logo's teal, and the edge of its disc.
+          DEFAULT: '#124452',
+          deep: '#0B2F3A',
         },
         halal: {
           full: '#1F7A45',

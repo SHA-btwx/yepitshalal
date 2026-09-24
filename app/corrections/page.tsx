@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CONTACT_EMAIL } from '@/lib/site';
+import clsx from 'clsx';
+import { CORRECTIONS_EMAIL } from '@/lib/site';
+import { PageHero } from '@/components/PageHero';
+import { PageBody, PageSection } from '@/components/PageLayout';
+import { Reveal } from '@/components/Reveal';
+import { MailIcon } from '@/components/icons';
+import { blockTitle, bodyText, inlineLink, panel } from '@/components/prose';
 
 export const metadata: Metadata = {
   title: 'Something wrong? Tell us',
@@ -20,6 +26,8 @@ export const metadata: Metadata = {
  * honoured correction route is the cheapest protection available, and the
  * absence of one is what turns a mistake into a claim. Do not remove it, and
  * do not let the response times here become untrue.
+ *
+ * Corrections are support work, so the address is help@ (lib/site INBOX).
  */
 
 const STEPS: [string, string][] = [
@@ -41,92 +49,105 @@ const STEPS: [string, string][] = [
   ],
 ];
 
+/** The address, printed as well as linked: mailto does nothing without a mail app. */
+function EmailCard({ className }: { className?: string }) {
+  return (
+    <div className={clsx(panel, 'p-5 sm:p-6', className)}>
+      <h2 className={blockTitle}>Email us</h2>
+      <p className="mt-1 text-sm leading-relaxed text-muted">One address, read by a person.</p>
+      <a
+        href={`mailto:${CORRECTIONS_EMAIL}?subject=Correction`}
+        className="mt-3 inline-flex min-h-[44px] items-center gap-2 break-all font-display text-lg font-semibold text-accent-ink underline decoration-accent-ink/30 underline-offset-4 transition hover:decoration-accent-ink"
+      >
+        <MailIcon className="h-5 w-5 shrink-0" />
+        {CORRECTIONS_EMAIL}
+      </a>
+    </div>
+  );
+}
+
 export default function CorrectionsPage() {
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-16 pt-10 sm:px-6 sm:pt-14">
-      <h1 className="text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Something wrong? Tell us
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        We publish what we know and say when we have not checked. That only works if it is
-        easy to tell us we have got something wrong, so this is the page for it.
-      </p>
+    <>
+      <PageHero
+        title="Something wrong? Tell us"
+        lede="We publish what we know and say when we have not checked. That only works if it is easy to tell us we have got something wrong, so this is the page for it."
+      />
 
-      <div className="mt-6 rounded-2xl border-2 border-halal-full/25 bg-halal-fullSoft p-5">
-        <h2 className="font-display text-lg font-semibold text-ink">
-          If we have the halal status wrong, we take the label down first
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink/80">
-          We do not leave a disputed halal label up while we investigate. It comes down,
-          the page says it is being checked, and it only goes back up when we are sure.
-          You do not need to send evidence to get that far.
-        </p>
-      </div>
-
-      <div className="mt-8 rounded-2xl border border-line bg-white p-5">
-        <h2 className="font-display text-lg font-semibold text-ink">Email us</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          One address, read by a person.
-        </p>
-        <a
-          href={`mailto:${CONTACT_EMAIL}?subject=Correction`}
-          className="mt-3 inline-flex min-h-[44px] items-center font-display text-lg font-semibold text-accent-ink underline underline-offset-4"
-        >
-          {CONTACT_EMAIL}
-        </a>
-      </div>
-
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">What happens next</h2>
-      <ol className="mt-4 space-y-4">
-        {STEPS.map(([title, body], i) => (
-          <li key={title} className="rounded-2xl border border-line bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-subtle">
-              Step {i + 1} of {STEPS.length}
+      <PageBody aside={<EmailCard />} asideOnPhone="hide">
+        <div className="space-y-4">
+          <section
+            aria-labelledby="label-down"
+            className="rounded-2xl bg-halal-fullSoft p-5 ring-1 ring-halal-full/20 sm:p-6"
+          >
+            <h2 id="label-down" className={blockTitle}>
+              If we have the halal status wrong, we take the label down first
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink/80">
+              We do not leave a disputed halal label up while we investigate. It comes down,
+              the page says it is being checked, and it only goes back up when we are sure.
+              You do not need to send evidence to get that far.
             </p>
-            <h3 className="mt-1 font-display text-base font-semibold text-ink">{title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted">{body}</p>
-          </li>
-        ))}
-      </ol>
+          </section>
+          {/* On a phone the address comes straight after the promise. */}
+          <EmailCard className="lg:hidden" />
+        </div>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">
-        If you would rather not be listed at all
-      </h2>
-      <p className="mt-2 text-pretty text-sm leading-relaxed text-muted">
-        Say so and we will remove the listing. We will ask you to confirm you speak for
-        the restaurant, because otherwise anyone could remove anyone. We will not argue
-        with you about it, and we will not ask you to buy anything to make it happen.
-      </p>
+        <PageSection id="next" title="What happens next">
+          {/* A real sequence, so it is numbered; the step itself is the label. */}
+          <ol className="space-y-5">
+            {STEPS.map(([title, body], i) => (
+              <li key={title} className="flex gap-4">
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft font-display text-sm font-semibold tabular-nums text-accent-ink"
+                >
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="font-display text-base font-semibold text-ink">{title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </PageSection>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Other things to fix</h2>
-      <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
-        <li>A wrong address, phone number, or opening hours.</li>
-        <li>
-          A photo that is yours and should not be here, or one labelled as an example
-          photo that is being taken for the real thing.
-        </li>
-        <li>A place that has closed, moved, or changed hands.</li>
-        <li>Two listings for the same place.</li>
-        <li>Anything on a prayer space page.</li>
-      </ul>
+        <PageSection id="remove" title="If you would rather not be listed at all">
+          <p className={bodyText}>
+            Say so and we will remove the listing. We will ask you to confirm you speak for
+            the restaurant, because otherwise anyone could remove anyone. We will not argue
+            with you about it, and we will not ask you to buy anything to make it happen.
+          </p>
+        </PageSection>
 
-      <p className="mt-8 text-pretty text-sm leading-relaxed text-muted">
-        If you want to look after your listing yourself instead,{' '}
-        <Link
-          href="/submit-restaurant"
-          className="font-medium text-accent-ink underline underline-offset-2"
-        >
-          claim it here
-        </Link>
-        . And if you want to understand how a label gets set before you dispute it,{' '}
-        <Link
-          href="/how-we-check"
-          className="font-medium text-accent-ink underline underline-offset-2"
-        >
-          this is how we check
-        </Link>
-        .
-      </p>
-    </div>
+        <PageSection id="other" title="Other things to fix">
+          <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-muted marker:text-subtle">
+            <li>A wrong address, phone number, or opening hours.</li>
+            <li>
+              A photo that is yours and should not be here, or one labelled as an example
+              photo that is being taken for the real thing.
+            </li>
+            <li>A place that has closed, moved, or changed hands.</li>
+            <li>Two listings for the same place.</li>
+            <li>Anything on a prayer space page.</li>
+          </ul>
+        </PageSection>
+
+        <Reveal as="section" aria-label="Other ways" className="border-t border-line pt-8">
+          <p className={bodyText}>
+            If you want to look after your listing yourself instead,{' '}
+            <Link href="/submit-restaurant" className={inlineLink}>
+              claim it here
+            </Link>
+            . And if you want to understand how a label gets set before you dispute it,{' '}
+            <Link href="/how-we-check" className={inlineLink}>
+              this is how we check
+            </Link>
+            .
+          </p>
+        </Reveal>
+      </PageBody>
+    </>
   );
 }

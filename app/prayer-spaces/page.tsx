@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon, NavigationIcon, PhoneIcon } from '@/components/icons';
 import { NearestMosqueButton } from '@/components/NearestMosqueButton';
-import { boroughSlug } from '@/lib/areas';
+import { boroughSlug, getAreasWithPages } from '@/lib/areas';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
 import {
   countPrayerSpaces,
@@ -15,6 +15,11 @@ import {
 } from '@/lib/prayerSpaces';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
+import { PageHero } from '@/components/PageHero';
+import { PageBody, PageSection } from '@/components/PageLayout';
+import { Reveal } from '@/components/Reveal';
+import { inlineLink, noteWarm, panel, sectionTitle } from '@/components/prose';
+import { PRAYER_ROOM } from '@/lib/media';
 
 export const revalidate = 3600;
 
@@ -43,12 +48,16 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
   const hasPoint = Number.isFinite(lat) && Number.isFinite(lng);
   const label = searchParams.label?.slice(0, 80);
 
-  const [total, withHours, boroughs, nearby] = await Promise.all([
+  const [total, withHours, boroughs, nearby, areas] = await Promise.all([
     countPrayerSpaces(),
     countPrayerSpacesWithHours(),
     getPrayerSpaceBoroughs(),
     hasPoint ? getNearestPrayerSpaces(lat, lng, 20, 8000) : Promise.resolve([]),
+    getAreasWithPages(),
   ]);
+  // A borough with prayer spaces but too few listed restaurants has no page to
+  // link to (Bexley, 2026-09-24). It is still shown, just not as a link.
+  const withPages = new Set(areas.map((a) => a.slug));
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -60,42 +69,47 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-16 pt-8 sm:px-6 sm:pt-12">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
+      <PageHero
+        title="Mosques and prayer spaces in London"
+        lede={
+          <>
+            {total} places to pray across London, from OpenStreetMap. Every restaurant page also says how
+            far the nearest one is to walk.
+          </>
+        }
+        art={PRAYER_ROOM}
+      >
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <NearestMosqueButton variant="onDark" />
+          <span className="text-[13px] text-white/70">Uses your location. We never store it.</span>
+        </div>
+      </PageHero>
 
-      <h1 className="text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Mosques and prayer spaces in London
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        {total} places to pray across London, from OpenStreetMap. Every restaurant page also says how
-        far the nearest one is to walk.
-      </p>
-
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <NearestMosqueButton />
-        <span className="text-[13px] text-subtle">Uses your location. We never store it.</span>
-      </div>
-
+      <PageBody>
       {/* Said at the top, not buried at the bottom, because it changes how you
           use the page: a mosque listed as open may well be locked. */}
-      <p className="mt-5 flex items-start gap-2 rounded-xl bg-sand p-4 text-sm leading-relaxed text-ink/80">
-        <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
-        <span>
-          <span className="font-semibold text-ink">Opening times are the weak part.</span> Only{' '}
-          {withHours} of these {total} carry any hours in OpenStreetMap, a mosque listed as open may
-          still be locked, and the doors being open is not the same as jamaat. For a particular
-          prayer, ring them or check their own website.
-        </span>
-      </p>
+      <div className="space-y-4">
+        <p className={`${noteWarm} flex items-start gap-2.5 text-sm leading-relaxed text-ink/80`}>
+          <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-spice-ink" aria-hidden="true" />
+          <span>
+            <span className="font-semibold text-ink">Opening times are the weak part.</span> Only{' '}
+            {withHours} of these {total} carry any hours in OpenStreetMap, a mosque listed as open may
+            still be locked, and the doors being open is not the same as jamaat. For a particular
+            prayer, ring them or check their own website.
+          </span>
+        </p>
 
-      <p className="mt-4 text-pretty text-sm leading-relaxed text-muted">
-        This is separate from the halal listings on purpose. A mosque being near a restaurant says
-        nothing about that restaurant&apos;s food, and a halal label says nothing about the mosque.
-      </p>
+        <p className="text-pretty text-sm leading-relaxed text-muted">
+          This is separate from the halal listings on purpose. A mosque being near a restaurant says
+          nothing about that restaurant&apos;s food, and a halal label says nothing about the mosque.
+        </p>
+      </div>
 
       {hasPoint && (
-        <section aria-labelledby="near" className="mt-8">
-          <h2 id="near" className="font-display text-xl font-semibold text-ink">
+        <section aria-labelledby="near" className="scroll-mt-24">
+          <h2 id="near" className={sectionTitle}>
             {nearby.length ? `Nearest to ${label ?? 'you'}` : `Nothing found near ${label ?? 'there'}`}
           </h2>
           {nearby.length === 0 && (
@@ -104,7 +118,7 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
               there isn&apos;t one.
             </p>
           )}
-          <ul className="mt-3 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+          <ul className={`mt-4 divide-y divide-line overflow-hidden ${panel}`}>
             {nearby.map((s) => {
               const hours = formatOsmHours(s.opening_hours);
               const services = formatOsmHours(s.service_times);
@@ -174,50 +188,58 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
         </section>
       )}
 
-      <section aria-labelledby="by-borough" className="mt-10">
-        <h2 id="by-borough" className="font-display text-xl font-semibold text-ink">
-          By borough
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          Pick a borough to see its halal places; each restaurant page carries the nearest prayer
-          space.
-        </p>
-        <ul className="mt-3 flex flex-wrap gap-2">
+      <PageSection
+        id="by-borough"
+        title="By borough"
+        lede="Pick a borough to see its halal places; each restaurant page carries the nearest prayer space."
+      >
+        <ul className="flex flex-wrap gap-2">
           {boroughs.map((b) => (
             <li key={b.borough}>
-              <Link
-                href={`/halal-restaurants/${boroughSlug(b.borough)}`}
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-line bg-white px-3.5 text-[13px] font-medium text-ink/80 transition hover:border-ink/30 hover:text-ink"
-              >
-                {b.borough}
-                <span className="text-subtle">{b.spaces}</span>
-              </Link>
+              {withPages.has(boroughSlug(b.borough)) ? (
+                <Link
+                  href={`/halal-restaurants/${boroughSlug(b.borough)}`}
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-line bg-white px-4 text-[14px] font-medium text-ink/85 transition duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:bg-accent-soft hover:text-ink hover:shadow-sm"
+                >
+                  {b.borough}
+                  <span className="text-[13px] tabular-nums text-subtle">{b.spaces}</span>
+                </Link>
+              ) : (
+                <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-dashed border-line px-4 text-[14px] text-muted">
+                  {b.borough}
+                  <span className="text-[13px] tabular-nums text-subtle">{b.spaces}</span>
+                </span>
+              )}
             </li>
           ))}
         </ul>
-      </section>
+      </PageSection>
 
-      <p className="mt-10 flex items-start gap-2 text-sm leading-relaxed text-muted">
-        <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
-        <span>
-          Prayer space data from{' '}
-          <a
-            href="https://www.openstreetmap.org/copyright"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-accent-ink hover:underline"
-          >
-            OpenStreetMap contributors
-          </a>
-          , under the Open Database Licence. That is OpenStreetMap&apos;s coverage of London, not
-          a complete list of its mosques, and we haven&apos;t visited any of them. Know one
-          we&apos;re missing, or something that&apos;s wrong?{' '}
-          <Link href="/submit-restaurant" className="font-semibold text-accent-ink hover:underline">
-            Tell us
-          </Link>
-          .
-        </span>
-      </p>
-    </div>
+      <Reveal as="section" aria-label="Where this comes from" className="border-t border-line pt-6">
+        <p className="flex items-start gap-2 text-sm leading-relaxed text-muted">
+          <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
+          <span>
+            Prayer space data from{' '}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={inlineLink}
+            >
+              OpenStreetMap contributors
+            </a>
+            , under the Open Database Licence. That is OpenStreetMap&apos;s coverage of London, not
+            a complete list of its mosques, and we haven&apos;t visited any of them. Know one
+            we&apos;re missing, or something that&apos;s wrong?{' '}
+            {/* Corrections, not the restaurant form: this is about a mosque. */}
+            <Link href="/corrections" className={inlineLink}>
+              Tell us
+            </Link>
+            .
+          </span>
+        </p>
+      </Reveal>
+      </PageBody>
+    </>
   );
 }

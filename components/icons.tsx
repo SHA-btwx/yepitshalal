@@ -114,6 +114,48 @@ export function CheckIcon(p: IconProps) {
   );
 }
 
+export function ArrowDownIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 3L12 21M12 21L18.5 14.5M12 21L5.5 14.5" />
+    </Svg>
+  );
+}
+
+export function PauseIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M6 18.4V5.6C6 5.26863 6.26863 5 6.6 5H9.4C9.73137 5 10 5.26863 10 5.6V18.4C10 18.7314 9.73137 19 9.4 19H6.6C6.26863 19 6 18.7314 6 18.4Z" />
+      <path d="M14 18.4V5.6C14 5.26863 14.2686 5 14.6 5H17.4C17.7314 5 18 5.26863 18 5.6V18.4C18 18.7314 17.7314 19 17.4 19H14.6C14.2686 19 14 18.7314 14 18.4Z" />
+    </Svg>
+  );
+}
+
+export function PlayIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M6.90588 4.53682C6.50592 4.2998 6 4.58808 6 5.05299V18.947C6 19.4119 6.50592 19.7002 6.90588 19.4632L18.629 12.5162C19.0211 12.2838 19.0211 11.7162 18.629 11.4838L6.90588 4.53682Z" />
+    </Svg>
+  );
+}
+
+export function MailIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M7 9L12 12.5L17 9" />
+      <path d="M2 17V7C2 5.89543 2.89543 5 4 5H20C21.1046 5 22 5.89543 22 7V17C22 18.1046 21.1046 19 20 19H4C2.89543 19 2 18.1046 2 17Z" />
+    </Svg>
+  );
+}
+
+export function ChevronDownIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M6 9L12 15L18 9" />
+    </Svg>
+  );
+}
+
 export function SealCheckIcon(p: IconProps) {
   return (
     <Svg {...p}>

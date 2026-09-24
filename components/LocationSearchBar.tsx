@@ -233,7 +233,7 @@ export function LocationSearchBar() {
         ref={formRef}
         onSubmit={handleSearch}
         role="search"
-        className="flex items-center gap-1.5 rounded-full bg-white p-1.5 shadow-xl shadow-black/15 ring-1 ring-black/5 transition focus-within:ring-2 focus-within:ring-accent-ink"
+        className="ground-light flex items-center gap-1.5 rounded-full bg-white p-1.5 shadow-xl shadow-black/15 ring-1 ring-black/5 transition focus-within:ring-2 focus-within:ring-accent-onDark"
       >
         <label htmlFor={inputId} className="sr-only">
           Search by postcode, area, street or restaurant name

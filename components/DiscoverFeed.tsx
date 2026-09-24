@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { skipOptimiser } from '@/lib/imageUrl';
 import Link from 'next/link';
 import { HalalBadge } from './HalalBadge';
 import { ForkKnifeIcon, ArrowRightIcon, SparkleIcon } from './icons';
@@ -123,6 +124,7 @@ function DiscoverCard({
       ) : item.coverUrl || item.mediaUrl ? (
         <Image
           src={item.coverUrl ?? item.mediaUrl}
+          unoptimized={skipOptimiser(item.coverUrl ?? item.mediaUrl)}
           alt=""
           fill
           className="object-cover"

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { matchLanguage } from '@/lib/languages';
 import { ipHashFor, overIpLimit, RATE_LIMITED_MESSAGE } from '@/lib/rateLimit';
+import { notifyInbox } from '@/lib/notify';
 
 // "Can you do this in my language?"
 //
@@ -71,6 +72,19 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: "That didn't save. Please try again." }, { status: 500 });
   }
+
+  await notifyInbox({
+    inbox: 'hello',
+    subject: `Language request: ${matched?.name ?? typed}`,
+    fields: [
+      ['Language', matched?.name ?? typed],
+      ['As typed', matched && matched.name !== typed ? typed : null],
+      ['Email', email ?? 'Not given'],
+      ['Asked from', clean(body.source, 200)],
+      ['Page language', clean(body.locale, 8) ?? 'en'],
+    ],
+    replyTo: email,
+  });
 
   return NextResponse.json({ ok: true });
 }

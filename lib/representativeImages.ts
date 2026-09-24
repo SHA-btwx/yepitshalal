@@ -139,6 +139,22 @@ export function coverFor(place: {
   return { src: image.src, own: false, image };
 }
 
+/**
+ * A picture for a kind of food as a whole, for a tile that stands for the
+ * category ("Pizza", "Turkish") rather than for any one restaurant. Same
+ * reviewed library, same preference for our own copies. `taken` keeps two
+ * tiles that share a bucket (Indian and Pakistani are both curry) from
+ * showing the same photo.
+ */
+export function imageForCuisine(cuisine: string, taken: Set<string> = new Set()): RepresentativeImage | null {
+  const bucket = bucketFor({ name: '', cuisine_label: cuisine });
+  if (!bucket || !LIBRARY[bucket]?.length) return null;
+  const pool = poolFor(bucket, 0);
+  const image = pool.find((i) => !taken.has(i.src)) ?? pool[0];
+  taken.add(image.src);
+  return image;
+}
+
 export function allRepresentativeImages(): { bucket: string; images: RepresentativeImage[] }[] {
   return Object.entries(LIBRARY).map(([bucket, images]) => ({ bucket, images }));
 }

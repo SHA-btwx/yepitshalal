@@ -61,13 +61,13 @@ function addCoverageLayers(map: MapLibreMap) {
       id: `${COVERAGE_SRC}-fill`,
       type: 'fill',
       source: COVERAGE_SRC,
-      paint: { 'fill-color': '#1C9A4B', 'fill-opacity': 0.09 },
+      paint: { 'fill-color': '#5FCB1E', 'fill-opacity': 0.09 },
     });
     map.addLayer({
       id: `${COVERAGE_SRC}-line`,
       type: 'line',
       source: COVERAGE_SRC,
-      paint: { 'line-color': '#0F5E2E', 'line-width': 2, 'line-opacity': 0.7 },
+      paint: { 'line-color': '#276F0A', 'line-width': 2, 'line-opacity': 0.7 },
     });
   }
 
@@ -79,7 +79,7 @@ function addCoverageLayers(map: MapLibreMap) {
       source: CENTER_SRC,
       paint: {
         'circle-radius': 5,
-        'circle-color': '#0F5E2E',
+        'circle-color': '#276F0A',
         'circle-stroke-width': 2.5,
         'circle-stroke-color': '#ffffff',
       },
@@ -309,7 +309,7 @@ export function RestaurantMap({
       mark.style.width = '20px';
       mark.style.height = '20px';
       mark.style.borderRadius = '6px';
-      mark.style.background = '#14181A';
+      mark.style.background = '#0F252B';
       mark.style.border = '2px solid #fff';
       mark.style.boxShadow = '0 1px 4px rgba(0,0,0,.35)';
       mark.style.display = 'flex';
@@ -427,7 +427,7 @@ function renderMarkers(
       el.style.borderRadius = '50%';
       el.style.border = '3px solid white';
       el.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-      el.style.background = '#14181A';
+      el.style.background = '#0F252B';
       el.style.color = 'white';
       el.style.fontFamily = 'inherit';
       el.style.fontSize = '13px';

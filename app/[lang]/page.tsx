@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { heroPrimary, heroSecondary } from '@/components/PageHero';
 import { notFound } from 'next/navigation';
 import { HalalBadge } from '@/components/HalalBadge';
 import { NotifyMeForm } from '@/components/NotifyMeForm';
 import { ArrowRightIcon, InfoIcon, MapPinIcon } from '@/components/icons';
-import { ctaPrimary, ctaSecondary } from '@/components/cta';
+import { ctaSecondary } from '@/components/cta';
+import { forestLights } from '@/components/grounds';
 import { getAreasWithPages } from '@/lib/areas';
 import { getCuisines } from '@/lib/cuisines';
 import { hreflangAlternates, localeByCode, LOCALES } from '@/lib/locales';
@@ -73,11 +75,8 @@ export default async function LocalePage({ params }: { params: { lang: string } 
     <div lang={locale.code} dir={locale.dir}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
 
-      <section className="relative overflow-hidden bg-forest-deep">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(120%_90%_at_82%_-10%,rgba(52,197,107,0.38),transparent_58%),radial-gradient(95%_85%_at_-5%_105%,rgba(11,61,34,0.95),transparent_62%),radial-gradient(70%_60%_at_15%_15%,rgba(194,84,43,0.22),transparent_60%)]"
-        />
+      <section className="ground-dark grain relative overflow-hidden bg-forest-deep">
+        <div aria-hidden="true" className={`absolute inset-0 ${forestLights}`} />
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-sand-soft" />
 
         <div className="relative mx-auto max-w-3xl px-5 pb-12 pt-10 text-center sm:px-6 sm:pb-16 sm:pt-16">
@@ -87,8 +86,8 @@ export default async function LocalePage({ params }: { params: { lang: string } 
             <span
               className={
                 locale.dir === 'rtl'
-                  ? 'rounded-full bg-spice px-2.5 py-1 text-[12px] font-bold leading-normal text-white'
-                  : 'rounded-full bg-spice px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white'
+                  ? 'rounded-full bg-accent px-2.5 py-1 text-[12px] font-bold leading-normal text-forest-deep'
+                  : 'rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-forest-deep'
               }
             >
               {locale.beta}
@@ -107,13 +106,13 @@ export default async function LocalePage({ params }: { params: { lang: string } 
           </p>
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className={ctaPrimary}>
+            <Link href="/" className={heroPrimary}>
               {locale.ctaSearch}
               <ArrowRightIcon className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/how-we-check"
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white/20"
+              className={heroSecondary}
             >
               {locale.ctaHow}
             </Link>

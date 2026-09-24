@@ -22,7 +22,8 @@ export function NearestMosqueButton({
   className,
 }: {
   label?: string;
-  variant?: 'solid' | 'quiet';
+  /** 'onDark' is for the forest page header, where a dark button would vanish. */
+  variant?: 'solid' | 'quiet' | 'onDark';
   className?: string;
 }) {
   const router = useRouter();
@@ -54,9 +55,9 @@ export function NearestMosqueButton({
       disabled={state === 'locating'}
       className={clsx(
         'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition active:scale-[0.98] disabled:opacity-70',
-        variant === 'solid'
-          ? 'bg-ink text-white hover:bg-accent-ink'
-          : 'border border-line bg-white text-ink hover:border-ink/30',
+        variant === 'solid' && 'bg-ink text-white hover:bg-accent-ink',
+        variant === 'quiet' && 'border border-line bg-white text-ink hover:border-ink/30',
+        variant === 'onDark' && 'min-h-[48px] bg-white px-6 text-ink shadow-sm hover:-translate-y-px hover:bg-sand-soft hover:shadow-md',
         className
       )}
     >

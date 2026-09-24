@@ -30,14 +30,15 @@ record something, say so rather than guessing.
 
 ## Gotchas that are not bugs
 
-- `next/og` routes 500 locally on Windows. They work on Vercel. A build that
-  says "Compiled successfully" then fails prerender on `/icon`, `/apple-icon`
-  and `/opengraph-image` is a **passing** local build
+- There are no `next/og` routes since Wave 9: the link preview is the static
+  `app/opengraph-image.jpg`, so a local `next build` exits 0. If a `next/og`
+  route is ever added back, it will 500 locally on Windows and still work on
+  Vercel
 - After any `next build`, `rm -rf .next` before restarting the dev server
 - A worktree needs `.env.local` copied in or the build fails with
   "supabaseUrl is required"
-- Never send a stored image through the Vercel image optimiser. Pass
-  `unoptimized`. It 402s past its monthly quota
+- Never send any image through the Vercel image optimiser, stored or Unsplash.
+  Pass `unoptimized={skipOptimiser(src)}`. It 402s past its monthly quota
 
 Details for all of these: `03 Operations/` in the vault.
 

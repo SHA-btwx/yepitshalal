@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PageHero } from '@/components/PageHero';
+import { PageBody } from '@/components/PageLayout';
+import { inlineLink, noteWarm, sectionTitle } from '@/components/prose';
 import { CONTACT_EMAIL } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -29,16 +32,12 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-16 pt-10 sm:px-6 sm:pt-14">
-      <h1 className="text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Terms
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        The rules for using YepItsHalal. We have kept them in plain English, because terms
-        nobody can read are not really terms.
-      </p>
+    <>
+      <PageHero tone="sand" title="Terms" lede="The rules for using YepItsHalal. We have kept them in plain English, because terms nobody can read are not really terms." />
+      <PageBody>
+      <div>
 
-      <div className="mt-6 rounded-2xl border-2 border-halal-unverified/25 bg-halal-unverifiedSoft p-5">
+      <div className={noteWarm}>
         <h2 className="font-display text-lg font-semibold text-ink">
           The most important thing on this page
         </h2>
@@ -54,23 +53,23 @@ export default function TermsPage() {
         </p>
       </div>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Using the site</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Using the site</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Search, browse and read as much as you like, signed in or not, for free. You may
         not scrape the site wholesale, resell the data, or use it to build a competing
         listing. Some of what we show comes from open data that carries its own licence
         terms, credited on{' '}
-        <Link href="/how-we-check" className="font-medium text-accent-ink underline underline-offset-2">
+        <Link href="/how-we-check" className={inlineLink}>
           how we check
         </Link>{' '}
         and{' '}
-        <Link href="/image-credits" className="font-medium text-accent-ink underline underline-offset-2">
+        <Link href="/image-credits" className={inlineLink}>
           image credits
         </Link>
         .
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">
+      <h2 className={`mt-12 ${sectionTitle}`}>
         What we promise about halal information
       </h2>
       <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
@@ -84,7 +83,7 @@ export default function TermsPage() {
           If you tell us a label is wrong, we take it down while we check. See{' '}
           <Link
             href="/corrections"
-            className="font-medium text-accent-ink underline underline-offset-2"
+            className={inlineLink}
           >
             corrections
           </Link>
@@ -96,7 +95,7 @@ export default function TermsPage() {
         that a restaurant told us the truth.
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">
+      <h2 className={`mt-12 ${sectionTitle}`}>
         If you add something
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
@@ -106,7 +105,7 @@ export default function TermsPage() {
         can remove anything, and we will remove anything we find is wrong.
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Supporting us</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Supporting us</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Yep+ is support, not access.{' '}
         <span className="font-medium text-ink">
@@ -131,7 +130,7 @@ export default function TermsPage() {
         </li>
       </ul>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">
+      <h2 className={`mt-12 ${sectionTitle}`}>
         Priority verification
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
@@ -143,7 +142,7 @@ export default function TermsPage() {
         promised, through our own fault, you can have your money back.
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Where we stand</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Where we stand</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         We are in Beta and we say so on the site. Things break, coverage is uneven, and
         London is the only city so far. We are not liable for a decision you make about
@@ -156,16 +155,16 @@ export default function TermsPage() {
         England and Wales have jurisdiction.
       </p>
 
-      <h2 className="mt-10 font-display text-xl font-semibold text-ink">Reaching us</h2>
+      <h2 className={`mt-12 ${sectionTitle}`}>Reaching us</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         <a
           href={`mailto:${CONTACT_EMAIL}`}
-          className="font-medium text-accent-ink underline underline-offset-2"
+          className={inlineLink}
         >
           {CONTACT_EMAIL}
         </a>
         . For how we handle your data, see{' '}
-        <Link href="/privacy" className="font-medium text-accent-ink underline underline-offset-2">
+        <Link href="/privacy" className={inlineLink}>
           privacy
         </Link>
         .
@@ -174,6 +173,8 @@ export default function TermsPage() {
       <p className="mt-10 border-t border-line pt-6 text-xs text-subtle">
         Last updated 21 September 2026.
       </p>
-    </div>
+      </div>
+      </PageBody>
+    </>
   );
 }

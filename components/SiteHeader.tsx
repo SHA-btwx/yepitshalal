@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { LogoLockup } from './Logo';
 import { NavLink } from './NavLink';
+import { LanguageMenu } from './LanguageMenu';
 import { SparkleIcon } from './icons';
 import { createServerSupabase } from '@/lib/supabase/server';
 
+// The header is the logo's own ground since 2026-09-24: its deep teal, with
+// the lockup in the logo's white and lime, and the one button in lime.
 export async function SiteHeader() {
   const supabase = createServerSupabase();
   const {
@@ -11,22 +14,22 @@ export async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-sand-line bg-sand-soft/85 backdrop-blur supports-[backdrop-filter]:bg-sand-soft/70">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <span className="inline-flex items-center gap-2">
+    <header className="ground-dark sticky top-0 z-30 border-b border-white/10 bg-forest-deep/95 text-white backdrop-blur supports-[backdrop-filter]:bg-forest-deep/85">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6">
+        <span className="inline-flex min-w-0 items-center gap-2">
           <Link
             href="/"
-            className="inline-flex min-h-[40px] items-center rounded-full"
+            className="inline-flex min-h-[44px] items-center rounded-full"
             aria-label="YepItsHalal home"
           >
-            <LogoLockup />
+            <LogoLockup tone="dark" />
           </Link>
           {/* Beside the name on every page, not just the homepage. Somebody who
               arrives on a restaurant page from a search deserves to know how
               young this is before they judge what is missing from it. */}
           <Link
             href="/#next-cities"
-            className="inline-flex items-center rounded-full bg-spice-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-spice-ink transition hover:bg-spice/20"
+            className="relative inline-flex shrink-0 items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-onDark ring-1 ring-accent/40 transition after:absolute after:-inset-x-1 after:-inset-y-3 after:content-[''] hover:bg-white/15"
             title="London only for now. Tell us where to go next."
           >
             Beta
@@ -35,18 +38,29 @@ export async function SiteHeader() {
 
         {/* Below sm these live in the bottom tab bar instead. */}
         <nav aria-label="Primary" className="hidden items-center gap-1 sm:flex">
-          <NavLink href="/discover">Discover</NavLink>
-          <NavLink href="/submit-restaurant">Add your restaurant</NavLink>
-          <NavLink href={user ? '/account' : '/sign-in'}>{user ? 'My account' : 'Sign in'}</NavLink>
+          <NavLink href="/discover" tone="dark">
+            Discover
+          </NavLink>
+          <NavLink href="/submit-restaurant" tone="dark">
+            Add your restaurant
+          </NavLink>
+          <NavLink href={user ? '/account' : '/sign-in'} tone="dark">
+            {user ? 'My account' : 'Sign in'}
+          </NavLink>
         </nav>
 
-        <Link
-          href="/yep-plus"
-          className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-white transition hover:bg-accent-ink active:scale-[0.98]"
-        >
-          <SparkleIcon className="h-4 w-4" />
-          Support us
-        </Link>
+        <span className="inline-flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* From 640px. On a phone the language lives in the bottom bar. */}
+          <LanguageMenu />
+
+          <Link
+            href="/yep-plus"
+            className="inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full bg-accent px-3.5 text-sm font-semibold text-forest-deep transition duration-200 hover:-translate-y-px hover:bg-accent-onDark active:translate-y-0 active:scale-[0.985] sm:px-4"
+          >
+            <SparkleIcon className="h-4 w-4" aria-hidden="true" />
+            Support us
+          </Link>
+        </span>
       </div>
     </header>
   );

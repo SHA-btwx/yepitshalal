@@ -4,6 +4,9 @@ import { ArrowRightIcon } from '@/components/icons';
 import { getCuisines } from '@/lib/cuisines';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
+import { PageHero } from '@/components/PageHero';
+import { Reveal } from '@/components/Reveal';
+import { inlineLink, pageShell } from '@/components/prose';
 
 export const revalidate = 3600;
 
@@ -28,52 +31,51 @@ export default async function CuisineIndexPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-16 pt-8 sm:px-6 sm:pt-12">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
+      <PageHero
+        crumbs={[{ label: 'London', href: '/halal-restaurants' }, { label: 'By kind of food' }]}
+        title="Halal food in London, by what you fancy"
+        lede={
+          <>
+            Most people do not decide by postcode. {total.toLocaleString('en-GB')} places with evidence of
+            halal food, sorted by what they actually serve.
+          </>
+        }
+      />
 
-      <nav aria-label="Breadcrumb" className="text-xs text-subtle">
-        <Link href="/halal-restaurants" className="hover:text-ink hover:underline">
-          London
-        </Link>
-        <span className="mx-1.5" aria-hidden="true">/</span>
-        <span className="text-muted">By kind of food</span>
-      </nav>
-
-      <h1 className="mt-3 text-balance font-display text-3xl font-semibold text-ink sm:text-4xl">
-        Halal food in London, by what you fancy
-      </h1>
-      <p className="mt-3 text-pretty text-base leading-relaxed text-muted">
-        Most people do not decide by postcode. {total.toLocaleString('en-GB')} places with evidence of
-        halal food, sorted by what they actually serve.
-      </p>
-
-      <ul className="mt-8 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        {cuisines.map((c) => (
-          <li key={c.slug}>
-            <Link
-              href={`/halal-restaurants/cuisine/${c.slug}`}
-              className="group flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3.5 transition hover:border-ink/25 hover:shadow-sm"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-display text-base font-semibold text-ink">Halal {c.cuisine}</span>
-                <span className="mt-0.5 block text-[13px] text-muted">
-                  {c.listed} with evidence
-                  {c.fully_halal > 0 && <> · {c.fully_halal} Fully Halal</>}
+      <div className={`${pageShell} pb-4 pt-10 sm:pt-14`}>
+        {/* The same index shape as the borough list: rules, not cards. */}
+        <ul className="grid grid-cols-1 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
+          {cuisines.map((c) => (
+            <li key={c.slug} className="border-t border-line">
+              <Link
+                href={`/halal-restaurants/cuisine/${c.slug}`}
+                className="group -mx-3 flex min-h-[60px] items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-white"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-display text-[16px] font-semibold text-ink">Halal {c.cuisine}</span>
+                  <span className="mt-0.5 block text-[13px] tabular-nums text-muted">
+                    {c.listed} with evidence
+                    {c.fully_halal > 0 && <>, {c.fully_halal} Fully Halal</>}
+                  </span>
                 </span>
-              </span>
-              <ArrowRightIcon className="h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" aria-hidden="true" />
-            </Link>
-          </li>
-        ))}
-      </ul>
+                <ArrowRightIcon className="h-4 w-4 shrink-0 text-subtle transition duration-200 group-hover:translate-x-0.5 group-hover:text-ink" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-      <p className="mt-10 text-sm leading-relaxed text-muted">
-        Looking for somewhere specific instead?{' '}
-        <Link href="/halal-restaurants" className="font-semibold text-accent-ink hover:underline">
-          Browse by borough
-        </Link>
-        .
-      </p>
-    </div>
+        <Reveal as="section" aria-label="Browse by borough" className="mt-10 border-t border-line pt-6">
+          <p className="text-sm leading-relaxed text-muted">
+            Looking for somewhere specific instead?{' '}
+            <Link href="/halal-restaurants" className={inlineLink}>
+              Browse by borough
+            </Link>
+            .
+          </p>
+        </Reveal>
+      </div>
+    </>
   );
 }

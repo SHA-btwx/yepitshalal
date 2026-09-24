@@ -3,13 +3,13 @@
 import { useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CheckIcon } from './icons';
+import { choicePill, fieldGroup, fieldHint, fieldInput, fieldLabel, formError } from './form';
+import { ctaPrimary, ctaSecondary } from './cta';
+import { Swap } from './motion/Swap';
 
-// text-[16px] on every input is deliberate: iOS Safari zooms the whole page
-// when a focused field's text is smaller than 16px, and the user has to pinch
-// back out after every field.
-const FIELD_CLASS =
-  'w-full rounded-xl border border-black/15 bg-white px-3.5 py-3 text-[16px] text-ink placeholder:text-subtle transition focus:border-accent-ink focus:outline-none focus:ring-2 focus:ring-accent-ink/20 sm:text-sm';
-const LABEL_CLASS = 'mb-1.5 block text-sm font-medium text-ink';
+// Field styles live in components/form.ts, shared with every other form.
+const FIELD_CLASS = fieldInput;
+const LABEL_CLASS = fieldLabel;
 
 function Field({
   label,
@@ -31,7 +31,7 @@ function Field({
       </label>
       <input id={id} name={name} aria-describedby={hintId} className={FIELD_CLASS} {...props} />
       {hint && (
-        <p id={hintId} className="mt-1 text-xs text-muted">
+        <p id={hintId} className={fieldHint}>
           {hint}
         </p>
       )}
@@ -65,7 +65,7 @@ function Choice({
         {options.map((opt) => (
           <label
             key={opt.value}
-            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-black/15 px-3.5 text-[14px] text-ink/80 transition has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-white hover:border-ink/30"
+            className={choicePill}
           >
             <input type="radio" name={name} value={opt.value} required={required} className="sr-only" />
             {opt.label}
@@ -139,6 +139,7 @@ export function SubmitRestaurantForm({
 
   if (done) {
     return (
+      <Swap id="done">
       <div
         ref={doneRef}
         tabIndex={-1}
@@ -167,23 +168,25 @@ export function SubmitRestaurantForm({
         <div className="mt-5 flex flex-wrap gap-2">
           <Link
             href="/"
-            className="inline-flex min-h-[44px] items-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-accent-ink"
+            className={ctaPrimary}
           >
             Back to search
           </Link>
           <button
             type="button"
             onClick={() => setDone(null)}
-            className="inline-flex min-h-[44px] items-center rounded-full border border-line bg-white px-5 text-sm font-semibold text-ink transition hover:border-ink/30"
+            className={ctaSecondary}
           >
             Add another
           </button>
         </div>
       </div>
+      </Swap>
     );
   }
 
   return (
+    <Swap id="form">
     <form onSubmit={handleSubmit} className="space-y-6" noValidate={false}>
       <input type="text" name="company_website" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       {existing && <input type="hidden" name="update_slug" value={existing.slug} />}
@@ -236,7 +239,7 @@ export function SubmitRestaurantForm({
         </div>
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-black/10 p-4 sm:p-5">
+      <section className={fieldGroup}>
         <div>
           <h2 className="font-display text-lg font-semibold text-ink">Halal information</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -270,7 +273,7 @@ export function SubmitRestaurantForm({
           the people who actually go. Kept out of the halal section on purpose:
           a prayer room is not evidence about meat, and putting the two
           questions in one box would invite somebody to read it as if it were. */}
-      <section className="space-y-4 rounded-2xl border border-black/10 p-4 sm:p-5">
+      <section className={fieldGroup}>
         <div>
           <h2 className="font-display text-lg font-semibold text-ink">Somewhere to pray</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -333,7 +336,7 @@ export function SubmitRestaurantForm({
           ref={errorRef}
           tabIndex={-1}
           role="alert"
-          className="rounded-xl bg-halal-partialSoft px-4 py-3 text-sm font-medium text-halal-partialInk ring-1 ring-halal-partial/20"
+          className={formError}
         >
           {error}
         </p>
@@ -342,10 +345,11 @@ export function SubmitRestaurantForm({
       <button
         type="submit"
         disabled={submitting}
-        className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-accent-ink disabled:opacity-60"
+        className={`${ctaPrimary} w-full`}
       >
         {submitting ? 'Sending…' : existing ? 'Send the edit for review' : 'Send for review'}
       </button>
     </form>
+    </Swap>
   );
 }
