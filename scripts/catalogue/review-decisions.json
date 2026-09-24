@@ -288,5 +288,9 @@
   "saltanat.co.uk": {
     "decision": "skip",
     "note": "Marketing article about other breakfast places."
+  },
+  "halalfoodauthority.com": {
+    "decision": "exclude",
+    "note": "The certifier's office at 109 Fulham Palace Road, W6 8JA, not a place to eat; map data had it as a halal restaurant. Shabir, 2026-09-24: 'yes perhaps remove the halal food authority'."
   }
 }

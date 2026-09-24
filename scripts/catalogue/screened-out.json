@@ -1,6 +1,8 @@
 {
   "honestburgers.co.uk": {
-    "paths": ["/locations/"],
+    "paths": [
+      "/locations/"
+    ],
     "reason": "Each location page lists that branch's features, halal among them, and then the features of nearby branches, so a location page cannot be applied to every listing that carries this site. The FAQ at /feedback-and-faqs/ speaks for every branch ('All of the chicken in our restaurants is halal', and 'We do not offer halal beef' in its structured answer) and is used instead.",
     "by": "Claude, chat ad44ae56, from the rendered pages",
     "at": "2026-09-24"
@@ -17,6 +19,31 @@
   },
   "sam-sweets.weeblysite.com": {
     "reason": "A home bakery called Sam Sweets. Map data gives it to Nirala Sweets in Newham, a different business.",
+    "by": "Claude, chat ad44ae56, from the rendered pages",
+    "at": "2026-09-24"
+  },
+  "restaurants.subway.com": {
+    "reason": "Subway's store locator: each page is one store's, and 227 places share the host. A Slough store run by 'Al Shaheer Halal Foods Pvt Ltd' put 'halal' on the page through its company name, which would have become evidence for every Subway in London. Per-store halal information needs matching page by page first.",
+    "by": "Claude, chat ad44ae56, from the sitemap pass",
+    "at": "2026-09-24"
+  },
+  "marketplacefoodhall.com": {
+    "reason": "A food hall's website. Its FAQ ('halal friendly options at selected traders') is about the hall, not any one trader: map data gives it to Club Mexicana, a vegan stall inside.",
+    "by": "Claude, chat ad44ae56, from the rendered pages",
+    "at": "2026-09-24"
+  },
+  "key:overture:5b2a6a87-acd7-4071-b73f-b8c1a3f53158": {
+    "reason": "'Honesto' at 84 Brewer Street, W1F 9UB is Honest Burgers Soho (Overture names it Honest Burgers), already present as 'Honest Burger' at the same address. Screened so the branch is not listed twice.",
+    "by": "Claude, chat ad44ae56, from the source records",
+    "at": "2026-09-24"
+  },
+  "key:overture:f185458d-534f-44c0-84e5-af3623000736": {
+    "reason": "'Band of Burgers - Tolworth' with the postcode 'W13 9' and so placed in Ealing: the Tolworth branch, at 41B Tolworth Broadway, KT6 7DJ, is already its own record. Screened so it is not listed twice, once in the wrong borough.",
+    "by": "Claude, chat ad44ae56, from the source records",
+    "at": "2026-09-24"
+  },
+  "alleatapp.com": {
+    "reason": "An ordering platform hosting many restaurants' pages. Map data gives it to Eat Well at 258 Grand Drive, SW20, but its page is a Thai takeaway in N8.",
     "by": "Claude, chat ad44ae56, from the rendered pages",
     "at": "2026-09-24"
   }

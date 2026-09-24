@@ -27,8 +27,11 @@
 //     short list of chains whose central sites were read (CHAINS below), and
 //     never above moderate.
 //   - Text a site builder or ordering platform repeats across the sites it
-//     hosts is not any restaurant speaking, and hosts listed in
-//     screened-out.json were read and found not to be the listed place.
+//     hosts is not any restaurant speaking, nor is a review widget, and hosts
+//     listed in screened-out.json were read and found not to be the listed
+//     place.
+//   - On a site several places share, a page or sentence naming an area in
+//     another borough is that branch's alone (see namesAnotherArea).
 //
 // Output: .cache/evidence.jsonl (one line per place with evidence) and review
 // files. Run: node classify-evidence.mjs
@@ -46,8 +49,9 @@ for (const r of readJsonl(cachePath('crawl.jsonl'))) crawl.set(r.host, r);
 // the first pass found nothing on. Its pages count exactly like the first
 // pass's: mentions and contradiction flags from both are judged together. So
 // do the pages of the rendered pass (crawl-rendered.mjs), which read in a real
-// browser the sites the plain passes found empty or could not read.
-for (const pass of ['crawl-deep.jsonl', 'crawl-rendered.jsonl'].filter((f) => existsSync(cachePath(f)))) {
+// browser the sites the plain passes found empty or could not read, and of its
+// sitemap-led second pass (SITEMAP=1, crawl-rendered-2.jsonl).
+for (const pass of ['crawl-deep.jsonl', 'crawl-rendered.jsonl', 'crawl-rendered-2.jsonl'].filter((f) => existsSync(cachePath(f)))) {
   // Blog, news and event pages are left out: "Best halal food in London" on a
   // marketing post is not a statement about what this kitchen serves.
   const EDITORIAL = /\/(blog|blogs|news|post|posts|article|articles|events?|whats-?on|journal|stories|recipes?|press|magazine|guides?)(\/|$)/i;
@@ -177,11 +181,17 @@ function tidyExcerpt(text, re) {
 // are judged on the sentence, not on a window of surrounding text, so a menu link
 // ("Allergens . Halal") or a neighbouring FAQ answer cannot lend a sentence
 // words it does not contain.
+// Reviews a site embeds from elsewhere ("Nice halal pizza takeaway. Posted on
+// Google. Trustindex verifies that the original source of the review is
+// Google") are customers talking, whatever page they sit on.
+const REVIEW_WIDGET = /\b(trustindex|posted on (google|facebook|tripadvisor|trustpilot|yelp)|google reviews?|verified (review|customer)|reviewed on)\b/i;
+
 function halalSentences(mentions) {
   const out = [];
   const seen = new Set();
   for (const m of mentions) {
     const text = m.excerpt.replace(/\s+\.\s+/g, '. ');
+    const review = REVIEW_WIDGET.test(text);
     for (const hit of text.matchAll(/\bhalal\b/gi)) {
       const before = text.slice(0, hit.index);
       const start = Math.max(before.lastIndexOf('. '), before.lastIndexOf('? '), before.lastIndexOf('! '), before.lastIndexOf(' · '), before.lastIndexOf(' | ')) + 1;
@@ -208,7 +218,7 @@ function halalSentences(mentions) {
       // little of it survives before "halal" that a "not" could be just out of view.
       const wordsBefore = sentence.slice(0, sentence.search(/\bhalal\b/i)).trim().split(/\s+/).filter(Boolean).length;
       const fragment = start === 0 && /^[a-z]/.test(sentence) && wordsBefore < 8;
-      const entry = { url: m.url, s: clip(sentence), question, fragment, raw: key };
+      const entry = { url: m.url, s: clip(sentence), question, fragment, raw: key, review };
       if (cut >= 0) out[cut] = entry;
       else out.push(entry);
 
@@ -227,7 +237,7 @@ function halalSentences(mentions) {
           const qaKey = s.toLowerCase();
           if (!seen.has(qaKey)) {
             seen.add(qaKey);
-            out.push({ url: m.url, s, question: false, qa: kind, q: sentence, a: answer });
+            out.push({ url: m.url, s, question: false, qa: kind, q: sentence, a: answer, review });
           }
         }
       }
@@ -248,7 +258,7 @@ const QA_EXCEPTION = /\b(except|apart from|other than|with the exception|but|how
 // Halal said as a fact about the food, not just the word appearing. The last
 // alternative lets a cuisine sit between: "Halal indian & Sri Lankan Food
 // restaurant Wembley" is a restaurant calling itself halal.
-const POSITIVE = /\b(is|are|all|100\s?%|fully|completely|only)\s+(\S+\s+){0,3}halal\b|\bhalal[- ]?(chicken|meat|meats|beef|lamb|mutton|burgers?|kebabs?|food|menu|options?|certified|certification|approved|dishes|kitchen|restaurant|takeaway|range)\b|\b(serve|serves|served|use|uses|used|offer|offers|provide|provides|sell|sells|source|sources|sourced)\s+(\S+\s+){0,2}halal\b|\bhalal\s+(?:[a-z&'-]+\s+){1,4}(?:food|cuisine|restaurant|takeaway)\b/i;
+const POSITIVE = /\b(is|are|all|100\s?%|fully|completely|only)\s+(\S+\s+){0,3}halal\b|\bhalal[- ]?(chicken|meat|meats|beef|lamb|mutton|burgers?|kebabs?|food|menu|options?|certified|certification|approved|dishes|kitchens?|restaurants?|takeaways?|range)\b|\b(serve|serves|served|use|uses|used|offer|offers|provide|provides|sell|sells|source|sources|sourced)\s+(\S+\s+){0,2}halal\b|\bhalal\s+(?:[a-z&'-]+\s+){1,4}(?:food|cuisine|restaurant|takeaway)\b/i;
 
 const norm = (t) => (t || '').replace(/[‘’ʼ]/g, "'");
 
@@ -316,7 +326,120 @@ function someoneElsesWords(sentence, host, names) {
 const platformsFlag = (host, excerpt) =>
   platformSites.has(host) && (platformFlagCount.get(norm(excerpt).toLowerCase()) || 0) >= SHARED_MIN_SITES;
 
+// A sentence on a site shared by several places that says where it is ("a
+// proud Halal-certified restaurant in Fulham") speaks for the place there, not
+// for the chain's other branches (Band of Burgers, 2026-09-24). Only names of
+// London areas count, so "in London" or "in town" says nothing about where.
+const LONDON_AREAS = [
+  'Barking', 'Dagenham', 'Barnet', 'Bexley', 'Brent', 'Bromley', 'Camden', 'Croydon', 'Ealing', 'Enfield', 'Greenwich', 'Hackney',
+  'Hammersmith', 'Fulham', 'Haringey', 'Harrow', 'Havering', 'Hillingdon', 'Hounslow', 'Islington', 'Kensington', 'Chelsea',
+  'Kingston', 'Lambeth', 'Lewisham', 'Merton', 'Newham', 'Redbridge', 'Richmond', 'Southwark', 'Sutton', 'Tower Hamlets',
+  'Waltham Forest', 'Wandsworth', 'Westminster', 'Soho', 'Mayfair', 'Marylebone', 'Fitzrovia', 'Holborn', 'Covent Garden',
+  'Shoreditch', 'Whitechapel', 'Aldgate', 'Stratford', 'Walthamstow', 'Leyton', 'Leytonstone', 'Ilford', 'Wembley', 'Southall',
+  'Hayes', 'Uxbridge', 'Tooting', 'Brixton', 'Clapham', 'Balham', 'Streatham', 'Peckham', 'Camberwell', 'Brick Lane', 'Bethnal Green',
+  'Mile End', 'Stepney', 'Poplar', 'Canary Wharf', 'East Ham', 'West Ham', 'Forest Gate', 'Plaistow', 'Upton Park', 'Green Street',
+  'Edgware', 'Edgware Road', 'Paddington', 'Bayswater', 'Kilburn', 'Willesden', 'Harlesden', 'Acton', 'Chiswick', 'Hammersmith',
+  'Shepherds Bush', "Shepherd's Bush", 'Wood Green', 'Tottenham', 'Finsbury Park', 'Holloway', 'Archway', 'Kentish Town',
+  'Hampstead', 'Golders Green', 'Hendon', 'Colindale', 'Kingsbury', 'Neasden', 'Tolworth', 'Surbiton', 'Wimbledon', 'Mitcham',
+  'Morden', 'Norbury', 'Thornton Heath', 'Lewisham', 'Catford', 'Deptford', 'Woolwich', 'Eltham', 'Beckton', 'Canning Town',
+  'Dalston', 'Stoke Newington', 'Hoxton', 'Old Street', 'Angel', 'Euston', 'Kings Cross', "King's Cross", 'Victoria', 'Pimlico',
+  'Knightsbridge', 'Earls Court', "Earl's Court", 'Notting Hill', 'Ladbroke Grove', 'Battersea', 'Putney', 'Hounslow', 'Feltham',
+  'Twickenham', 'Romford', 'Hornchurch', 'Chingford', 'Palmers Green', 'Edmonton', 'Ponders End', 'Seven Kings', 'Goodmayes',
+  'Chadwell Heath', 'Barkingside', 'Gants Hill', 'Wanstead', 'Woodford', 'South Woodford', 'Rainham', 'Grays', 'Elephant and Castle',
+  'Borough', 'Bermondsey', 'Rotherhithe', 'Waterloo', 'South Bank', 'Leicester Square', 'Oxford Street', 'Bond Street', 'Baker Street',
+  'Southgate', 'Earlsfield', 'Camden Town', 'Chalk Farm', 'Swiss Cottage', 'Belsize Park', 'Highgate', 'Muswell Hill', 'Crouch End',
+  'Hornsey', 'Harringay', 'Green Lanes', 'Turnpike Lane', 'Seven Sisters', 'Stamford Hill', 'Clapton', 'Homerton', 'Bow', 'Limehouse',
+  'Wapping', 'Shadwell', 'Liverpool Street', 'Moorgate', 'Farringdon', 'Clerkenwell', 'Highbury', 'Stroud Green', 'Manor House',
+  'Bounds Green', 'Winchmore Hill', 'Cockfosters', 'New Southgate', 'Arnos Grove', 'Burnt Oak', 'Mill Hill', 'Finchley', 'Whetstone',
+  'Cricklewood', 'Brent Cross', 'Dollis Hill', 'Queensbury', 'Stanmore', 'Wealdstone', 'Pinner', 'Northolt', 'Greenford', 'Perivale',
+  'Hanwell', 'West Ealing', 'Brentford', 'Isleworth', 'Heston', 'Cranford', 'West Drayton', 'Yiewsley', 'Ruislip', 'Ickenham',
+  'Eastcote', 'Northwood', 'Kew', 'Mortlake', 'Barnes', 'Teddington', 'Hampton', 'Whitton', 'East Sheen', 'Roehampton', 'Southfields',
+  'Nine Elms', 'Vauxhall', 'Kennington', 'Oval', 'Stockwell', 'Herne Hill', 'Dulwich', 'East Dulwich', 'Forest Hill', 'Sydenham',
+  'Crystal Palace', 'Penge', 'Anerley', 'Beckenham', 'Orpington', 'Petts Wood', 'Chislehurst', 'Sidcup', 'Bexleyheath', 'Welling',
+  'Erith', 'Belvedere', 'Abbey Wood', 'Thamesmead', 'Plumstead', 'Charlton', 'Blackheath', 'Hither Green', 'Brockley', 'New Cross',
+  'Nunhead', 'Surrey Quays', 'Canada Water', 'Kensal Rise', 'Kensal Green', 'Queens Park', 'Maida Vale', "St John's Wood",
+  'West Hampstead', 'Park Royal', 'Hanger Lane', 'White City', 'Holland Park', 'South Kensington', 'Gloucester Road', 'West Brompton',
+  'Parsons Green', 'Brook Green', 'Ravenscourt Park', 'Gunnersbury', 'Turnham Green', 'Bedfont', 'Worcester Park', 'Cheam',
+  'Carshalton', 'Wallington', 'Purley', 'Coulsdon', 'Addiscombe', 'Norwood', 'South Norwood', 'West Norwood', 'Tulse Hill',
+  'Colliers Wood', 'Raynes Park', 'New Malden', 'Chessington', 'Norbiton', 'Upminster', 'Harold Wood', 'Hainault', 'Chigwell',
+  'Loughton', 'Buckhurst Hill', 'Lea Bridge', 'Manor Park', 'Silvertown', 'Custom House', 'Royal Docks', 'Becontree', 'Collier Row',
+  'Harold Hill', 'Elm Park', 'Enfield Town', 'Southall Broadway', 'Ealing Broadway', 'Tooting Broadway', 'Tooting Bec',
+];
+// And places outside London, where chains with London branches also trade:
+// "HALAL RESTAURANT IN NOTTINGHAM" is no London branch's statement.
+const ELSEWHERE = [
+  'Birmingham', 'Manchester', 'Leeds', 'Bradford', 'Leicester', 'Nottingham', 'Sheffield', 'Liverpool', 'Glasgow', 'Edinburgh',
+  'Cardiff', 'Bristol', 'Luton', 'Slough', 'Reading', 'Milton Keynes', 'Coventry', 'Wolverhampton', 'Derby', 'Blackburn', 'Bolton',
+  'Oldham', 'Preston', 'Newcastle', 'Sunderland', 'Middlesbrough', 'Huddersfield', 'Dewsbury', 'Peterborough', 'Northampton',
+  'Oxford', 'Cambridge', 'Brighton', 'Southampton', 'Portsmouth', 'Watford', 'Crawley', 'Chatham', 'Leigh-on-Sea', 'Southend',
+  'Chelmsford', 'Colchester', 'Ipswich', 'Norwich', 'Stoke', 'Walsall', 'Dudley', 'Burnley', 'Rochdale', 'Stockport', 'Wigan',
+  'Kent', 'Essex', 'Surrey', 'Hertfordshire', 'Clacton', 'Basildon', 'Dartford', 'Gravesend', 'High Wycombe', 'Aylesbury',
+];
+const escapeRe = (a) => a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/'/g, "'?");
+const AREA_NAMES = [...LONDON_AREAS, ...ELSEWHERE].sort((a, b) => b.length - a.length);
+const AREA_IN = new RegExp(`\\b(?:in|across|around|near|throughout) (?:the heart of )?(${AREA_NAMES.map(escapeRe).join('|')})\\b`, 'i');
+const AREA_WORDS = AREA_NAMES.map((a) => ({ name: a, words: ` ${normaliseName(a)} ` }));
+const OUTSIDE_LONDON = new Set(ELSEWHERE.map((a) => ` ${normaliseName(a)} `));
+
+// Which borough each area is in, learned from the addresses of every place we
+// hold (Soho: Westminster, Stratford: Newham), because a branch's street address
+// rarely names its district: Kricket Soho is at 12 Denman Street. An area names
+// another branch only when it is in another borough, so two branches in one
+// borough still share their pages.
+const BOROUGH_PARTS = { hammersmith: 'Hammersmith and Fulham', fulham: 'Hammersmith and Fulham', kensington: 'Kensington and Chelsea', chelsea: 'Kensington and Chelsea', barking: 'Barking and Dagenham', dagenham: 'Barking and Dagenham', kingston: 'Kingston upon Thames', richmond: 'Richmond upon Thames' };
+const areaBorough = new Map();
+{
+  const tally = new Map();
+  for (const e of entities) {
+    if (!e.address || !e.borough) continue;
+    const here = ` ${normaliseName(e.address)} `;
+    for (const a of AREA_WORDS) {
+      if (OUTSIDE_LONDON.has(a.words) || !here.includes(a.words)) continue;
+      const t = tally.get(a.words) ?? new Map();
+      t.set(e.borough, (t.get(e.borough) || 0) + 1);
+      tally.set(a.words, t);
+    }
+  }
+  const boroughs = new Set(entities.map((e) => e.borough).filter(Boolean));
+  for (const b of boroughs) areaBorough.set(` ${normaliseName(b)} `, b);
+  for (const [part, b] of Object.entries(BOROUGH_PARTS)) areaBorough.set(` ${part} `, b);
+  for (const [words, t] of tally) {
+    if (areaBorough.has(words)) continue;
+    const [best, n] = [...t.entries()].sort((x, y) => y[1] - x[1])[0];
+    const total = [...t.values()].reduce((s, v) => s + v, 0);
+    // Only where the addresses agree: a street name found all over London
+    // ("Broadway", "Green Lanes") says nothing about one borough.
+    if (n >= 3 && n / total >= 0.6) areaBorough.set(words, best);
+  }
+}
+function elsewhere(areaWords, entity) {
+  if (OUTSIDE_LONDON.has(areaWords)) return true;
+  const b = areaBorough.get(areaWords);
+  return Boolean(b && entity.borough && b !== entity.borough);
+}
+function namesAnotherArea(sentence, entity) {
+  const m = sentence.match(AREA_IN);
+  return Boolean(m) && elsewhere(` ${normaliseName(m[1])} `, entity);
+}
+// A branch page says where it is in its address too (/band-of-burgers-southgate/,
+// /locations/woodgreen/): on a shared site, a page named after an area in
+// another borough is that branch's, whatever its sentences say.
+function pageOfAnotherArea(url, entity) {
+  let path;
+  try {
+    path = ` ${normaliseName(decodeURIComponent(new URL(url).pathname).replace(/[-_/.]+/g, ' '))} `;
+  } catch {
+    return false;
+  }
+  const squashed = path.replace(/ /g, '');
+  const named = AREA_WORDS.find((a) => path.includes(a.words) || (a.words.trim().includes(' ') && squashed.includes(a.words.replace(/ /g, ''))));
+  return Boolean(named) && elsewhere(named.words, entity);
+}
+
 function websiteEvidence(entity) {
+  // A single place whose website link was found to be someone else's
+  // (screened-out.json, keyed "key:<entity key>").
+  if (screened[`key:${entity.key}`]) return { skip: true, reason: 'screened_out' };
   const rec = entity.websiteHost && crawl.get(entity.websiteHost);
   const names = [entity.name, ...entity.sources.fsa.map((f) => f.name), ...entity.sources.overture.map((o) => o.name), entity.sources.osm?.name].filter(Boolean);
   // A website only speaks for a place whose name it plausibly belongs to. Map
@@ -390,7 +513,15 @@ function websiteEvidence(entity) {
   // "Our food does not have Halal or Kosher certification", "None of our
   // products are certified Halal".
   const NOT_CERTIFIED = /\bnot\s+(been\s+|yet\s+|currently\s+|officially\s+)?(a\s+)?(halal[- ]certified|certified\s+halal)\b|\bhas\s+not\s+been\s+halal\b|\b(no|none|not|don't|do not|doesn't|does not)\b(?:(?!\b(but|however|although|also|instead)\b)[^.]){0,50}\b(halal[- ](or[- ]kosher[- ])?certifi\w*|certified[- ](halal|kosher)|halal\s+(or\s+kosher\s+)?certificat\w*)\b/i;
-  const all = halalSentences(mentions).filter((x) => !someoneElsesWords(x.s, entity.websiteHost, names));
+  // A person's decision about a site (review-decisions.json) covers every place
+  // that carries it, so the branch rules below do not second-guess it.
+  const shared = (hostCount.get(entity.websiteHost) || 0) > 1 && !decisions[entity.websiteHost];
+  const all = halalSentences(mentions).filter(
+    (x) =>
+      !someoneElsesWords(x.s, entity.websiteHost, names) &&
+      !x.review &&
+      !(shared && (namesAnotherArea(x.s, entity) || pageOfAnotherArea(x.url, entity)))
+  );
   // A site covering several branches says something about each. When its
   // sentences carry more than one postcode, the one carrying this listing's
   // postcode goes first, so the Ealing branch quotes "Halal-certified American

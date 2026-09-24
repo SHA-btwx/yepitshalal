@@ -14,6 +14,7 @@ const CERT_CLAIM = pick('CERT_CLAIM');
 const FULLY = pick('FULLY');
 const POSITIVE = pick('POSITIVE');
 const TESTIMONIAL = pick('TESTIMONIAL');
+const REVIEW_WIDGET = pick('REVIEW_WIDGET');
 const any = (re, x) => [].concat(re).some((r) => r.test(x));
 
 const cases = [
@@ -49,6 +50,9 @@ const cases = [
   ['NEGATIVE', NEGATIVE, 'We do not offer halal beef at any of our restaurants.', false],
   ['PARTIAL_NOT', PARTIAL_NOT, 'We do not offer halal beef at any of our restaurants.', true],
   ['NEGATIVE', NEGATIVE, "We don't serve halal food", true],
+  ['POSITIVE', POSITIVE, 'As one of the top halal restaurants in Wood Green, we serve fresh dishes', true],
+  ['REVIEW_WIDGET', REVIEW_WIDGET, 'Nice halal pizza takeaway. Posted on Google. KD. Trustindex verifies that the original source of the review is Google.', true],
+  ['REVIEW_WIDGET', REVIEW_WIDGET, 'All our meat is halal and we serve it fresh every day.', false],
 ];
 
 let failed = 0;

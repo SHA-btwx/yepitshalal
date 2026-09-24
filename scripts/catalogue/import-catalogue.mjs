@@ -333,7 +333,19 @@ for (const [loser, keeper] of merges.slice(0, 50)) {
   const k = existing.find((r) => r.id === keeper);
   log(`merge: ${l.name}, ${l.address}  ->  ${k.name}, ${k.address}`);
 }
-writeFileSync(cachePath('import-plan.json'), JSON.stringify({ ...plan, unconfirmed: unconfirmed.map((r) => ({ id: r.id, name: r.name, fsa: r.source_reference_id })), merges }, null, 2));
+// Every new place, with the evidence it would be listed on, so the list can be
+// read before --apply, however long it is.
+const newPlaceDetail = newPlaces.map((e) => ({
+  key: e.key,
+  name: e.name,
+  borough: e.borough,
+  postcode: e.postcode ?? null,
+  address: e.address ?? null,
+  website: e.websiteHost ?? null,
+  label: predict(evidenceByKey.get(e.key)),
+  evidence: (evidenceByKey.get(e.key) || []).map((ev) => `${ev.kind}:${ev.claim}:${ev.strength} ${ev.source_name}${ev.excerpt ? ` "${String(ev.excerpt).slice(0, 140)}"` : ''}`),
+}));
+writeFileSync(cachePath('import-plan.json'), JSON.stringify({ ...plan, unconfirmed: unconfirmed.map((r) => ({ id: r.id, name: r.name, fsa: r.source_reference_id })), merges, newPlaces: newPlaceDetail }, null, 2));
 
 // --- Evidence only ---------------------------------------------------------------------------------
 // `--evidence-only` brings new evidence to the listings that already exist and

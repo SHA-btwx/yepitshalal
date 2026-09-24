@@ -41,6 +41,10 @@ registers (no published reuse terms; ask them for permission first).
    look empty to a plain fetch. Same bot name, robots.txt obeyed, and it stops at
    any bot check rather than get past it. The rules for reading a page live once
    in `page-text.mjs`, shared by both crawlers.
+   `SITEMAP=1 RENDER_OUT=crawl-rendered-2.jsonl` is its sitemap-led second pass:
+   only the FAQ, halal, allergen, dietary and about pages a site's own sitemap
+   lists, and only ones no earlier pass read. A queue entry can also name the
+   exact pages to read (`urls`), for a chain's branch pages.
 3. `node classify-evidence.mjs` turns what the sources say into evidence records
    (`evidence.jsonl`). Rules are in the file header. Key points:
    - Only the restaurant's own clear words that all its meat is halal can be
@@ -52,7 +56,11 @@ registers (no published reuse terms; ask them for permission first).
    - Names, OpenStreetMap tags and map categories are weak evidence.
    - Cuisine and area are never evidence.
    - Text an ordering platform repeats across the sites it hosts (adverts for
-     other businesses, a shared review) is not any restaurant speaking.
+     other businesses, a shared review) is not any restaurant speaking, and
+     neither is a review widget ("Posted on Google").
+   - On a site several places share, a branch page or sentence naming an area
+     in another borough ("in Fulham", /band-of-burgers-southgate/) speaks for
+     that branch only. Sites a person has reviewed are left as decided.
    - A branch with no website of its own takes its chain's statement, for a
      short list of chains whose central sites were read, never above moderate.
    The script lists Fully Halal statements awaiting review in `review-strong.tsv`.
@@ -127,5 +135,12 @@ the exact quote. Commit changes to this file with the import they affect.
 `screened-out.json` is separate: hosts whose pages were read and found not to
 be the listed place speaking (a Leigh-on-Sea shop's ordering site linked to
 London shops of the same name, a chain's branch pages that each list their
-neighbours too). It can only take a website's evidence away, never add any.
-Each entry says why, who read it, and when.
+neighbours too, a store locator, a food hall). An entry can cover a whole host,
+only some paths of it (`paths`), or one place (`key:<entity key>`, for a
+duplicate or a place given someone else's site). It can only take a website's
+evidence away, never add any. Each entry says why, who read it, and when.
+
+`import-catalogue.mjs` without `--evidence-only` also adds places that have
+evidence but are not listed yet; the dry run writes every one of them, with
+the evidence it would be listed on, to `.cache/import-plan.json` (`newPlaces`).
+Read that list before `--apply`.

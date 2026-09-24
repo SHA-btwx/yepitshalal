@@ -16,11 +16,21 @@
 //     and media are not downloaded.
 //   - Delivery platforms and social networks are never opened (lib.mjs).
 //
-// Which sites: RENDER_QUEUE=path/to/queue.json, an array of { host, url }
+// Which sites: RENDER_QUEUE=path/to/queue.json, an array of { host, url, urls? }
 // (the sites of listed places that the plain passes read without finding
-// halal, or could not read). MAX_PAGES sets pages per site (default 5).
+// halal, or could not read). `urls`, when given, are the exact pages to read,
+// such as a chain's branch pages. MAX_PAGES sets pages per site (default 5).
 // Output: .cache/crawl-rendered.jsonl, the same shape as crawl.jsonl, plus
 // `rendered: true` and a character count per page. Resumable.
+//
+// SITEMAP=1 is a second, sitemap-led pass (2026-09-24): instead of the home
+// page and its links, it reads the pages a site's own sitemap lists under
+// FAQ, halal, allergens, dietary or about, skipping every page an earlier pass
+// already read. A chain's FAQ is often three clicks from its home page ("Is
+// your meat halal? All of the chicken in our restaurants is halal"). Write it
+// to its own file with RENDER_OUT=crawl-rendered-2.jsonl. HALAL_CAP raises the
+// number of halal mentions kept per site (default 12), so a long FAQ is not
+// cut off before its last answer.
 //
 // Needs Playwright with Chromium. PLAYWRIGHT_PATH may point at an existing
 // install (its index.mjs); otherwise `npm i -D playwright` here.
@@ -38,6 +48,10 @@ const USER_AGENT =
   'YepItsHalalBot/1.0 (+https://yepitshalal.com; reads restaurant sites for halal information)';
 const CONCURRENCY = Number(process.env.CRAWL_CONCURRENCY || 8);
 const MAX_PAGES = Number(process.env.MAX_PAGES || 5);
+const SITEMAP = process.env.SITEMAP === '1';
+const HALAL_CAP = Number(process.env.HALAL_CAP || 12);
+// The pages most likely to say what is served, as the plain deep pass picks them.
+const DEEP_PATH = /halal|faq|question|about|our-?story|allergen|dietary|diet|nutrition|sourcing|our-?food|our-?meat|ingredients/i;
 const NAV_TIMEOUT_MS = 20000;
 const SETTLE_MS = 6000;
 const HOST_BUDGET_MS = 75000;
@@ -63,18 +77,75 @@ console.log(`to render ${queue.length}, already done ${done.size}`);
 // A bot check, not the restaurant's page. We stop there rather than get past it.
 const BOT_WALL = /just a moment\.\.\.|attention required|verify you are (a )?human|checking your browser|access denied|enable javascript and cookies to continue|captcha|are you a robot/i;
 
-async function robotsFor(host) {
+async function fetchText(url, ms = 10000) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
+  const timer = setTimeout(() => controller.abort(), ms);
   try {
-    const res = await fetch(`https://${host}/robots.txt`, { headers: { 'user-agent': USER_AGENT }, signal: controller.signal, redirect: 'follow' });
-    if (res.status !== 200) return [];
-    const body = await res.text();
-    return /<html/i.test(body.slice(0, 200)) ? [] : parseRobots(body);
+    const res = await fetch(url, { headers: { 'user-agent': USER_AGENT }, signal: controller.signal, redirect: 'follow' });
+    return { status: res.status, body: res.status === 200 ? await res.text() : '' };
   } catch {
-    return [];
+    return { status: 0, body: '' };
   } finally {
     clearTimeout(timer);
+  }
+}
+
+async function robotsFor(host) {
+  const { status, body } = await fetchText(`https://${host}/robots.txt`);
+  if (status !== 200 || /<html/i.test(body.slice(0, 200))) return { rules: [], body: '' };
+  return { rules: parseRobots(body), body };
+}
+
+// The site's own sitemap, followed through at most six sitemap files, page
+// sitemaps first. Returns the pages whose address says what the food is.
+async function sitemapPages(host, robotsBody) {
+  const listed = [...(robotsBody || '').matchAll(/^\s*sitemap:\s*(\S+)/gim)].map((m) => m[1]);
+  const maps = listed.length ? listed.slice(0, 3) : [`https://${host}/sitemap.xml`, `https://${host}/wp-sitemap.xml`];
+  const found = new Set();
+  const seen = new Set();
+  while (maps.length && seen.size < 6) {
+    const url = maps.shift();
+    if (seen.has(url)) continue;
+    seen.add(url);
+    const { status, body } = await fetchText(url);
+    if (status !== 200 || !/<(urlset|sitemapindex)/i.test(body)) continue;
+    const locs = [...body.matchAll(/<loc>\s*(?:<!\[CDATA\[)?\s*([^<\]\s]+)/gi)].map((m) => m[1].replace(/&amp;/g, '&'));
+    if (/<sitemapindex/i.test(body)) {
+      maps.push(...locs.sort((a, b) => Number(/page/i.test(b)) - Number(/page/i.test(a))));
+    } else {
+      for (const loc of locs) {
+        try {
+          const u = new URL(loc);
+          if (u.hostname.replace(/^www\./, '') === host && DEEP_PATH.test(u.pathname)) found.add(u.origin + u.pathname);
+        } catch { /* not a URL */ }
+      }
+    }
+  }
+  return [...found].sort((a, b) => Number(/halal/i.test(b)) - Number(/halal/i.test(a)) || Number(/faq|question/i.test(b)) - Number(/faq|question/i.test(a)) || a.length - b.length);
+}
+
+// Pages any earlier pass already read, per host, so the sitemap pass only
+// reads new ones.
+const pageKey = (u) => {
+  try {
+    const x = new URL(u);
+    return x.origin.replace('://www.', '://').replace('http://', 'https://') + x.pathname.replace(/\/$/, '');
+  } catch {
+    return null;
+  }
+};
+const readBefore = new Map();
+if (SITEMAP) {
+  for (const file of ['crawl.jsonl', 'crawl-deep.jsonl', 'crawl-rendered.jsonl']) {
+    if (!existsSync(cachePath(file))) continue;
+    for (const line of readFileSync(cachePath(file), 'utf8').split('\n')) {
+      if (!line) continue;
+      let r;
+      try { r = JSON.parse(line); } catch { continue; }
+      const set = readBefore.get(r.host) || new Set();
+      for (const p of r.pages || []) for (const u of [p.url, p.finalUrl]) { const k = u && pageKey(u); if (k) set.add(k); }
+      readBefore.set(r.host, set);
+    }
   }
 }
 
@@ -92,9 +163,17 @@ async function readPage(page, url) {
   return { status: res ? res.status() : 0, finalUrl: page.url(), text, links: got.links };
 }
 
-async function renderHost(browser, host, startUrl) {
-  const record = { host, startUrl, crawledAt: new Date().toISOString(), rendered: true, pages: [], halal: [], flags: {}, certifierMention: false };
-  const rules = await robotsFor(host);
+// `urls`: pages to read, when the queue names them (a chain's branch pages).
+async function renderHost(browser, host, startUrl, urls = null) {
+  const record = { host, startUrl, crawledAt: new Date().toISOString(), rendered: true, ...(SITEMAP ? { sitemap: true } : {}), pages: [], halal: [], flags: {}, certifierMention: false };
+  const { rules, body: robotsBody } = await robotsFor(host);
+  // The sitemap pass reads only pages no earlier pass has read.
+  let fromSitemap = null;
+  if (SITEMAP) {
+    const before = readBefore.get(host) || new Set();
+    fromSitemap = (await sitemapPages(host, robotsBody)).filter((u) => !before.has(pageKey(u)));
+    if (!fromSitemap.length) return record;
+  }
   const context = await browser.newContext({ userAgent: USER_AGENT, locale: 'en-GB', viewport: { width: 1280, height: 900 } });
   await context.route('**/*', (route) => {
     const type = route.request().resourceType();
@@ -103,8 +182,8 @@ async function renderHost(browser, host, startUrl) {
   const page = await context.newPage();
   const started = Date.now();
   const visited = new Set();
-  const queuePages = [startUrl];
-  if (new URL(startUrl).pathname !== '/') queuePages.push(`https://${host}/`);
+  const queuePages = fromSitemap ?? (urls ? [...urls] : [startUrl]);
+  if (!fromSitemap && !urls && new URL(startUrl).pathname !== '/') queuePages.push(`https://${host}/`);
   try {
     while (queuePages.length && record.pages.length < MAX_PAGES && Date.now() - started < HOST_BUDGET_MS) {
       const url = queuePages.shift();
@@ -127,8 +206,8 @@ async function renderHost(browser, host, startUrl) {
       if (wall) break;
       if (got.status !== 200) continue;
 
-      for (const ex of excerptsAround(got.text, /\bhalal\b/gi)) {
-        if (record.halal.length < 12) record.halal.push({ url: got.finalUrl, excerpt: ex });
+      for (const ex of excerptsAround(got.text, /\bhalal\b/gi, 150, Math.max(8, HALAL_CAP))) {
+        if (record.halal.length < HALAL_CAP) record.halal.push({ url: got.finalUrl, excerpt: ex });
       }
       for (const [flag, re] of Object.entries(CONTRADICTIONS)) {
         if (re.test(got.text)) {
@@ -138,8 +217,9 @@ async function renderHost(browser, host, startUrl) {
       if (CERTIFIER.test(got.text)) record.certifierMention = true;
 
       // From the first page only: the internal links most likely to say what is
-      // served, scored exactly as the plain crawler scores them.
-      if (record.pages.length === 1) {
+      // served, scored exactly as the plain crawler scores them. The sitemap
+      // pass has its pages already.
+      if (record.pages.length === 1 && !fromSitemap && !urls) {
         const scored = [];
         for (const l of got.links) {
           let href;
@@ -172,10 +252,10 @@ const started = Date.now();
 
 async function worker() {
   while (next < queue.length) {
-    const { host, url } = queue[next++];
+    const { host, url, urls } = queue[next++];
     let rec;
     try {
-      rec = await renderHost(browser, host, url || `https://${host}/`);
+      rec = await renderHost(browser, host, url || `https://${host}/`, urls);
     } catch (err) {
       rec = { host, startUrl: url, crawledAt: new Date().toISOString(), rendered: true, error: String(err).slice(0, 120), pages: [], halal: [], flags: {} };
     }
