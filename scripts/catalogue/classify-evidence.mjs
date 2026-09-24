@@ -97,7 +97,9 @@ const NEGATIVE = [
   /\bnot\s+a\s+halal\s+(restaurant|kitchen|establishment|venue)\b/i,
   // "ASK Italian is not a Halal or Kosher restaurant"
   /\bnot\s+a\s+(halal\s+or\s+kosher|kosher\s+or\s+halal)\s+(restaurant|kitchen|establishment|venue)\b/i,
-  /\b(do not|don't|does not|doesn't)\s+(serve|offer|use|sell|provide|have|stock|carry)\s+(any\s+|a\s+)?halal\b(?![^.]{0,30}\b(certif|accredit))/i,
+  // Not when one meat is named: "We do not offer halal beef at any of our
+  // restaurants" is about the beef, and is PARTIAL_NOT below.
+  /\b(do not|don't|does not|doesn't)\s+(serve|offer|use|sell|provide|have|stock|carry)\s+(any\s+|a\s+)?halal\b(?!\s+(beef|lamb|chicken|mutton|goat|veal|duck|turkey|burgers?|steaks?|wings|sausages?|kebabs?|doner|pepperoni|ham)\b)(?![^.]{0,30}\b(certif|accredit))/i,
   /\bnone of our (meat|meats|food|dishes)\s+(is|are)\s+halal\b/i,
   // A claim that has lapsed, or a kitchen that cannot provide it.
   /\b(is|are)\s+no\s+longer\s+halal\b/i,
@@ -106,8 +108,12 @@ const NEGATIVE = [
   /\b(no|none of the) (meat|meats|dishes) (we serve|on our menu) (is|are) halal\b/i,
 ];
 
-// "Our chicken wings are not halal": part of the menu is not, so at most options.
-const PARTIAL_NOT = /\b(our|the)\s+[a-z ]{2,30}\s+(is|are)\s+not\s+halal\b(?![-\s]*(certified|certification|accredited|approved|registered))/i;
+// "Our chicken wings are not halal", "We do not offer halal beef": part of the
+// menu is not, so at most options.
+const PARTIAL_NOT = [
+  /\b(our|the)\s+[a-z ]{2,30}\s+(is|are)\s+not\s+halal\b(?![-\s]*(certified|certification|accredited|approved|registered))/i,
+  /\b(do not|don't|does not|doesn't)\s+(serve|offer|use|sell|provide|have|stock|carry)\s+(any\s+)?halal\s+(beef|lamb|chicken|mutton|goat|veal|duck|turkey|burgers?|steaks?|wings|sausages?|kebabs?|doner|pepperoni|ham)\b/i,
+];
 
 // A contradiction only counts when it is not itself negated ("no pork served",
 // "pork free", "zero contact with non-halal").
@@ -317,12 +323,25 @@ function websiteEvidence(entity) {
   // data sometimes carries the website of a neighbour or of the building.
   if (rec?.halal?.length && !hostMatchesName(entity.websiteHost, names)) return { skip: true, reason: 'website_not_this_place' };
   if (!rec || !rec.halal?.length) return null;
-  if (screened[entity.websiteHost]) return { skip: true, reason: 'screened_out' };
-  const mentions = rec.halal.map((m) => ({ ...m, excerpt: norm(m.excerpt) }));
+  // A screened host is left out whole, or only on the paths listed for it
+  // ("/locations/" on a chain whose branch pages each describe their
+  // neighbours too, while its FAQ speaks for every branch).
+  const screen = screened[entity.websiteHost];
+  if (screen && !screen.paths) return { skip: true, reason: 'screened_out' };
+  const onScreenedPath = (url) => {
+    try {
+      return Boolean(screen?.paths?.some((p) => new URL(url).pathname.startsWith(p)));
+    } catch {
+      return false;
+    }
+  };
+  const mentions = rec.halal.filter((m) => !onScreenedPath(m.url)).map((m) => ({ ...m, excerpt: norm(m.excerpt) }));
+  if (!mentions.length) return { skip: true, reason: 'screened_out' };
   // A flag recorded by an earlier crawl is read again with today's rules, so a
   // rule fixed since (Francis Bacon) does not wait for the next crawl.
   const flags = Object.fromEntries(
     Object.entries(rec.flags || {})
+      .filter(([, v]) => !onScreenedPath(v.url))
       .map(([k, v]) => [k, { ...v, excerpt: norm(v.excerpt) }])
       .filter(([k, v]) => !CONTRADICTIONS[k] || CONTRADICTIONS[k].test(v.excerpt))
       .filter(([, v]) => !platformsFlag(entity.websiteHost, v.excerpt))
@@ -441,7 +460,10 @@ function websiteEvidence(entity) {
   if (partial) {
     const positiveElsewhere = [fully, options, positive, cert].find((x) => x && x.s !== partial.s);
     if (!positiveElsewhere) return { skip: true, reason: 'partial_without_positive' };
-    return { ...record('halal_options', 'moderate', partial, { notes: 'The website says some items are not halal.' }), reason: 'partial_not' };
+    // A quote cut off at the edge of the crawler's window ("We do not offer
+    // halal beef at") reads badly; the halal statement it qualifies is quoted.
+    const quote = /[.!?]["”']?$/.test(partial.s.trim()) ? partial : positiveElsewhere;
+    return { ...record('halal_options', 'moderate', quote, { notes: 'The website says some items are not halal.' }), reason: 'partial_not' };
   }
 
   if (fully && decision === 'options') {

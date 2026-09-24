@@ -1,6 +1,7 @@
 {
   "honestburgers.co.uk": {
-    "reason": "Each location page lists that branch's features, halal options among them, and then the features of nearby branches, so no one page speaks for all 39 listings that carry this site. Two of those (Honesto, Barnies Burgers) are not Honest Burgers at all. Needs matching page by page to each branch's postcode before any of it is used.",
+    "paths": ["/locations/"],
+    "reason": "Each location page lists that branch's features, halal among them, and then the features of nearby branches, so a location page cannot be applied to every listing that carries this site. The FAQ at /feedback-and-faqs/ speaks for every branch ('All of the chicken in our restaurants is halal', and 'We do not offer halal beef' in its structured answer) and is used instead.",
     "by": "Claude, chat ad44ae56, from the rendered pages",
     "at": "2026-09-24"
   },

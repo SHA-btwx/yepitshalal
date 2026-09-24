@@ -46,6 +46,9 @@ const cases = [
   ['CONTRADICTION', CONTRADICTIONS.bacon, '"Whoever is out of patience is out of possession of their soul." Francis Bacon', false],
   ['CONTRADICTION', CONTRADICTIONS.bacon, 'Smoky BBQ Bacon Burger', true],
   ['CONTRADICTION', CONTRADICTIONS.bacon, 'halal beef bacon, Cheddar cheese', false],
+  ['NEGATIVE', NEGATIVE, 'We do not offer halal beef at any of our restaurants.', false],
+  ['PARTIAL_NOT', PARTIAL_NOT, 'We do not offer halal beef at any of our restaurants.', true],
+  ['NEGATIVE', NEGATIVE, "We don't serve halal food", true],
 ];
 
 let failed = 0;
