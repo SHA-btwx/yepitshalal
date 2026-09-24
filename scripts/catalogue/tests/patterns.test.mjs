@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { CONTRADICTIONS } from '../page-text.mjs';
 
 const src = readFileSync(new URL('../classify-evidence.mjs', import.meta.url), 'utf8');
 const pick = (name) => {
@@ -11,6 +12,8 @@ const PARTIAL_NOT = pick('PARTIAL_NOT');
 const NEGATED = pick('NEGATED');
 const CERT_CLAIM = pick('CERT_CLAIM');
 const FULLY = pick('FULLY');
+const POSITIVE = pick('POSITIVE');
+const TESTIMONIAL = pick('TESTIMONIAL');
 const any = (re, x) => [].concat(re).some((r) => r.test(x));
 
 const cases = [
@@ -32,6 +35,17 @@ const cases = [
   ['FULLY', FULLY, 'All our meat is 100% halal', true],
   ['FULLY', FULLY, 'We are a fully halal restaurant', true],
   ['FULLY', FULLY, 'Halal options available', false],
+  // 2026-09-24, from reading the rendered crawl.
+  ['POSITIVE', POSITIVE, 'Halal indian & Sri Lankan Food restaurant Wembley.', true],
+  ['POSITIVE', POSITIVE, 'Enjoy peri peri chicken, grilled chicken, halal fast food, burgers and more', true],
+  ['POSITIVE', POSITIVE, 'Halal Monitoring Committee', false],
+  ['TESTIMONIAL', TESTIMONIAL, 'I had a lovely experience at Baba Ghanouj, this place is a must-visit', true],
+  ['TESTIMONIAL', TESTIMONIAL, 'so I am so happy to find a PURE VEG restaurant, I hope it stays this way', true],
+  ['TESTIMONIAL', TESTIMONIAL, "I'm afraid our meat is not halal, but we offer seafood", false],
+  ['TESTIMONIAL', TESTIMONIAL, 'All our meats and chicken are halal.', false],
+  ['CONTRADICTION', CONTRADICTIONS.bacon, '"Whoever is out of patience is out of possession of their soul." Francis Bacon', false],
+  ['CONTRADICTION', CONTRADICTIONS.bacon, 'Smoky BBQ Bacon Burger', true],
+  ['CONTRADICTION', CONTRADICTIONS.bacon, 'halal beef bacon, Cheddar cheese', false],
 ];
 
 let failed = 0;

@@ -2,6 +2,9 @@
 //
 //   node import-catalogue.mjs            dry run: prints the plan, writes nothing
 //   node import-catalogue.mjs --apply    writes it
+//   node import-catalogue.mjs --evidence-only [--apply]
+//        only brings changed evidence to existing listings (see below)
+//   EVIDENCE_FILE=evidence-new.jsonl    reads that file instead of evidence.jsonl
 //
 // What it does, in order:
 //   1. Matches every existing listing to a place from build-entities, by its
@@ -31,6 +34,7 @@ import {
 import { isCandidate, rowIsCandidate } from './candidates.mjs';
 
 const APPLY = process.argv.includes('--apply');
+const EVIDENCE_ONLY = process.argv.includes('--evidence-only');
 const NOW = new Date().toISOString();
 
 const env = Object.fromEntries(
@@ -49,7 +53,7 @@ const log = (...a) => console.log(...a);
 // --- Inputs ---------------------------------------------------------------------------
 const entities = readJsonl(cachePath('entities.jsonl'));
 const entityByKey = new Map(entities.map((e) => [e.key, e]));
-const evidenceByKey = new Map(readJsonl(cachePath('evidence.jsonl')).map((r) => [r.key, r.evidence]));
+const evidenceByKey = new Map(readJsonl(cachePath(process.env.EVIDENCE_FILE || 'evidence.jsonl')).map((r) => [r.key, r.evidence]));
 
 const currentFsaIds = new Set();
 for (const file of readdirSync(cachePath('fsa/'))) {
@@ -330,6 +334,82 @@ for (const [loser, keeper] of merges.slice(0, 50)) {
   log(`merge: ${l.name}, ${l.address}  ->  ${k.name}, ${k.address}`);
 }
 writeFileSync(cachePath('import-plan.json'), JSON.stringify({ ...plan, unconfirmed: unconfirmed.map((r) => ({ id: r.id, name: r.name, fsa: r.source_reference_id })), merges }, null, 2));
+
+// --- Evidence only ---------------------------------------------------------------------------------
+// `--evidence-only` brings new evidence to the listings that already exist and
+// does nothing else: no merges, no new listings, nothing sent to review, no
+// flags, links or hours. It compares what each matched listing holds from this
+// pipeline with what the pipeline now says, and replaces only the listings
+// where the two differ. Evidence added by admins or submissions is never
+// touched, and counts towards the predicted label like any other.
+// Without --apply it writes evidence-changes.json and changes nothing.
+if (EVIDENCE_ONLY) {
+  const idByKey = new Map([...keeperOf].map(([k, r]) => [k, r.id]));
+  for (const [k, r] of attachedTo) idByKey.set(k, r.id);
+  const rowById = new Map(existing.map((r) => [r.id, r]));
+  const held = await fetchAll('restaurant_halal_evidence', 'restaurant_id, kind, claim, strength, source_name, source_url, excerpt, notes, checked_by, is_current');
+  const pipelineBy = new Map();
+  const othersBy = new Map();
+  for (const e of held) {
+    if (!e.is_current) continue;
+    const into = e.checked_by === 'catalogue_pipeline' ? pipelineBy : othersBy;
+    into.set(e.restaurant_id, [...(into.get(e.restaurant_id) || []), e]);
+  }
+  const asRow = (ev) => ({
+    kind: ev.kind, claim: ev.claim, strength: ev.strength, source_name: ev.source_name,
+    source_url: ev.source_url ?? null, excerpt: ev.excerpt ? String(ev.excerpt).slice(0, 300) : null, notes: ev.notes ?? null,
+  });
+  const sig = (e) => [e.kind, e.claim, e.strength, e.source_name, e.source_url || '', e.excerpt || '', e.notes || ''].join('\u0001');
+  const sameSet = (a, b) => a.length === b.length && a.map(sig).sort().join('\u0002') === b.map(sig).sort().join('\u0002');
+  const shown = (label) => (label === 'not_listed' ? 'no evidence' : label);
+
+  // One listing can stand for several places: a kitchen trading under three
+  // names is one listing with three places attached, and it holds the evidence
+  // of all of them, exactly as the full import writes it.
+  const rawByRid = new Map();
+  const keysByRid = new Map();
+  for (const [key, rid] of idByKey) {
+    rawByRid.set(rid, [...(rawByRid.get(rid) || []), ...(evidenceByKey.get(key) || [])]);
+    keysByRid.set(rid, [...(keysByRid.get(rid) || []), key]);
+  }
+  const changes = [];
+  for (const [rid, raw] of rawByRid) {
+    const next = raw.map(asRow);
+    const cur = (pipelineBy.get(rid) || []).map(asRow);
+    if (sameSet(next, cur)) continue;
+    const others = othersBy.get(rid) || [];
+    changes.push({
+      id: rid, keys: keysByRid.get(rid), name: rowById.get(rid)?.name, borough: rowById.get(rid)?.borough,
+      before: shown(predict([...cur, ...others])), after: shown(predict([...next, ...others])),
+      next, cur, raw,
+    });
+  }
+  const moves = {};
+  for (const c of changes) moves[`${c.before} -> ${c.after}`] = (moves[`${c.before} -> ${c.after}`] || 0) + 1;
+  log(`\nevidence-only: ${idByKey.size} matched listings, ${changes.length} whose pipeline evidence differs`);
+  log(JSON.stringify(moves, null, 2));
+  writeFileSync(cachePath('evidence-changes.json'), JSON.stringify(changes.map(({ raw, ...c }) => c), null, 1));
+  if (!APPLY) {
+    log('Dry run only: evidence-changes.json lists every change. Re-run with --apply to write.');
+    process.exit(0);
+  }
+  const chunkOf = (arr, n) => Array.from({ length: Math.ceil(arr.length / n) }, (_, i) => arr.slice(i * n, i * n + n));
+  let written = 0;
+  for (const part of chunkOf(changes, 100)) {
+    const { error: delErr } = await sb.from('restaurant_halal_evidence').delete().in('restaurant_id', part.map((c) => c.id)).eq('checked_by', 'catalogue_pipeline');
+    if (delErr) throw new Error(`clear evidence: ${delErr.message}`);
+    const rows = part.flatMap((c) => c.raw.map((ev) => ({
+      restaurant_id: c.id, ...asRow(ev), checked_at: ev.checked_at || NOW, checked_by: 'catalogue_pipeline',
+    })));
+    if (rows.length) {
+      const { error: insErr } = await sb.from('restaurant_halal_evidence').insert(rows);
+      if (insErr) throw new Error(`evidence: ${insErr.message}`);
+    }
+    written += rows.length;
+  }
+  log(`evidence-only: replaced the pipeline evidence of ${changes.length} listings (${written} rows)`);
+  process.exit(0);
+}
 
 if (!APPLY) {
   log('\nDry run only. Re-run with --apply to write.');

@@ -23,12 +23,19 @@
 //     claim that a branch is not halal.
 //   - Names, tags and categories are weak whatever they claim: at most
 //     Unverified.
+//   - A branch with no website of its own takes its chain's statement, for the
+//     short list of chains whose central sites were read (CHAINS below), and
+//     never above moderate.
+//   - Text a site builder or ordering platform repeats across the sites it
+//     hosts is not any restaurant speaking, and hosts listed in
+//     screened-out.json were read and found not to be the listed place.
 //
 // Output: .cache/evidence.jsonl (one line per place with evidence) and review
 // files. Run: node classify-evidence.mjs
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { cachePath, hostMatchesName, readJsonl } from './lib.mjs';
+import { cachePath, hostMatchesName, normaliseName, readJsonl } from './lib.mjs';
+import { CONTRADICTIONS } from './page-text.mjs';
 
 const TODAY = new Date().toISOString();
 
@@ -37,12 +44,14 @@ const crawl = new Map();
 for (const r of readJsonl(cachePath('crawl.jsonl'))) crawl.set(r.host, r);
 // The second, sitemap-led pass (crawl-websites.mjs with DEEP=1) only read sites
 // the first pass found nothing on. Its pages count exactly like the first
-// pass's: mentions and contradiction flags from both are judged together.
-if (existsSync(cachePath('crawl-deep.jsonl'))) {
+// pass's: mentions and contradiction flags from both are judged together. So
+// do the pages of the rendered pass (crawl-rendered.mjs), which read in a real
+// browser the sites the plain passes found empty or could not read.
+for (const pass of ['crawl-deep.jsonl', 'crawl-rendered.jsonl'].filter((f) => existsSync(cachePath(f)))) {
   // Blog, news and event pages are left out: "Best halal food in London" on a
   // marketing post is not a statement about what this kitchen serves.
   const EDITORIAL = /\/(blog|blogs|news|post|posts|article|articles|events?|whats-?on|journal|stories|recipes?|press|magazine|guides?)(\/|$)/i;
-  for (const d of readJsonl(cachePath('crawl-deep.jsonl'))) {
+  for (const d of readJsonl(cachePath(pass))) {
     const r = crawl.get(d.host);
     if (!r || !d.pages.length) continue;
     const editorial = (u) => { try { return EDITORIAL.test(new URL(u).pathname); } catch { return false; } };
@@ -67,6 +76,14 @@ for (const e of entities) if (e.websiteHost) hostCount.set(e.websiteHost, (hostC
 // shapes a label has a record. Object form: { decision, note?, excerpt?, url? }.
 const reviewPath = new URL('./review-decisions.json', import.meta.url);
 const decisions = existsSync(reviewPath) ? JSON.parse(readFileSync(reviewPath, 'utf8')) : {};
+
+// Hosts whose pages were read and found not to be the restaurant speaking: a
+// lapsed domain now showing a directory or spam, an ordering aggregator, or a
+// page about other businesses. Kept apart from review-decisions.json, which
+// holds decisions about what a restaurant's own words mean. This list can only
+// take a website's evidence away, never add any. { host: { reason, by, at } }
+const screenPath = new URL('./screened-out.json', import.meta.url);
+const screened = existsSync(screenPath) ? JSON.parse(readFileSync(screenPath, 'utf8')) : {};
 
 // --- Website language -------------------------------------------------------------
 
@@ -170,6 +187,12 @@ function halalSentences(mentions) {
       const key = sentence.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
+      // Each window of text around a mention can cut a sentence at its edge, and
+      // the next window may hold the same sentence whole ("...diner-style food
+      // in" and then "...diner-style food in Ealing with a focus on burgers").
+      // The whole one is kept, in the cut one's place.
+      if (out.some((o) => o.raw && o.raw.includes(key))) continue;
+      const cut = out.findIndex((o) => o.raw && key.includes(o.raw));
       // "?." because block elements end with an inserted ". " during extraction.
       const question = /\?[\s.]*$/.test(sentence) || (/^(is|are|do|does|can|will|have)\b[^.]*\bhalal\b/i.test(sentence) && sentence.includes('?'));
       // The crawler keeps a window of text around each mention, so the first
@@ -179,7 +202,9 @@ function halalSentences(mentions) {
       // little of it survives before "halal" that a "not" could be just out of view.
       const wordsBefore = sentence.slice(0, sentence.search(/\bhalal\b/i)).trim().split(/\s+/).filter(Boolean).length;
       const fragment = start === 0 && /^[a-z]/.test(sentence) && wordsBefore < 8;
-      out.push({ url: m.url, s: clip(sentence), question, fragment });
+      const entry = { url: m.url, s: clip(sentence), question, fragment, raw: key };
+      if (cut >= 0) out[cut] = entry;
+      else out.push(entry);
 
       // An FAQ answer often never repeats the word: "Is your meat halal? Yes,
       // all of it." The question and its answer are kept together as one
@@ -214,21 +239,94 @@ const QA_NO = /^(no\b|nope|unfortunately|sadly|sorry|i'?m afraid|we don'?t|we do
 const QA_ALL = /\b(is|are)\s+(all\s+)?(of\s+)?(your|the|our)\s+(meat|meats|food|menu|restaurant|restaurants|kitchen|dishes|everything)\s+(100\s?%\s+|fully\s+|completely\s+|all\s+)?halal\b|\bis\s+(everything|it all|all (the|your) (food|meat))\s+halal\b|\bdo\s+you\s+(only\s+(serve|use|cook with)|(serve|use|cook with)\s+only)\s+halal\s+(meat|meats|food|chicken and meat)\b|\bis\s+(?![\w'&. ]{0,40}\b(chicken|lamb|beef|mutton|goat|duck|turkey|veal|sauces?|cakes?|cheesecakes?|pizzas?|burgers?|steaks?|wings|gelatine?|sweets|ice cream|gelato|tea|coffee|shellfish|seafood|sushi|products?|ingredients|cheese|chocolate|doughnuts?|donuts?)\b)[\w'&. ]{2,40}\s+(a\s+)?(fully\s+)?halal(\s+(restaurant|kitchen))?\s*\?/i;
 const QA_EXCEPTION = /\b(except|apart from|other than|with the exception|but|however|although|when|not all|some of|most of|majority|only (our|the) chicken)\b|^(yes,?\s+)?(all\s+)?(of\s+)?(our|the)\s+(chicken|lamb|beef|poultry)\b/i;
 
-// Halal said as a fact about the food, not just the word appearing.
-const POSITIVE = /\b(is|are|all|100\s?%|fully|completely|only)\s+(\S+\s+){0,3}halal\b|\bhalal[- ]?(chicken|meat|meats|beef|lamb|mutton|burgers?|kebabs?|food|menu|options?|certified|certification|approved|dishes|kitchen|restaurant|takeaway|range)\b|\b(serve|serves|served|use|uses|used|offer|offers|provide|provides|sell|sells|source|sources|sourced)\s+(\S+\s+){0,2}halal\b/i;
+// Halal said as a fact about the food, not just the word appearing. The last
+// alternative lets a cuisine sit between: "Halal indian & Sri Lankan Food
+// restaurant Wembley" is a restaurant calling itself halal.
+const POSITIVE = /\b(is|are|all|100\s?%|fully|completely|only)\s+(\S+\s+){0,3}halal\b|\bhalal[- ]?(chicken|meat|meats|beef|lamb|mutton|burgers?|kebabs?|food|menu|options?|certified|certification|approved|dishes|kitchen|restaurant|takeaway|range)\b|\b(serve|serves|served|use|uses|used|offer|offers|provide|provides|sell|sells|source|sources|sourced)\s+(\S+\s+){0,2}halal\b|\bhalal\s+(?:[a-z&'-]+\s+){1,4}(?:food|cuisine|restaurant|takeaway)\b/i;
+
+const norm = (t) => (t || '').replace(/[‘’ʼ]/g, "'");
+
+// Text an ordering platform or site builder puts on every site it hosts. In
+// September 2026 twenty London restaurants' sites, a vegetarian one among
+// them, were one platform's sites, and every halal sentence on them was the
+// platform's: adverts for two other businesses ("Biryani Bhaijaan Birmingham
+// serves authentic halal biryani...", "Tasty Chicken Lower Clapton serves
+// halal fried chicken..."), a review shown on four of them, and a wholesaler's
+// advert for "pork belly" that made each one look as if it served pork.
+//
+// A long sentence that appears word for word on three or more sites, never
+// says "we", "our" or "I", and names neither the site's business nor this
+// place, is someone else speaking, and counts for none of them. A site that
+// carries one is a platform's site, and anything else repeated on three or more
+// of those sites, however short, and any contradiction quoted identically on
+// three or more, is the platform's too. A group's own wording shared across
+// its sites ("I'm afraid our meat is not halal", on six pubs) says "our", and
+// still counts.
+const SHARED_MIN_SITES = 3;
+const SHARED_MIN_WORDS = 12;
+const FIRST_PERSON = /\b(we|we're|we've|we'll|our|ours|us|i|i'm|i've|my)\b/i;
+const sentencesBySite = new Map();
+for (const r of crawl.values()) {
+  if (!r.halal?.length) continue;
+  const said = halalSentences(r.halal.map((m) => ({ ...m, excerpt: norm(m.excerpt) }))).map((x) => x.s);
+  sentencesBySite.set(r.host, [...new Set(said.map((s) => s.toLowerCase()))]);
+}
+function sitesPerSentence(hosts, minWords) {
+  const out = new Map();
+  for (const host of hosts) {
+    for (const s of sentencesBySite.get(host) || []) {
+      if (s.split(/\s+/).length >= minWords) out.set(s, (out.get(s) || 0) + 1);
+    }
+  }
+  return out;
+}
+const notTheirs = (sentence, host, names = []) =>
+  !FIRST_PERSON.test(sentence) &&
+  !hostMatchesName(host, [sentence]) &&
+  !names.some((n) => {
+    // Whole words only: "Hala" is not named in "halal".
+    const name = normaliseName(n);
+    return name.length >= 4 && ` ${normaliseName(sentence)} `.includes(` ${name} `);
+  });
+const longShared = sitesPerSentence(sentencesBySite.keys(), SHARED_MIN_WORDS);
+const platformSites = new Set(
+  [...sentencesBySite.keys()].filter((host) =>
+    sentencesBySite.get(host).some((s) => (longShared.get(s) || 0) >= SHARED_MIN_SITES && notTheirs(s, host))
+  )
+);
+const platformShared = sitesPerSentence(platformSites, 1);
+const platformFlagCount = new Map();
+for (const host of platformSites) {
+  for (const v of Object.values(crawl.get(host).flags || {})) {
+    const k = norm(v.excerpt).toLowerCase();
+    platformFlagCount.set(k, (platformFlagCount.get(k) || 0) + 1);
+  }
+}
+function someoneElsesWords(sentence, host, names) {
+  const k = sentence.toLowerCase();
+  if ((longShared.get(k) || 0) >= SHARED_MIN_SITES && notTheirs(sentence, host, names)) return true;
+  return platformSites.has(host) && (platformShared.get(k) || 0) >= SHARED_MIN_SITES && notTheirs(sentence, host, names);
+}
+const platformsFlag = (host, excerpt) =>
+  platformSites.has(host) && (platformFlagCount.get(norm(excerpt).toLowerCase()) || 0) >= SHARED_MIN_SITES;
 
 function websiteEvidence(entity) {
   const rec = entity.websiteHost && crawl.get(entity.websiteHost);
+  const names = [entity.name, ...entity.sources.fsa.map((f) => f.name), ...entity.sources.overture.map((o) => o.name), entity.sources.osm?.name].filter(Boolean);
   // A website only speaks for a place whose name it plausibly belongs to. Map
   // data sometimes carries the website of a neighbour or of the building.
-  if (rec?.halal?.length) {
-    const names = [entity.name, ...entity.sources.fsa.map((f) => f.name), ...entity.sources.overture.map((o) => o.name), entity.sources.osm?.name];
-    if (!hostMatchesName(entity.websiteHost, names.filter(Boolean))) return { skip: true, reason: 'website_not_this_place' };
-  }
+  if (rec?.halal?.length && !hostMatchesName(entity.websiteHost, names)) return { skip: true, reason: 'website_not_this_place' };
   if (!rec || !rec.halal?.length) return null;
-  const norm = (t) => (t || '').replace(/[‘’ʼ]/g, "'");
+  if (screened[entity.websiteHost]) return { skip: true, reason: 'screened_out' };
   const mentions = rec.halal.map((m) => ({ ...m, excerpt: norm(m.excerpt) }));
-  const flags = Object.fromEntries(Object.entries(rec.flags || {}).map(([k, v]) => [k, { ...v, excerpt: norm(v.excerpt) }]));
+  // A flag recorded by an earlier crawl is read again with today's rules, so a
+  // rule fixed since (Francis Bacon) does not wait for the next crawl.
+  const flags = Object.fromEntries(
+    Object.entries(rec.flags || {})
+      .map(([k, v]) => [k, { ...v, excerpt: norm(v.excerpt) }])
+      .filter(([k, v]) => !CONTRADICTIONS[k] || CONTRADICTIONS[k].test(v.excerpt))
+      .filter(([, v]) => !platformsFlag(entity.websiteHost, v.excerpt))
+  );
   const liveFlags = Object.entries(flags).filter(([, v]) => !NEGATED.test(v.excerpt)).map(([k]) => k);
   const contradicted = liveFlags.length > 0;
   const chain = (hostCount.get(entity.websiteHost) || 0) > 3;
@@ -264,13 +362,32 @@ function websiteEvidence(entity) {
   // a customer review quoted on the site ("they have halal meat") is not the
   // restaurant's own word, and "we are not halal certified" is not a claim of
   // anything halal.
-  const TESTIMONIAL = /\b(they (have|had|serve|served|do|did|were|are|use)|the food was|we loved|i loved|loved (it|the)|highly recommend|would recommend|nice touch|five stars|5 stars)\b|^["“]/i;
+  // A diner writing in the first person is a review too: "so I am so happy to
+  // find a PURE VEG restaurant, I hope it stays this way", on a vegetarian
+  // restaurant's home page, or "I had a lovely experience at Baba Ghanouj, this
+  // place is a must-visit", is not that restaurant saying anything about halal.
+  const TESTIMONIAL = /\b(they (have|had|serve|served|do|did|were|are|use)|the food was|we loved|i loved|loved (it|the)|highly recommend|would recommend|nice touch|five stars|5 stars)\b|^["“]|\bi\s+(am|was)\s+so\b|\bi'?m\s+so\s+(happy|glad|pleased)\b|\bi\s+(hope|found|had|tried|visited|ordered|went|came|ate|enjoyed)\b|\bthis place (is|was)\b|\bmust[- ]visit\b/i;
   // Saying there is no certificate is not saying anything about the food:
   // "Our food does not have Halal or Kosher certification", "None of our
   // products are certified Halal".
   const NOT_CERTIFIED = /\bnot\s+(been\s+|yet\s+|currently\s+|officially\s+)?(a\s+)?(halal[- ]certified|certified\s+halal)\b|\bhas\s+not\s+been\s+halal\b|\b(no|none|not|don't|do not|doesn't|does not)\b(?:(?!\b(but|however|although|also|instead)\b)[^.]){0,50}\b(halal[- ](or[- ]kosher[- ])?certifi\w*|certified[- ](halal|kosher)|halal\s+(or\s+kosher\s+)?certificat\w*)\b/i;
-  const all = halalSentences(mentions);
-  const statements = all.filter((x) => !x.question && !TESTIMONIAL.test(x.s) && !NOT_CERTIFIED.test(x.s));
+  const all = halalSentences(mentions).filter((x) => !someoneElsesWords(x.s, entity.websiteHost, names));
+  // A site covering several branches says something about each. When its
+  // sentences carry more than one postcode, the one carrying this listing's
+  // postcode goes first, so the Ealing branch quotes "Halal-certified American
+  // diner-style food in Ealing", not the branch on the Kent coast. Only the
+  // choice of quote changes, never the claim.
+  const postcode = (entity.postcode || '').toUpperCase().replace(/\s+/g, '');
+  const postcodesIn = (s) => [...s.toUpperCase().matchAll(/\b([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\b/g)].map((m) => m[1] + m[2]);
+  const here = (x) => (postcodesIn(x.s).includes(postcode) ? 0 : 1);
+  let statements = all.filter((x) => !x.question && !TESTIMONIAL.test(x.s) && !NOT_CERTIFIED.test(x.s));
+  const branches = new Set(statements.flatMap((x) => postcodesIn(x.s)));
+  if (postcode.length >= 5 && branches.has(postcode) && branches.size > 1) {
+    statements = statements
+      .map((x, i) => ({ x, i }))
+      .sort((a, b) => here(a.x) - here(b.x) || a.i - b.i)
+      .map(({ x }) => x);
+  }
   // Statements that say halal without negating it. Only these can support a
   // halal claim; negatives are still looked for in every statement.
   const affirmative = statements.filter((x) => {
@@ -411,6 +528,83 @@ function otherEvidence(entity) {
   return out;
 }
 
+// --- Chains -----------------------------------------------------------------------------
+//
+// A branch with no website of its own says nothing on its own behalf, but its
+// chain may have said something for every branch. For these chains only, the
+// central site was read and its statement is about all branches (chat ad44ae56,
+// 2026-09-24), so a branch named exactly as the chain, or the chain and its own
+// area ("Chicken Cottage Ealing", checked against its address and borough), and
+// with no website of its own, gets that statement as evidence. "Sams Chicken &
+// Pizza", "MGM Chicken Cottage" or a kitchen trading as five brands does not.
+//
+// Never above moderate. The chain's word is not a check of this kitchen, so it
+// can make a branch Unverified, never Fully Halal.
+const CHAINS = [
+  { label: "Sam's Chicken", host: 'samschicken.com', names: ['sams chicken'] },
+  { label: 'German Doner Kebab', host: 'gdk.com', names: ['german doner kebab', 'gdk'] },
+  { label: 'Chicken Cottage', host: 'chickencottage.com', names: ['chicken cottage'] },
+  { label: "Shah's Halal Food", host: 'shahshalalfood.co.uk', names: ['shahs halal food', 'shahs halal'] },
+  { label: "Dave's Hot Chicken", host: 'daveshotchickenuk.com', names: ['daves hot chicken'] },
+  { label: 'Wrapchic', host: 'wrapchic.co.uk', names: ['wrapchic', 'wrap chic'] },
+  { label: 'Thunderbird', host: 'thunderbirdckn.co.uk', names: ['thunderbird', 'thunderbird fried chicken'] },
+  { label: "Rio's Piri Piri", host: 'riospiripiri.com', names: ['rios piri piri', 'rios peri peri'] },
+  { label: 'Tinseltown', host: 'tinseltown.co.uk', names: ['tinseltown'] },
+  { label: 'Gökyüzü', host: 'gokyuzurestaurant.co.uk', names: ['gokyuzu'] },
+];
+
+function chainOf(entity) {
+  if (entity.websiteHost) return null;
+  const address = normaliseName(`${entity.address || ''} ${entity.borough || ''}`);
+  const chainNamed = (raw) => {
+    const name = normaliseName(raw);
+    // An address can open with the trading names themselves ("Tinseltown/King
+    // of Wings/Dog 'N' Bun/protein Push, Unit 4 ..."), which are not an area.
+    const area = ` ${address.replace(name, ' ')} `;
+    return CHAINS.find((chain) =>
+      chain.names.some((n) => {
+        if (name === n) return true;
+        const rest = name.startsWith(`${n} `) ? name.slice(n.length + 1).split(' ') : null;
+        return rest && rest.length <= 3 && rest.every((w) => area.includes(` ${w} `));
+      })
+    );
+  };
+  const chain = chainNamed(entity.name);
+  if (!chain) return null;
+  // Every name it trades under must be the chain's: a kitchen registered as
+  // "Wrap Chic, Behrouz, Indian Lunchbox, Faasos, Wings Shack" is not a branch.
+  const traded = [...entity.sources.fsa.map((f) => f.name), ...entity.sources.overture.map((o) => o.name), entity.sources.osm?.name].filter(Boolean);
+  return traded.every((n) => chainNamed(n) === chain) ? chain : null;
+}
+
+// What each chain's own site says, read once.
+const chainSays = new Map();
+for (const chain of CHAINS) {
+  for (const site of entities.filter((e) => e.websiteHost === chain.host)) {
+    const web = websiteEvidence(site);
+    if (web && !web.skip) {
+      const { reason, ...record } = web;
+      chainSays.set(chain.host, record);
+      break;
+    }
+  }
+}
+
+function chainEvidence(entity) {
+  const chain = chainOf(entity);
+  const said = chain && chainSays.get(chain.host);
+  if (!said) return null;
+  return {
+    ...said,
+    strength: said.strength === 'strong' ? 'moderate' : said.strength,
+    source_name: "The chain's website",
+    notes: [
+      `${chain.label}'s own website, speaking for all its branches. Not confirmed at this branch.`,
+      said.kind === 'certification_claim' ? 'Not confirmed with the certifier.' : null,
+    ].filter(Boolean).join(' '),
+  };
+}
+
 // --- Run --------------------------------------------------------------------------------
 
 const results = [];
@@ -433,17 +627,25 @@ for (const entity of entities) {
     const { reason, ...record } = web;
     evidence.push(record);
   }
+  const fromChain = chainEvidence(entity);
+  if (fromChain) {
+    reasons.chain_statement = (reasons.chain_statement || 0) + 1;
+    evidence.push(fromChain);
+  }
   evidence.push(...otherEvidence(entity));
   if (evidence.length) results.push({ key: entity.key, evidence });
 }
 
-writeFileSync(cachePath('evidence.jsonl'), results.map((r) => JSON.stringify(r)).join('\n'));
+// OUT_SUFFIX=-new writes evidence-new.jsonl and review-strong-new.tsv instead,
+// so a run can be compared with the current evidence before it replaces it.
+const SUFFIX = process.env.OUT_SUFFIX || '';
+writeFileSync(cachePath(`evidence${SUFFIX}.jsonl`), results.map((r) => JSON.stringify(r)).join('\n'));
 
 // One review line per host: a chain's statement is judged once.
 const seenHosts = new Set();
 const uniqueReview = reviewRows.filter((r) => (seenHosts.has(r[0]) ? false : seenHosts.add(r[0])));
 writeFileSync(
-  cachePath('review-strong.tsv'),
+  cachePath(`review-strong${SUFFIX}.tsv`),
   ['host\tname\tborough\texcerpt\turl\tdecision', ...uniqueReview.map((r) => r.join('\t'))].join('\n')
 );
 
@@ -454,3 +656,4 @@ console.log('places with any evidence:', results.length);
 console.log('website outcomes:', reasons);
 console.log('evidence by kind:claim:strength:', claimCount);
 console.log('hosts awaiting review for Fully Halal:', uniqueReview.filter((r) => !r[5]).length);
+console.log('chains whose own site said something:', [...chainSays.keys()].join(', ') || 'none');

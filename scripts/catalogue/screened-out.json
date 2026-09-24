@@ -1,0 +1,22 @@
+{
+  "honestburgers.co.uk": {
+    "reason": "Each location page lists that branch's features, halal options among them, and then the features of nearby branches, so no one page speaks for all 39 listings that carry this site. Two of those (Honesto, Barnies Burgers) are not Honest Burgers at all. Needs matching page by page to each branch's postcode before any of it is used.",
+    "by": "Claude, chat ad44ae56, from the rendered pages",
+    "at": "2026-09-24"
+  },
+  "eliteperiperi.co.uk": {
+    "reason": "An ordering site for Elite Peri Peri - Eastwood, 153 Rayleigh Road, Leigh-on-Sea. Nothing on it speaks for the London shops of the same name that map data links to it.",
+    "by": "Claude, chat ad44ae56, from the rendered pages",
+    "at": "2026-09-24"
+  },
+  "oodleschinese.com": {
+    "reason": "Now redirects to Oodles Wok's chain site. The only listing carrying it is Green Co Grill & Lounge at E6 1AE, which was merged by mistake with an Oodles at E13 9AR.",
+    "by": "Claude, chat ad44ae56, from the rendered pages",
+    "at": "2026-09-24"
+  },
+  "sam-sweets.weeblysite.com": {
+    "reason": "A home bakery called Sam Sweets. Map data gives it to Nirala Sweets in Newham, a different business.",
+    "by": "Claude, chat ad44ae56, from the rendered pages",
+    "at": "2026-09-24"
+  }
+}

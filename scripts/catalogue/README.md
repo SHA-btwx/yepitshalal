@@ -36,6 +36,11 @@ registers (no published reuse terms; ask them for permission first).
    `DEEP=1 node crawl-websites.mjs` is a second pass over sites where nothing
    was found, guided by each site's sitemap. Both passes can be stopped and
    resumed.
+   `RENDER_QUEUE=queue.json node crawl-rendered.mjs` is a third pass in a real
+   browser (Playwright), for sites that draw their words with JavaScript and so
+   look empty to a plain fetch. Same bot name, robots.txt obeyed, and it stops at
+   any bot check rather than get past it. The rules for reading a page live once
+   in `page-text.mjs`, shared by both crawlers.
 3. `node classify-evidence.mjs` turns what the sources say into evidence records
    (`evidence.jsonl`). Rules are in the file header. Key points:
    - Only the restaurant's own clear words that all its meat is halal can be
@@ -46,10 +51,21 @@ registers (no published reuse terms; ask them for permission first).
    - A website only counts for a place whose name it belongs to.
    - Names, OpenStreetMap tags and map categories are weak evidence.
    - Cuisine and area are never evidence.
+   - Text an ordering platform repeats across the sites it hosts (adverts for
+     other businesses, a shared review) is not any restaurant speaking.
+   - A branch with no website of its own takes its chain's statement, for a
+     short list of chains whose central sites were read, never above moderate.
    The script lists Fully Halal statements awaiting review in `review-strong.tsv`.
+   `OUT_SUFFIX=-new` writes `evidence-new.jsonl` instead, to compare first.
 4. `node import-catalogue.mjs` prints the plan. Add `--apply` to write it. It is
    safe to re-run: pipeline evidence is replaced, and evidence added by admins or
    submissions is never touched.
+   `node import-catalogue.mjs --evidence-only` touches nothing but evidence: it
+   compares each listing's pipeline evidence with the file
+   (`EVIDENCE_FILE=evidence-new.jsonl` to choose one), writes every difference to
+   `.cache/evidence-changes.json` with the label before and after, and with
+   `--apply` replaces only the listings that differ. Read the changes before
+   applying.
    It also lists places "Not checked yet": places whose name or cuisine makes
    them worth checking (a kebab shop, a Pakistani grill), with whatever details
    the sources have, even none. The rule is in `candidates.mjs`. They are never
@@ -107,3 +123,9 @@ statements. Values are keyed by website host:
 
 The object form `{ decision, note, excerpt, url }` records why, and can supply
 the exact quote. Commit changes to this file with the import they affect.
+
+`screened-out.json` is separate: hosts whose pages were read and found not to
+be the listed place speaking (a Leigh-on-Sea shop's ordering site linked to
+London shops of the same name, a chain's branch pages that each list their
+neighbours too). It can only take a website's evidence away, never add any.
+Each entry says why, who read it, and when.
