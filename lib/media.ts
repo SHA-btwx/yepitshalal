@@ -9,6 +9,13 @@ import type { SceneArt } from '@/components/media/SceneMedia';
 // Widths are the files that exist in /public/media. A phone gets the tall
 // composition where there is one: the street was recomposed vertically, with
 // calm sky at the top and dark pavement at the bottom, so words can sit on it.
+//
+// The loops are the generated originals, untouched: 1276x720 (the tall street
+// 720x1276), five seconds, 4.5 to 13 Mbps (2026-09-24). The first versions
+// were re-recorded through a canvas at about 1.5 Mbps and cut to three
+// seconds, and Shabir saw it at once: "horrific, rendered down". Phones get
+// the same files, not smaller copies. The seam where a clip starts again is
+// hidden by a crossfade in the page (SceneMedia), not baked into the file.
 
 /** The London high street at dusk. The site's one recurring moving picture. */
 export const STREET: SceneArt = {
@@ -16,7 +23,6 @@ export const STREET: SceneArt = {
   widths: [640, 1120, 1600, 2400],
   alt: 'A London high street at dusk after rain, food shopfronts lit up',
   video: '/media/london-high-street.mp4',
-  videoSmall: '/media/london-high-street-640.mp4',
   videoLabel: 'Evening on a wet London high street, people walking past lit food shopfronts',
   narrow: {
     still: '/media/london-high-street-tall',
@@ -27,7 +33,7 @@ export const STREET: SceneArt = {
 };
 
 /** The same street in its wide composition only, for a frame that is wide on every screen. */
-export const STREET_WIDE: SceneArt = { ...STREET, narrow: undefined, videoSmall: '/media/london-high-street-640.mp4' };
+export const STREET_WIDE: SceneArt = { ...STREET, narrow: undefined };
 
 export const PRAYER_ROOM: SceneArt = {
   still: '/media/prayer-room-wide',
@@ -53,7 +59,6 @@ export const KITCHEN: SceneArt = {
   widths: [960, 1600],
   alt: 'A plate of grilled lamb chops and saffron rice on a restaurant kitchen pass',
   video: '/media/kitchen-pass.mp4',
-  videoSmall: '/media/kitchen-pass-640.mp4',
   videoLabel: 'A plate of lamb chops and saffron rice set down on a kitchen pass, steam rising',
 };
 
@@ -63,7 +68,6 @@ export const NOTES: SceneArt = {
   widths: [640, 1120, 1600],
   alt: 'Hands writing notes in a notebook at a desk, beside a takeaway menu, a phone and a mug of tea',
   video: '/media/keeping-notes.mp4',
-  videoSmall: '/media/keeping-notes-640.mp4',
   videoLabel: 'A hand writing a few words in a notebook under a desk lamp',
 };
 
@@ -73,6 +77,5 @@ export const TABLE: SceneArt = {
   widths: [640, 1120, 1600],
   alt: 'Hands sharing grilled chicken, lamb, saffron rice and salads across a restaurant table',
   video: '/media/shared-table.mp4',
-  videoSmall: '/media/shared-table-640.mp4',
   videoLabel: 'Hands reaching across a shared restaurant table, steam rising from the rice',
 };

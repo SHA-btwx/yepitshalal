@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import clsx from 'clsx';
 import { NavigationIcon } from './icons';
 
@@ -15,6 +15,10 @@ import { NavigationIcon } from './icons';
 // It asks the browser for a location and never stores one. If the person says
 // no, or the browser cannot tell, it falls through to the borough list rather
 // than nagging: a refusal is an answer, not an error to recover from.
+//
+// It says what it is doing the whole way, "Finding you…" while the browser
+// locates, then "Finding mosques…" until the list is on screen, and the page
+// it opens leads with the list (app/prayer-spaces, 2026-09-24).
 
 export function NearestMosqueButton({
   label = 'Find the nearest mosque',
@@ -28,6 +32,7 @@ export function NearestMosqueButton({
 }) {
   const router = useRouter();
   const [state, setState] = useState<'idle' | 'locating' | 'refused'>('idle');
+  const [searching, startSearch] = useTransition();
 
   function locate() {
     if (!('geolocation' in navigator)) {
@@ -38,7 +43,8 @@ export function NearestMosqueButton({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        router.push(`/prayer-spaces?lat=${latitude.toFixed(5)}&lng=${longitude.toFixed(5)}&label=you`);
+        setState('idle');
+        startSearch(() => router.push(`/prayer-spaces?lat=${latitude.toFixed(5)}&lng=${longitude.toFixed(5)}&label=you`));
       },
       () => {
         setState('refused');
@@ -52,7 +58,8 @@ export function NearestMosqueButton({
     <button
       type="button"
       onClick={locate}
-      disabled={state === 'locating'}
+      disabled={state === 'locating' || searching}
+      aria-live="polite"
       className={clsx(
         'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition active:scale-[0.98] disabled:opacity-70',
         variant === 'solid' && 'bg-ink text-white hover:bg-accent-ink',
@@ -62,7 +69,7 @@ export function NearestMosqueButton({
       )}
     >
       <NavigationIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-      {state === 'locating' ? 'Finding you…' : label}
+      {state === 'locating' ? 'Finding you…' : searching ? 'Finding mosques…' : label}
     </button>
   );
 }

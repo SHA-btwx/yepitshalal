@@ -18,8 +18,9 @@ import { SITE_URL } from '@/lib/site';
 import { PageHero } from '@/components/PageHero';
 import { PageBody, PageSection } from '@/components/PageLayout';
 import { Reveal } from '@/components/Reveal';
-import { inlineLink, noteWarm, panel, sectionTitle } from '@/components/prose';
+import { inlineLink, noteWarm, panel } from '@/components/prose';
 import { PRAYER_ROOM } from '@/lib/media';
+import { FocusOnArrive } from '@/components/FocusOnArrive';
 
 export const revalidate = 3600;
 
@@ -71,60 +72,62 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
-      <PageHero
-        title="Mosques and prayer spaces in London"
-        lede={
-          <>
-            {total} places to pray across London, from OpenStreetMap. Every restaurant page also says how
-            far the nearest one is to walk.
-          </>
-        }
-        art={PRAYER_ROOM}
-      >
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <NearestMosqueButton variant="onDark" />
-          <span className="text-[13px] text-white/70">Uses your location. We never store it.</span>
-        </div>
-      </PageHero>
+      {/* Arriving from "Find the nearest mosque", the answer comes first: a
+          short header with no picture, and the list straight under it, so the
+          mosques are on the first screen of a phone rather than below a hero
+          and two notes (Shabir, 2026-09-24). Without a location it is the
+          page to browse from, as before. */}
+      {hasPoint ? (
+        <>
+          <PageHero
+            titleId="near-title"
+            title={nearby.length ? (label && label !== 'you' ? `Mosques near ${label}` : 'Mosques near you') : `Nothing found near ${label ?? 'you'}`}
+            lede={
+              nearby.length
+                ? `The ${nearby.length} nearest, closest first, with roughly how long each is to walk.`
+                : "We don't know of a prayer space within five miles of there. That does not mean there isn't one."
+            }
+          >
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <NearestMosqueButton variant="onDark" label="Search again from here" />
+              <a href="#by-borough" className="inline-flex min-h-[44px] items-center text-sm font-medium text-white/85 underline decoration-white/30 underline-offset-4 transition hover:text-white hover:decoration-white">
+                Or pick a borough
+              </a>
+            </div>
+          </PageHero>
+          <FocusOnArrive id="near-title" />
+        </>
+      ) : (
+        <PageHero
+          title="Mosques and prayer spaces in London"
+          lede={
+            <>
+              {total} places to pray across London, from OpenStreetMap. Every restaurant page also says how
+              far the nearest one is to walk.
+            </>
+          }
+          art={PRAYER_ROOM}
+        >
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <NearestMosqueButton variant="onDark" />
+            <span className="text-[13px] text-white/70">Uses your location. We never store it.</span>
+          </div>
+        </PageHero>
+      )}
 
       <PageBody>
-      {/* Said at the top, not buried at the bottom, because it changes how you
-          use the page: a mosque listed as open may well be locked. */}
-      <div className="space-y-4">
-        <p className={`${noteWarm} flex items-start gap-2.5 text-sm leading-relaxed text-ink/80`}>
-          <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-spice-ink" aria-hidden="true" />
-          <span>
-            <span className="font-semibold text-ink">Opening times are the weak part.</span> Only{' '}
-            {withHours} of these {total} carry any hours in OpenStreetMap, a mosque listed as open may
-            still be locked, and the doors being open is not the same as jamaat. For a particular
-            prayer, ring them or check their own website.
-          </span>
-        </p>
-
-        <p className="text-pretty text-sm leading-relaxed text-muted">
-          This is separate from the halal listings on purpose. A mosque being near a restaurant says
-          nothing about that restaurant&apos;s food, and a halal label says nothing about the mosque.
-        </p>
-      </div>
-
-      {hasPoint && (
-        <section aria-labelledby="near" className="scroll-mt-24">
-          <h2 id="near" className={sectionTitle}>
-            {nearby.length ? `Nearest to ${label ?? 'you'}` : `Nothing found near ${label ?? 'there'}`}
-          </h2>
-          {nearby.length === 0 && (
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              We don&apos;t know of a prayer space within five miles of there. That does not mean
-              there isn&apos;t one.
-            </p>
-          )}
-          <ul className={`mt-4 divide-y divide-line overflow-hidden ${panel}`}>
-            {nearby.map((s) => {
+      {hasPoint && nearby.length > 0 && (
+        <section aria-labelledby="near-title">
+          <ul className={`divide-y divide-line overflow-hidden ${panel}`}>
+            {nearby.map((s, i) => {
               const hours = formatOsmHours(s.opening_hours);
               const services = formatOsmHours(s.service_times);
               const phone = splitPhones(s.phone)[0] ?? null;
               return (
-                <li key={s.id} className="px-4 py-3">
+                // Each one arrives a moment after the one before, nearest
+                // first, so the eye lands on the top of the list. Reduced
+                // motion is handled globally (globals.css).
+                <li key={s.id} className="animate-fade-up px-4 py-3" style={{ animationDelay: `${Math.min(i, 8) * 55}ms` }}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
                     <p className="font-display text-[15px] font-semibold text-ink">{s.name}</p>
                     <p className="text-[13px] font-semibold text-accent-ink">
@@ -187,6 +190,25 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
           </ul>
         </section>
       )}
+
+      {/* Said near the top, not buried at the bottom, because it changes how
+          you use the page: a mosque listed as open may well be locked. */}
+      <div className="space-y-4">
+        <p className={`${noteWarm} flex items-start gap-2.5 text-sm leading-relaxed text-ink/80`}>
+          <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-spice-ink" aria-hidden="true" />
+          <span>
+            <span className="font-semibold text-ink">Opening times are the weak part.</span> Only{' '}
+            {withHours} of these {total} carry any hours in OpenStreetMap, a mosque listed as open may
+            still be locked, and the doors being open is not the same as jamaat. For a particular
+            prayer, ring them or check their own website.
+          </span>
+        </p>
+
+        <p className="text-pretty text-sm leading-relaxed text-muted">
+          This is separate from the halal listings on purpose. A mosque being near a restaurant says
+          nothing about that restaurant&apos;s food, and a halal label says nothing about the mosque.
+        </p>
+      </div>
 
       <PageSection
         id="by-borough"

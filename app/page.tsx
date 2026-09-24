@@ -11,7 +11,7 @@ import { SceneMedia } from '@/components/media/SceneMedia';
 import { getFeaturedReels } from '@/lib/reels';
 import { getAreasWithPages } from '@/lib/areas';
 import { getCuisines } from '@/lib/cuisines';
-import { STREET } from '@/lib/media';
+import { STREET, TABLE } from '@/lib/media';
 import { heroPrimary } from '@/components/PageHero';
 import { jsonLdHtml } from '@/lib/jsonLd';
 import { SITE_URL } from '@/lib/site';
@@ -210,23 +210,43 @@ export default async function HomePage() {
       {/* ACTION. Find, understand, go, then the search itself. The headline
           echoes the hero's, closing the loop it opened. On the forest, so the
           page's one real ask reads as an action point rather than as another
-          block of copy. */}
+          block of copy.
+
+          Behind it, the shared table: hands reaching across one meal, the
+          moment the question is for (Shabir, 2026-09-24: use the shared meal).
+          On a phone it is a band across the top that the heading rises into;
+          from 1024px it fills the right of the section and the words keep the
+          left, so no line of text ever sits on the picture. */}
       <section aria-labelledby="eat-title" className="ground-dark grain relative overflow-hidden bg-forest-deep text-white">
         <div aria-hidden="true" className={`absolute inset-0 ${forestLights}`} />
-        <div className="relative mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
+        <SceneMedia
+          art={TABLE}
+          className="absolute inset-x-0 top-0 h-[min(66vw,400px)] sm:h-[min(50vw,440px)] lg:inset-y-0 lg:left-auto lg:right-0 lg:h-auto lg:w-[58%]"
+          fade={{ bottom: '64%' }}
+          fadeLg={{ left: '56%', top: '12%', bottom: '18%' }}
+          sizes="(min-width: 1024px) 60vw, 100vw"
+          position="50% 55%"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-b from-forest-deep/5 via-forest-deep/20 to-forest-deep/70 lg:bg-gradient-to-r lg:from-forest-deep/55 lg:via-forest-deep/10 lg:to-transparent"
+          />
+        </SceneMedia>
+        <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-[min(52vw,300px)] sm:px-6 sm:pb-20 sm:pt-[min(40vw,340px)] lg:py-24">
+          <div className="lg:max-w-[46%]">
           <Reveal>
             <h2 id="eat-title" className="text-balance font-display text-[2rem] font-semibold leading-[1.08] tracking-[-0.015em] sm:text-[2.8rem]">
               So, where are you eating?
             </h2>
           </Reveal>
 
-          <ol className="mt-8 grid grid-cols-1 gap-6 sm:mt-10 sm:grid-cols-3 sm:gap-8">
+          <ol className="mt-8 grid grid-cols-1 gap-6 sm:mt-10 sm:grid-cols-3 sm:gap-8 lg:grid-cols-1 lg:gap-6">
             {STEPS.map(({ Icon, verb, body }, i) => (
-              <Reveal as="li" key={verb} delay={i === 0 ? 0 : i === 1 ? 60 : 120} className="flex gap-4 sm:block">
+              <Reveal as="li" key={verb} delay={i === 0 ? 0 : i === 1 ? 60 : 120} className="flex gap-4 sm:block lg:flex">
                 <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-accent-onDark ring-1 ring-white/20">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <span className="block sm:mt-4">
+                <span className="block sm:mt-4 lg:mt-0">
                   <span className="block font-display text-xl font-semibold">{verb}</span>
                   <span className="mt-1 block max-w-xs text-[15px] leading-relaxed text-white/75">{body}</span>
                 </span>
@@ -234,13 +254,13 @@ export default async function HomePage() {
             ))}
           </ol>
 
-          <Reveal className="mt-10 flex flex-col gap-6 border-t border-white/12 pt-8 lg:flex-row lg:items-center lg:justify-between">
+          <Reveal className="mt-10 flex flex-col gap-6 border-t border-white/12 pt-8">
             <a href="#search" className={`${heroPrimary} self-start`}>
               Search your area
               <ArrowRightIcon className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
             </a>
             {biggestAreas.length > 0 && (
-              <nav aria-label="Start with a borough" className="lg:max-w-[40rem]">
+              <nav aria-label="Start with a borough">
                 <p className="text-xs font-semibold text-white/65">Or start with a borough</p>
                 <ul className="mt-2.5 flex flex-wrap gap-2">
                   {biggestAreas.map((a) => (
@@ -266,6 +286,7 @@ export default async function HomePage() {
               </nav>
             )}
           </Reveal>
+          </div>
         </div>
       </section>
 

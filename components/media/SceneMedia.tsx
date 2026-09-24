@@ -17,17 +17,25 @@ import clsx from 'clsx';
 // for narrow screens where one exists: a phone gets the tall photo and the
 // tall loop, not a sliver cropped out of the wide one.
 //
-// The loop is treated as a nicety. It is only fetched when:
+// The loop is the generated original, untouched (lib/media.ts), on every
+// screen. A clip is five seconds and was not made to loop, so two copies of
+// the same file take turns: just before one ends, the other starts from the
+// beginning and fades in over it. The seam disappears without re-encoding
+// anything. The second copy only loads once the first is fully buffered, so
+// it comes from the browser's cache rather than the network.
+//
+// It is only fetched when:
 //
 //  - the frame is actually displayed (a hidden frame never fetches anything)
 //  - the screen is at least `videoMinWidth` wide
 //  - the visitor has not asked for reduced motion or to save data
-//  - the frame is on screen; it pauses when scrolled away
+//  - the frame is within a screen of being seen; it pauses when scrolled away
 //
-// Moving content that plays for more than five seconds needs a way to stop it
-// (WCAG 2.2.2). That is a small word, "Pause", in the corner of the picture,
-// never a round play button sitting on the image: the loop is part of the
-// page, not a video player. The choice lasts for the rest of the visit.
+// No player controls. Shabir, 2026-09-24: "the video should just be looping in
+// the background". Moving content that plays for more than five seconds still
+// needs a way to stop it (WCAG 2.2.2), so a "Pause" control exists for keyboard
+// users and appears only when tabbed to; with reduced motion there is no loop
+// at all. The choice lasts for the rest of the visit.
 
 export interface SceneSource {
   /** Path without size or extension, e.g. /media/london-high-street-wide */
@@ -41,8 +49,6 @@ export interface SceneArt extends SceneSource {
   alt: string;
   /** What the loop shows, read out in place of the still's alt. */
   videoLabel?: string;
-  /** A lighter loop for phones when there is no tall composition. */
-  videoSmall?: string;
   /** A different composition for screens narrower than `below`. */
   narrow?: SceneSource & { below: number };
 }
@@ -50,6 +56,8 @@ export interface SceneArt extends SceneSource {
 type Fade = { left?: string; right?: string; top?: string; bottom?: string };
 
 const PAUSED_KEY = 'yih:hero-art-paused';
+/** Seconds the two copies overlap at the loop point. */
+const CROSSFADE_S = 0.9;
 
 /** An eased mask along one axis: soft where it starts, solid by `len`. */
 function axisMask(axis: 'x' | 'y', start?: string, end?: string): string {
@@ -113,6 +121,7 @@ export function SceneMedia({
   videoMinWidth?: number;
   /** Behind or beside words that already say it: empty alt, loop hidden from screen readers. */
   decorative?: boolean;
+  /** Where the keyboard-only Pause control appears when it has focus. */
   control?: 'bottom-right' | 'top-right' | 'bottom-left' | 'top-left' | 'none';
   controlTone?: 'light' | 'dark';
   /**
@@ -124,10 +133,18 @@ export function SceneMedia({
   children?: React.ReactNode;
 }) {
   const frame = useRef<HTMLDivElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
+  const first = useRef<HTMLVideoElement>(null);
+  const second = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [onScreen, setOnScreen] = useState(false);
+  // The second copy exists once the first has fully buffered.
+  const [twin, setTwin] = useState(false);
+  // Which copy is showing: 0 the first, 1 the second.
+  const [front, setFront] = useState(0);
+  const frontRef = useRef(0);
+  const swapping = useRef(false);
 
   useEffect(() => {
     const el = frame.current;
@@ -137,7 +154,7 @@ export function SceneMedia({
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
     if (width < videoMinWidth || still || saveData) return;
     const narrow = art.narrow && width < art.narrow.below;
-    const chosen = narrow ? art.narrow!.video : width < 768 ? art.videoSmall ?? art.video : art.video;
+    const chosen = narrow ? art.narrow!.video : art.video;
     if (!chosen) return;
     let remembered = false;
     try {
@@ -148,33 +165,82 @@ export function SceneMedia({
     setPaused(remembered);
     // After the page has settled, so the loop never competes with the words.
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
-    const start = () => setSrc(chosen);
-    if (idle) idle(start);
-    else window.setTimeout(start, 400);
+    const start = () => {
+      if (idle) idle(() => setSrc(chosen));
+      else window.setTimeout(() => setSrc(chosen), 400);
+    };
+    if (typeof IntersectionObserver === 'undefined') {
+      start();
+      return;
+    }
+    // The originals are 3 to 8 MB each, so a loop further down the page is
+    // only fetched once it is within a screen of being seen.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        start();
+      },
+      { rootMargin: '100% 0px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
     // `src` is deliberately left out: once a loop is chosen it stays chosen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [art, videoMinWidth, active]);
 
-  // Play only while on screen, current, and not paused by the visitor.
+  // Whether the frame is on screen at all.
   useEffect(() => {
-    const v = video.current;
     const el = frame.current;
-    if (!v || !el || !src) return;
-    if (!active) {
-      v.pause();
-      return;
-    }
+    if (!el || !src) return;
     if (typeof IntersectionObserver === 'undefined') {
-      if (!paused) v.play().catch(() => {});
+      setOnScreen(true);
       return;
     }
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !paused) v.play().catch(() => {});
-      else v.pause();
-    });
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting));
     io.observe(el);
     return () => io.disconnect();
-  }, [src, paused, active]);
+  }, [src]);
+
+  const running = Boolean(src) && active && onScreen && !paused;
+
+  // Play the copy in front while running; just before it ends, start the other
+  // from the beginning and hand over.
+  useEffect(() => {
+    const copies = [first.current, second.current];
+    if (!src) return;
+    if (!running) {
+      copies.forEach((v) => v?.pause());
+      return;
+    }
+    copies[frontRef.current]?.play().catch(() => {});
+    let raf = 0;
+    let settle = 0;
+    const tick = () => {
+      const f = frontRef.current;
+      const now = [first.current, second.current][f];
+      const next = [first.current, second.current][1 - f];
+      if (now && next && !swapping.current && now.duration && now.duration - now.currentTime <= CROSSFADE_S) {
+        swapping.current = true;
+        next.currentTime = 0;
+        next.play().catch(() => {});
+        frontRef.current = 1 - f;
+        setFront(1 - f);
+        settle = window.setTimeout(() => {
+          now.pause();
+          now.currentTime = 0;
+          swapping.current = false;
+        }, CROSSFADE_S * 1000 + 60);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(settle);
+      swapping.current = false;
+    };
+  }, [src, running, twin]);
 
   function toggle() {
     const next = !paused;
@@ -183,11 +249,6 @@ export function SceneMedia({
       sessionStorage.setItem(PAUSED_KEY, next ? '1' : '0');
     } catch {
       /* not essential */
-    }
-    const v = video.current;
-    if (v) {
-      if (next) v.pause();
-      else v.play().catch(() => {});
     }
   }
 
@@ -203,6 +264,10 @@ export function SceneMedia({
 
   const { narrow } = art;
   const alt = decorative ? '' : art.alt;
+  // The first reveal is slow and gentle; after that the copies cross in time
+  // with the handover.
+  const fadeMs = ready ? CROSSFADE_S * 1000 : 1000;
+  const copyClass = 'scene-fit absolute inset-0 h-full w-full transition-opacity ease-linear';
 
   return (
     <div ref={frame} className={clsx('scene-media pointer-events-none', className)} style={style}>
@@ -237,20 +302,31 @@ export function SceneMedia({
 
           {src && (
             <video
-              ref={video}
+              ref={first}
               src={src}
               muted
-              loop
               playsInline
-              autoPlay={!paused}
+              // Until the second copy exists, the first loops on its own.
+              loop={!twin}
               preload="auto"
               aria-hidden={decorative || undefined}
               aria-label={decorative ? undefined : art.videoLabel ?? art.alt}
               onPlaying={() => setReady(true)}
-              className={clsx(
-                'scene-fit absolute inset-0 h-full w-full transition-opacity duration-1000 ease-out',
-                ready ? 'opacity-100' : 'opacity-0'
-              )}
+              onCanPlayThrough={() => setTwin(true)}
+              className={copyClass}
+              style={{ opacity: ready && front === 0 ? 1 : 0, transitionDuration: `${fadeMs}ms` }}
+            />
+          )}
+          {src && twin && (
+            <video
+              ref={second}
+              src={src}
+              muted
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+              className={copyClass}
+              style={{ opacity: front === 1 ? 1 : 0, transitionDuration: `${fadeMs}ms` }}
             />
           )}
           {children}
@@ -264,14 +340,15 @@ export function SceneMedia({
           aria-pressed={paused}
           aria-label={paused ? 'Play the moving picture' : 'Pause the moving picture'}
           className={clsx(
-            'scene-control pointer-events-auto absolute inline-flex min-h-[40px] items-center px-3 text-[12px] font-semibold tracking-wide underline underline-offset-4 transition-opacity duration-200',
-            control === 'bottom-right' && 'bottom-2 right-2',
-            control === 'top-right' && 'right-2 top-2',
-            control === 'bottom-left' && 'bottom-2 left-2',
-            control === 'top-left' && 'left-2 top-2',
+            // Invisible until a keyboard reaches it.
+            'scene-control sr-only focus-visible:not-sr-only focus-visible:pointer-events-auto focus-visible:absolute focus-visible:inline-flex focus-visible:min-h-[40px] focus-visible:items-center focus-visible:px-3 focus-visible:text-[12px] focus-visible:font-semibold focus-visible:underline focus-visible:underline-offset-4',
+            control === 'bottom-right' && 'focus-visible:bottom-2 focus-visible:right-2',
+            control === 'top-right' && 'focus-visible:right-2 focus-visible:top-2',
+            control === 'bottom-left' && 'focus-visible:bottom-2 focus-visible:left-2',
+            control === 'top-left' && 'focus-visible:left-2 focus-visible:top-2',
             controlTone === 'light'
-              ? 'text-white decoration-white/40 [text-shadow:0_1px_6px_rgba(4,24,30,0.7)] hover:decoration-white'
-              : 'text-ink decoration-ink/30 hover:decoration-ink'
+              ? 'text-white [text-shadow:0_1px_6px_rgba(4,24,30,0.7)]'
+              : 'text-ink'
           )}
         >
           {paused ? 'Play' : 'Pause'}
