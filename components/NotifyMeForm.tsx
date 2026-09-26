@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { track } from '@/lib/analytics/posthog';
 import { ArrowRightIcon, CheckIcon } from './icons';
 import { PlaceAutocomplete, type ChosenPlace } from './PlaceAutocomplete';
 import { fieldInput, fieldInputDark } from './form';
@@ -93,6 +94,10 @@ export function NotifyMeForm({
         setError(json.error ?? "That didn't send. Please try again.");
         return;
       }
+      track('subscription_created', {
+        has_requested_city: Boolean(place || typed),
+        locale,
+      });
       setSentPlace((place?.name ?? typed).slice(0, 80) || null);
       setSent(true);
     } catch {

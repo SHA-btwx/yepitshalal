@@ -28,6 +28,10 @@ export const metadata: Metadata = {
  * Still to add once ICO registration is done: the registered entity name,
  * trading address and registration number. That registration produces exactly
  * those details, which is why they are not guessed at here.
+ *
+ * The PostHog row and the Cookies paragraph describe lib/analytics/: the
+ * PostHog config and the scrubber every event passes through before it is
+ * sent. If either changes, so do they.
  */
 
 const COLLECTED: [string, string, string][] = [
@@ -66,6 +70,7 @@ const COLLECTED: [string, string, string][] = [
 const PROCESSORS: [string, string, string][] = [
   ['Supabase', 'Database, sign in, and photo storage.', 'https://supabase.com/privacy'],
   ['Vercel', 'Hosting, and privacy friendly visitor analytics.', 'https://vercel.com/legal/privacy-policy'],
+  ['PostHog', 'Counting which pages and buttons get used, without cookies, on servers in the EU.', 'https://posthog.com/privacy'],
   ['Stripe', 'Payments, if you support us or buy a priority verification.', 'https://stripe.com/gb/privacy'],
   ['Resend', 'Delivering what you send through a form on this site to our own inbox, so a person reads it.', 'https://resend.com/legal/privacy-policy'],
 ];
@@ -128,9 +133,9 @@ export default function PrivacyPage() {
           <span className="font-medium text-ink">
             Because we have a legitimate interest.
           </span>{' '}
-          Hashing an IP address to stop the forms being flooded, and counting visits so we
-          know which pages are worth keeping. Both are the least intrusive way we could
-          think of to do those things.
+          Hashing an IP address to stop the forms being flooded, and counting visits, and
+          which buttons get used, so we know which pages are worth keeping. Both are the
+          least intrusive way we could think of to do those things.
         </li>
       </ul>
 
@@ -138,9 +143,13 @@ export default function PrivacyPage() {
       <p className="mt-2 text-sm leading-relaxed text-muted">
         We do not use advertising or tracking cookies, and there is no cookie banner
         because there is nothing to ask you about. Our visitor analytics, from Vercel,
-        does not use cookies and does not follow you between sites. If you sign in,
-        Supabase sets a cookie that keeps you signed in. That is the only one, and it is
-        there because you asked to be signed in.
+        does not use cookies and does not follow you between sites. PostHog, which counts
+        which pages and buttons get used, sets no cookies either and stores nothing on
+        your device. It tells one visit from another with a code made from your IP
+        address and browser that changes every day and cannot be turned back into either,
+        and it is never sent where you searched from, a postcode you typed, or your email
+        address. If you sign in, Supabase sets a cookie that keeps you signed in. That is
+        the only one, and it is there because you asked to be signed in.
       </p>
 
       <h2 className={`mt-12 ${sectionTitle}`}>Who else sees it</h2>

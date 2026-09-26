@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { track } from '@/lib/analytics/posthog';
 import { ArrowRightIcon, CheckIcon } from './icons';
 import { fieldInput, fieldLabel, formError, formSuccess } from './form';
 import { ctaPrimary } from './cta';
@@ -49,6 +50,7 @@ export function FeedbackBox() {
         setError(json.error ?? "That didn't send. Please try again.");
         return;
       }
+      track('feedback_submitted');
       setSent(true);
     } catch {
       setError("That didn't send. Please try again.");

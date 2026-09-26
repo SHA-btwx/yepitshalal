@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '@/lib/analytics/posthog';
 import { CheckIcon } from './icons';
 
 /**
@@ -13,7 +14,11 @@ export function ShareButton({ title, className }: { title: string; className?: s
 
   async function share() {
     const url = window.location.href.split('?')[0];
-    if (navigator.share) {
+    const supportsNativeShare = typeof navigator.share === 'function';
+    track('restaurant_share_initiated', {
+      share_method: supportsNativeShare ? 'native' : 'copy_link',
+    });
+    if (supportsNativeShare) {
       try {
         await navigator.share({ title, url });
         return;

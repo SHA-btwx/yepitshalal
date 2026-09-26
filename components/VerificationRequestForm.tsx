@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { track } from '@/lib/analytics/posthog';
 import { SealCheckIcon } from './icons';
 import { fieldInput } from './form';
 import { Free } from './Free';
@@ -37,6 +38,10 @@ export function VerificationRequestForm({
       setResult({ ok: false, message: json.error ?? 'Something went wrong.' });
       return;
     }
+    track('verification_request_created', {
+      queue_type: queueType,
+      payment_checkout_started: Boolean(json.checkoutUrl),
+    });
     if (json.checkoutUrl) {
       window.location.href = json.checkoutUrl;
       return;

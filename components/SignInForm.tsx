@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { track } from '@/lib/analytics/posthog';
 import { createClient } from '@/lib/supabase/client';
 import { CheckIcon } from './icons';
 import { fieldInput, fieldLabel, formError, formSuccess } from './form';
@@ -25,6 +26,7 @@ export function SignInForm() {
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
+    if (!error) track('sign_in_link_requested');
     setStatus(error ? 'error' : 'sent');
   }
 

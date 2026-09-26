@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import Link from 'next/link';
+import { track } from '@/lib/analytics/posthog';
 import { CheckIcon } from './icons';
 import { choicePill, fieldGroup, fieldHint, fieldInput, fieldLabel, formError } from './form';
 import { ctaPrimary, ctaSecondary } from './cta';
@@ -125,6 +126,11 @@ export function SubmitRestaurantForm({
         requestAnimationFrame(() => errorRef.current?.focus());
         return;
       }
+      track('restaurant_submission_created', {
+        submission_type: existing ? 'listing_edit' : 'new_restaurant',
+        relationship: String(data.relationship ?? 'not_provided'),
+        halal_claim: String(data.halal_claim ?? 'not_provided'),
+      });
       setDone({ name: String(data.name), duplicate: json.duplicate ?? null });
       requestAnimationFrame(() => {
         doneRef.current?.focus();

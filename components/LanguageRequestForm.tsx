@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { track } from '@/lib/analytics/posthog';
 import { CheckIcon } from './icons';
 import { fieldInput } from './form';
 import { searchLanguages, type LanguageOption } from '@/lib/languages';
@@ -80,6 +81,7 @@ export function LanguageRequestForm({ locale = 'en' }: { locale?: string }) {
         setError(json.error ?? "That didn't send. Please try again.");
         return;
       }
+      track('language_request_created', { locale });
       setSent(true);
     } catch {
       setError("That didn't send. Please check your connection and try again.");

@@ -7,6 +7,7 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { BottomNav } from '@/components/BottomNav';
 import { SITE_URL } from '@/lib/site';
 import { MotionRoot } from '@/components/motion/MotionRoot';
+import { PostHogInit } from '@/components/PostHogInit';
 
 // Newsreader and IBM Plex Sans, replacing Fraunces and Inter on 2026-09-22.
 //
@@ -126,6 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <BottomNav />
         </MotionRoot>
         <Analytics />
+        <PostHogInit />
       </body>
     </html>
   );

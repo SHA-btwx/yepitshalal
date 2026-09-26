@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { track } from '@/lib/analytics/posthog';
 import { geocodePostcode } from '@/lib/geocode';
 import { SearchIcon, CrosshairIcon } from './icons';
 import { SuggestionPanel, type SuggestionItem } from './SearchSuggestions';
@@ -94,6 +95,7 @@ export function LocationSearchBar() {
   }, [open]);
 
   function goToLocation(lat: number, lng: number, label: string) {
+    track('location_search_submitted', { search_mode: 'location' });
     router.push(
       `/search?lat=${lat}&lng=${lng}&mode=searched_location&label=${encodeURIComponent(label)}`
     );
@@ -105,6 +107,7 @@ export function LocationSearchBar() {
     if (item.kind === 'restaurant') {
       // Straight to the restaurant, not a search around it: they named the place
       // they wanted.
+      track('location_search_submitted', { search_mode: 'restaurant' });
       router.push(`/restaurant/${item.slug}`);
       return;
     }
@@ -123,6 +126,7 @@ export function LocationSearchBar() {
   }
 
   function useCurrentLocation() {
+    track('current_location_search_requested');
     setError(null);
     setOpen(false);
     setStatus('locating');
