@@ -101,6 +101,11 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
               {live.length} of {allowance.allowance} live
               {allowance.isPartner ? (
                 ' on your partner plan'
+              ) : allowance.isFounder ? (
+                <>
+                  {' '}
+                  as a Founder, <Free>free for life</Free>
+                </>
               ) : (
                 <>
                   {' '}
@@ -109,10 +114,10 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
               )}
             </p>
           </div>
-          {allowance.isPartner && (
+          {(allowance.isPartner || allowance.isFounder) && (
             <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent-ink">
               <SparkleIcon className="h-3.5 w-3.5" />
-              Partner
+              {allowance.isPartner ? 'Partner' : 'Founder'}
             </span>
           )}
         </div>
@@ -130,7 +135,7 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
           ))}
         </div>
 
-        {!allowance.isPartner && (
+        {!allowance.isPartner && !allowance.isFounder && (
           <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted">
             <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
             <span>

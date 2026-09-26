@@ -210,7 +210,7 @@ export default async function AdminRestaurantEditPage({ params }: { params: { id
 
             <div className="rounded-xl bg-black/[0.03] px-3.5 py-2.5 text-sm text-ink/80">
               Currently {allowance.published} of {allowance.allowance} reels published
-              {allowance.isPartner ? ' (partner)' : ' (free tier)'}.
+              {allowance.isPartner ? ' (partner)' : allowance.isFounder ? ' (Founder, 3 free for life)' : ' (free tier)'}.
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

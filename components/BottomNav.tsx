@@ -21,8 +21,10 @@ const TABS = [
 export function BottomNav() {
   const pathname = usePathname() ?? '/';
 
-  // Admin runs its own chrome and is desktop-oriented.
-  if (pathname.startsWith('/admin')) return null;
+  // Admin runs its own chrome and is desktop-oriented. /founders is a private
+  // invitation with one job, and its own bar at the bottom of a phone screen
+  // (the way to claim a spot) takes this one's place.
+  if (pathname.startsWith('/admin') || pathname.startsWith('/founders')) return null;
 
   return (
     <nav

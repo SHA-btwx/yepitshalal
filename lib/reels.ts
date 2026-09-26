@@ -27,6 +27,8 @@ export interface ReelAllowance {
   published: number;
   remaining: number;
   isPartner: boolean;
+  /** One of the 100 Founders Club (0050): 3 reel slots, free for life. */
+  isFounder: boolean;
 }
 
 /** A Discovery card: either a reel, or a photo for restaurants with no reel yet. */
@@ -94,15 +96,22 @@ export async function getAllReelsForOwner(restaurantId: string): Promise<Reel[]>
  */
 export async function getReelAllowance(restaurantId: string): Promise<ReelAllowance> {
   const supabase = createAdminSupabase();
-  const [{ data: allowance }, { data: published }, { data: partner }] = await Promise.all([
+  const [{ data: allowance }, { data: published }, { data: partner }, { data: founder }] = await Promise.all([
     supabase.rpc('restaurant_reel_allowance', { p_restaurant_id: restaurantId }),
     supabase.rpc('published_reel_count', { p_restaurant_id: restaurantId }),
     supabase.rpc('is_active_partner', { p_restaurant_id: restaurantId }),
+    supabase.rpc('is_founder_restaurant', { p_restaurant_id: restaurantId }),
   ]);
 
   const a = Number(allowance ?? 1);
   const p = Number(published ?? 0);
-  return { allowance: a, published: p, remaining: Math.max(0, a - p), isPartner: Boolean(partner) };
+  return {
+    allowance: a,
+    published: p,
+    remaining: Math.max(0, a - p),
+    isPartner: Boolean(partner),
+    isFounder: Boolean(founder),
+  };
 }
 
 interface RestaurantLite {

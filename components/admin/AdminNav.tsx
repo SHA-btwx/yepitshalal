@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { SealCheckIcon, ForkKnifeIcon, SparkleIcon, UserIcon, MapIcon, MapPinIcon, ListIcon, PlusIcon, InfoIcon, PhoneIcon } from '../icons';
+import { SealCheckIcon, ForkKnifeIcon, SparkleIcon, UserIcon, MapIcon, MapPinIcon, ListIcon, PlusIcon, InfoIcon, PhoneIcon, StarIcon } from '../icons';
 
 // There was no way to move between admin sections: every hop went back through
 // /admin. This is that missing layer, and it doubles as the "you are in the
 // admin" signal the public header alone doesn't give.
 const SECTIONS = [
   { href: '/admin/submissions', label: 'Submissions', Icon: PlusIcon },
+  { href: '/admin/founders', label: 'Founders', Icon: StarIcon },
   { href: '/admin/queue', label: 'Queue', Icon: SealCheckIcon },
   { href: '/admin/restaurants', label: 'Restaurants', Icon: ForkKnifeIcon },
   { href: '/admin/coverage', label: 'Coverage', Icon: MapPinIcon },

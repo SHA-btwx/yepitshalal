@@ -21,6 +21,7 @@ export const metadata: Metadata = {
  *   /api/feedback             site_feedback
  *   /api/language-requests    language_requests
  *   /api/restaurants/submit   restaurant_submissions
+ *   /api/founders             founder_applications
  *   /api/verification-requests
  *   Supabase Auth             magic link, email only
  *
@@ -39,6 +40,11 @@ const COLLECTED: [string, string, string][] = [
     'What you write to us',
     'Feedback, language requests, restaurant details you submit, and anything you send about your own restaurant.',
     'Kept for two years, so we can see whether we fixed the thing you told us about.',
+  ],
+  [
+    'Your name and a phone number or Instagram handle',
+    'Only if you claim a Founders Club spot for your restaurant, so Shabir can get in touch to set up your listing. Never published and never shared.',
+    'Kept while your listing or Founder status lasts, or until you ask us to remove it.',
   ],
   [
     'A one way hash of your IP address',

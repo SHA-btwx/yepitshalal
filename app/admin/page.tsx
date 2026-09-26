@@ -6,6 +6,7 @@ import {
   UserIcon,
   ArrowRightIcon,
   PlusIcon,
+  StarIcon,
 } from '@/components/icons';
 import { AdminPage } from '@/components/admin/ui';
 
@@ -15,6 +16,12 @@ const SECTIONS = [
     Icon: PlusIcon,
     title: 'Submissions',
     body: 'Restaurants sent in by owners and customers, waiting for review.',
+  },
+  {
+    href: '/admin/founders',
+    Icon: StarIcon,
+    title: 'Founders',
+    body: 'The 100 Founders Club: who has joined, in order, and the free listings after it.',
   },
   {
     href: '/admin/queue',
