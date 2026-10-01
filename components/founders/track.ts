@@ -1,6 +1,7 @@
 'use client';
 
 import { track } from '@vercel/analytics';
+import { track as trackPostHog } from '@/lib/analytics/posthog';
 
 // Every Founders page event goes through here, so switching where they go is a
 // one-file change.
@@ -9,10 +10,10 @@ import { track } from '@vercel/analytics';
 // were left, how somebody arrived. Never a name, a business, a phone number,
 // an Instagram handle, a postcode or anything typed into the form.
 //
-// Today they go to Vercel Web Analytics, which records custom events only on
-// its paid plans. PostHog is being added to the site separately; once
-// lib/analytics/posthog is on main, send the same event through its `track`
-// here as well (it takes the same name and properties).
+// Each event goes to two places. Vercel Web Analytics records custom events
+// only on its paid plans. PostHog records them on its free plan, after the
+// privacy filter in lib/analytics/scrub has checked them like every other
+// event on the site.
 
 export type FoundersEvent =
   | 'founders_page_viewed'
@@ -32,5 +33,10 @@ export function trackFounders(event: FoundersEvent, props?: Props) {
     track(event, props);
   } catch {
     // Analytics never gets in the way of the page.
+  }
+  try {
+    trackPostHog(event, props);
+  } catch {
+    // Kept apart from Vercel's, so one failing never stops the other.
   }
 }

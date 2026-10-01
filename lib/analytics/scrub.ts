@@ -51,7 +51,8 @@ export function scrubText(text: string): string {
     .replace(FULL_POSTCODE, '$1');
 }
 
-// Keys as well as values: heatmap events are keyed by the page URL.
+// Keys as well as values: heatmap events are keyed by the page URL. Heatmaps
+// are off in posthog.ts, but this stays in case they are ever turned back on.
 function scrubDeep(value: unknown): unknown {
   if (typeof value === 'string') return scrubText(value);
   if (Array.isArray(value)) return value.map(scrubDeep);
