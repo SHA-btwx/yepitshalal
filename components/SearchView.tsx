@@ -60,6 +60,64 @@ const CLASSIFICATION_FILTERS: {
 
 const PAGE = 30;
 
+type SortOrder = 'distance' | 'evidence';
+
+/**
+ * Evidence first or Nearest. A choice of order, not a filter, so it sits on the
+ * page beside Filters rather than inside the sheet, the way most search sites
+ * show theirs. With only two orders a menu would hide one of them: both stay in
+ * view and one tap switches.
+ */
+function SortToggle({
+  value,
+  onChange,
+  className,
+}: {
+  value: SortOrder;
+  onChange: (sort: SortOrder) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Sort results"
+      className={clsx(
+        'flex items-center gap-0.5 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)]',
+        className
+      )}
+    >
+      {/* The up and down arrows most sites use for "order". Dropped on the
+          narrowest phones, where the two words need the room. */}
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="ml-2 mr-0.5 hidden h-4 w-4 shrink-0 text-subtle min-[360px]:block"
+      >
+        <path d="M8 19V5M4 9l4-4 4 4M16 5v14M12 15l4 4 4-4" />
+      </svg>
+      {(['evidence', 'distance'] as const).map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onChange(s)}
+          aria-pressed={value === s}
+          className={clsx(
+            'min-h-[36px] flex-auto whitespace-nowrap rounded-full px-2.5 text-[13px] font-semibold transition sm:flex-none sm:px-3',
+            value === s ? 'bg-ink text-white' : 'text-ink/55 hover:text-ink'
+          )}
+        >
+          {s === 'distance' ? 'Nearest' : 'Evidence first'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) {
   const [results, setResults] = useState<SearchResultRestaurant[]>(initial.results);
   const [totalCount, setTotalCount] = useState(initial.totalCount);
@@ -71,7 +129,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   const [query, setQuery] = useState('');
   // Evidence first by default: someone looking for halal food wants the places
   // with a reason to believe first, nearest first within each label.
-  const [sort, setSort] = useState<'distance' | 'evidence'>('evidence');
+  const [sort, setSort] = useState<SortOrder>('evidence');
   const [visible, setVisible] = useState(PAGE);
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -99,7 +157,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
   const activeFilterCount = classifications.length + (query ? 1 : 0);
 
   const run = useCallback(
-    async (miles: number, filters: HalalStatus[], q: string, s: 'distance' | 'evidence') => {
+    async (miles: number, filters: HalalStatus[], q: string, s: SortOrder) => {
       setLoading(true);
       setFailed(false);
       setServerRadiusMeters(null);
@@ -267,29 +325,11 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
     </label>
   );
 
-  const sortToggle = (
-    <div role="group" aria-label="Sort results" className="flex items-center gap-1 rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(15,37,43,0.04)]">
-      {(['evidence', 'distance'] as const).map((s) => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => setSort(s)}
-          aria-pressed={sort === s}
-          className={clsx(
-            'min-h-[34px] rounded-full px-3 text-[13px] font-semibold transition',
-            sort === s ? 'bg-ink text-white' : 'text-ink/55 hover:text-ink'
-          )}
-        >
-          {s === 'distance' ? 'Nearest' : 'Evidence first'}
-        </button>
-      ))}
-    </div>
-  );
-
   return (
     <div className="mx-auto max-w-6xl sm:px-6 sm:py-4">
-      {/* Two rows on a phone: where, and how far. Everything else is one tap
-          away in the sheet, because results matter more than controls. */}
+      {/* Three rows on a phone: where, how far, then the order beside Filters.
+          Everything else is one tap away in the sheet, because results matter
+          more than controls. */}
       <div className="sticky top-14 z-20 bg-sand-soft/92 px-4 pb-3 pt-2.5 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-5 after:bg-gradient-to-b after:from-sand-soft/85 after:to-transparent sm:static sm:rounded-[22px] sm:px-5 sm:py-4 sm:shadow-[0_1px_2px_rgba(15,37,43,0.03),0_10px_28px_-18px_rgba(15,37,43,0.18)] sm:after:hidden">
         <div className="flex items-center gap-2">
           <Link
@@ -340,11 +380,19 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             className="flex-1 sm:max-w-xs sm:flex-none"
           />
 
+          <SortToggle value={sort} onChange={setSort} className="ml-auto hidden sm:flex" />
+        </div>
+
+        {/* On a phone the order sits beside Filters, as Sort and Filter do on
+            most search sites, so changing it never means opening the sheet. */}
+        <div className="mt-2 flex items-center gap-2 sm:hidden">
+          <SortToggle value={sort} onChange={setSort} className="min-w-0 flex-1" />
+
           <button
             type="button"
             onClick={() => setFiltersOpen(true)}
             className={clsx(
-              'inline-flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition active:scale-[0.98] sm:hidden',
+              'inline-flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition active:scale-[0.98]',
               activeFilterCount > 0 ? 'bg-ink text-white' : 'bg-white text-ink/75'
             )}
           >
@@ -356,8 +404,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
               </span>
             )}
           </button>
-
-          <div className="ml-auto hidden sm:block">{sortToggle}</div>
         </div>
 
         {/* Desktop shows the status filters inline: the room is there. */}
@@ -367,7 +413,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
       <FilterSheet
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
-        title="Filter and sort"
+        title="Filters"
         footer={
           <div className="flex gap-2">
             {activeFilterCount > 0 && (
@@ -400,10 +446,6 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wide text-subtle">Name or cuisine</h3>
             <div className="mt-2">{nameField}</div>
-          </div>
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-subtle">Order</h3>
-            <div className="mt-2">{sortToggle}</div>
           </div>
         </div>
       </FilterSheet>
@@ -596,7 +638,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
             away doesn't leave a strip of dead space. */}
         <div
           className={clsx(
-            'relative h-[calc(100dvh-13.75rem)] min-h-[360px] overflow-hidden bg-halal-unverifiedSoft sm:sticky sm:top-[4.5rem] sm:h-[calc(100vh-6rem)] sm:min-h-0 sm:rounded-2xl',
+            'relative h-[calc(100dvh-16.875rem)] min-h-[360px] overflow-hidden bg-halal-unverifiedSoft sm:sticky sm:top-[4.5rem] sm:h-[calc(100vh-6rem)] sm:min-h-0 sm:rounded-2xl',
             mobileView === 'list' && 'hidden sm:block'
           )}
         >

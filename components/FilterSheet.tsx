@@ -6,8 +6,9 @@ import { XIcon } from './icons';
 
 // A phone has room for one decision at a time. The search screen used to spend
 // two thirds of a 812px screen on controls before a single restaurant appeared,
-// so everything that is not "where" and "how far" lives in here, one tap away,
-// with a count on the button so nothing is silently filtering your results.
+// so everything that is not "where", "how far" or the order lives in here, one
+// tap away, with a count on the button so nothing is silently filtering your
+// results.
 //
 // Not used above sm: a desktop has the room, and the controls stay on the page.
 
