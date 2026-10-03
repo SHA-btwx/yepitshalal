@@ -10,8 +10,10 @@ import {
 } from '@/lib/analytics/posthog';
 
 // The pages recordings show as an empty box (scrub.ts), so asking there would
-// be a question about nothing.
-const NOT_ASKED = ['/admin', '/account', '/manage', '/auth'];
+// be a question about nothing. And the privacy page, which asks the same
+// question in its Recordings section, where it covers nothing a visitor came
+// to read before answering.
+const NOT_ASKED = ['/admin', '/account', '/manage', '/auth', '/privacy'];
 
 // Both answers are the same size and the same colour, so no is exactly as
 // easy as yes.
