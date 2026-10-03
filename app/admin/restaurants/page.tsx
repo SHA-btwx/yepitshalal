@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { HalalBadge } from '@/components/HalalBadge';
 import { DeleteRestaurantButton } from '@/components/DeleteRestaurantButton';
 import { PlusIcon, ArrowUpRightIcon } from '@/components/icons';
@@ -10,6 +11,9 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Restaurants' };
 
 export default async function AdminRestaurantsPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const { data: restaurants } = await supabase
     .from('restaurants')

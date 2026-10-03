@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { publishVerification } from '@/lib/admin-actions';
 import { HalalBadge } from '@/components/HalalBadge';
 import { ArrowUpRightIcon, InfoIcon } from '@/components/icons';
@@ -51,6 +52,9 @@ function claimValue(v: TriState): string {
 }
 
 export default async function ReviewVerificationPage({ params }: { params: { id: string } }) {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const { data: request } = await supabase
     .from('verification_requests')

@@ -1,4 +1,5 @@
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { AdminPage, Panel, Tag } from '@/components/admin/ui';
 import { InfoIcon } from '@/components/icons';
 
@@ -71,6 +72,9 @@ function LabelCells({ r }: { r: Counts }) {
 const HEAD = 'px-3 py-2.5 font-medium';
 
 export default async function AdminCoveragePage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const monthStart = new Date();
   monthStart.setUTCDate(1);

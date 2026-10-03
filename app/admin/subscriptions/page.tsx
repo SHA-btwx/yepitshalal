@@ -1,4 +1,5 @@
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { AdminPage, Panel, List, Row, SubscriptionStatusTag } from '@/components/admin/ui';
 
 export const dynamic = 'force-dynamic';
@@ -14,6 +15,9 @@ interface SubscriptionRow {
 }
 
 export default async function AdminSubscriptionsPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const { data: subscriptions } = await supabase
     .from('subscriptions')

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { approveReel, rejectReel } from '@/lib/reel-actions';
 import { AdminPage, Panel, List, Row, Tag, FIELD } from '@/components/admin/ui';
 import { ArrowUpRightIcon, SparkleIcon } from '@/components/icons';
@@ -21,6 +22,9 @@ interface PendingReel {
 }
 
 export default async function AdminReelsPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
 
   const [{ data: pending }, { data: published }] = await Promise.all([

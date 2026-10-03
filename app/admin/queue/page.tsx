@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { ArrowRightIcon } from '@/components/icons';
 import { AdminPage, Panel, List, Row, Tag, QueueStatusTag } from '@/components/admin/ui';
 
@@ -22,6 +23,9 @@ function daysWaiting(iso: string): string {
 }
 
 export default async function AdminQueuePage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const monthStart = new Date();
   monthStart.setUTCDate(1);

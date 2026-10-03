@@ -1,4 +1,5 @@
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { createOffer, deleteOffer } from '@/lib/admin-actions';
 import { ConfirmSubmitButton } from '@/components/admin/ConfirmSubmitButton';
 import { TrashIcon } from '@/components/icons';
@@ -19,6 +20,9 @@ interface OfferRow {
 }
 
 export default async function AdminOffersPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const [{ data: offers }, { data: restaurants }] = await Promise.all([
     supabase

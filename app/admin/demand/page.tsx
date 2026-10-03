@@ -1,4 +1,5 @@
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { AdminPage, Panel, Tag } from '@/components/admin/ui';
 import { InfoIcon } from '@/components/icons';
 
@@ -35,6 +36,9 @@ function when(iso: string) {
 }
 
 export default async function AdminDemandPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
 
   // Languages people asked for, from the form under the switcher. Kept on

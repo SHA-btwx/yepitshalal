@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { AdminPage, Panel, Tag } from '@/components/admin/ui';
 import { ArrowUpRightIcon, InfoIcon, PhoneIcon } from '@/components/icons';
 import { formatUkPhone, splitPhones } from '@/lib/phone';
@@ -51,6 +52,9 @@ function businessKey(r: Row): string {
 }
 
 export default async function AdminVerifyPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
 
   const rows: Row[] = [];

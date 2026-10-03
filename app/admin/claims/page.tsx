@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { reviewOwnershipClaim } from '@/lib/reel-actions';
 import { AdminPage, Panel, List, Row, Tag } from '@/components/admin/ui';
 import { ArrowUpRightIcon } from '@/components/icons';
@@ -17,6 +18,9 @@ interface Claim {
 }
 
 export default async function AdminClaimsPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const { data } = await supabase
     .from('restaurant_ownership_claims')

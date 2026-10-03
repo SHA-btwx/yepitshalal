@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { mergeDuplicate, markDistinct } from '@/lib/catalogue-actions';
 import { AdminPage, Panel, List, Row, Tag } from '@/components/admin/ui';
 import { ConfirmSubmitButton } from '@/components/admin/ConfirmSubmitButton';
@@ -28,6 +29,9 @@ interface Candidate {
 }
 
 export default async function AdminDuplicatesPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
 
   const { data: rows } = await supabase

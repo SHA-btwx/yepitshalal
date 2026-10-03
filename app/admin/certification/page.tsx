@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { AdminPage, Panel, Tag } from '@/components/admin/ui';
 import { ArrowUpRightIcon, InfoIcon } from '@/components/icons';
 
@@ -58,6 +59,9 @@ function hostOf(url: string | null): string | null {
 }
 
 export default async function AdminCertificationPage() {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const { data } = await supabase
     .from('restaurant_halal_evidence')

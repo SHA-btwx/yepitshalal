@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/require-admin';
 import { updateRestaurant, deletePhoto, setPrimaryPhoto } from '@/lib/admin-actions';
 import { assignRestaurantOwner, setPartnership } from '@/lib/reel-actions';
 import { getReelAllowance } from '@/lib/reels';
@@ -15,6 +16,9 @@ import type { HalalClassification } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminRestaurantEditPage({ params }: { params: { id: string } }) {
+  // The layout checks too, but a layout is not always re-run when moving
+  // between admin pages.
+  await requireAdmin();
   const supabase = createAdminSupabase();
   const { data: restaurant } = await supabase
     .from('restaurants')
