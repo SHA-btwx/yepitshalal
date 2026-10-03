@@ -13,6 +13,7 @@ import { HalalBadge } from '@/components/HalalBadge';
 import { SparkleIcon, ArrowUpRightIcon, TrashIcon, InfoIcon } from '@/components/icons';
 import { Free } from '@/components/Free';
 import type { Reel, ReelStatus } from '@/lib/reels';
+import { BLOCK_CLASS } from '@/lib/analytics/scrub';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Manage reels', robots: { index: false } };
@@ -68,8 +69,10 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
   const live = reels.filter((r) => r.status === 'published' || r.status === 'pending_review');
   const atCapacity = live.length >= allowance.allowance;
 
+  // A restaurant owner's own dashboard: session recordings show it as an
+  // empty box (BLOCK_CLASS in lib/analytics/scrub.ts).
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+    <div className={`${BLOCK_CLASS} mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">

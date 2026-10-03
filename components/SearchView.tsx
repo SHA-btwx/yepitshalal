@@ -30,6 +30,7 @@ import type { SearchResponse } from '@/lib/search';
 import type { NearbyArea } from '@/app/api/nearby-areas/route';
 import type { MapPrayerSpace } from './RestaurantMap';
 import { formatMetres, walkingMinutes } from '@/lib/prayerSpaces';
+import { MASK_CLASS } from '@/lib/analytics/scrub';
 
 const RestaurantMap = dynamic(() => import('./RestaurantMap').then((m) => m.RestaurantMap), {
   ssr: false,
@@ -332,10 +333,13 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           more than controls. */}
       <div className="sticky top-14 z-20 bg-sand-soft/92 px-4 pb-3 pt-2.5 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-5 after:bg-gradient-to-b after:from-sand-soft/85 after:to-transparent sm:static sm:rounded-[22px] sm:px-5 sm:py-4 sm:shadow-[0_1px_2px_rgba(15,37,43,0.03),0_10px_28px_-18px_rgba(15,37,43,0.18)] sm:after:hidden">
         <div className="flex items-center gap-2">
+          {/* The place being searched near is whatever the visitor typed, so
+              recordings blank it and autocapture never reads it (MASK_CLASS).
+              Screen readers get it from the text, not an aria-label, because
+              autocapture keeps attributes. */}
           <Link
             href="/"
-            className="flex min-h-[46px] min-w-0 flex-1 items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition active:scale-[0.99] hover:shadow-[0_2px_4px_rgba(15,37,43,0.05),0_10px_22px_-12px_rgba(15,37,43,0.24)] sm:flex-none sm:pr-4"
-            aria-label={`Searching near ${label}. Change location`}
+            className={`${MASK_CLASS} flex min-h-[46px] min-w-0 flex-1 items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[0_1px_2px_rgba(15,37,43,0.04),0_6px_16px_-10px_rgba(15,37,43,0.18)] transition active:scale-[0.99] hover:shadow-[0_2px_4px_rgba(15,37,43,0.05),0_10px_22px_-12px_rgba(15,37,43,0.24)] sm:flex-none sm:pr-4`}
           >
             <MapPinIcon className="h-4 w-4 shrink-0 text-accent-ink" aria-hidden="true" />
             <span className="min-w-0 flex-1">
@@ -343,6 +347,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
                 Halal food near
               </span>
               <span className="mt-0.5 block truncate text-[15px] font-semibold leading-tight text-ink">{label}</span>
+              <span className="sr-only">. Change location</span>
             </span>
             <SearchIcon className="h-4 w-4 shrink-0 text-subtle" aria-hidden="true" />
           </Link>
@@ -540,7 +545,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
           {!loading && totalCount === 0 && filtered && (
             <div className="rounded-2xl border border-dashed border-black/10 px-6 py-12 text-center">
               <MapPinIcon className="mx-auto h-8 w-8 text-subtle" aria-hidden="true" />
-              <p className="mt-3 font-display text-base font-semibold text-ink">
+              <p className={`${MASK_CLASS} mt-3 font-display text-base font-semibold text-ink`}>
                 {query ? `Nothing matching “${query}” within ${radiusLabel}` : 'No matches for these filters'}
               </p>
               <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
@@ -596,7 +601,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
                             <span className="block truncate text-sm font-semibold text-ink">{area.label}</span>
                             <span className="block truncate text-xs text-muted">
                               {area.outcode} · {area.places} {area.places === 1 ? 'place' : 'places'} ·{' '}
-                              {(area.distance_meters / 1609.34).toFixed(1)} mi away
+                              <span className={MASK_CLASS}>{(area.distance_meters / 1609.34).toFixed(1)} mi away</span>
                             </span>
                           </span>
                           <ArrowRightIcon className="h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" aria-hidden="true" />
@@ -723,7 +728,7 @@ export function SearchView({ lat, lng, mode, label, initial }: SearchViewProps) 
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">Somewhere to pray</p>
                   <p className="mt-0.5 font-display text-base font-semibold text-ink">{prayerPick.name}</p>
-                  <p className="mt-0.5 text-[13px] text-muted">
+                  <p className={`${MASK_CLASS} mt-0.5 text-[13px] text-muted`}>
                     {formatMetres(prayerPick.distance_meters)} from the middle of this search · about{' '}
                     {walkingMinutes(prayerPick.distance_meters)} min walk
                   </p>

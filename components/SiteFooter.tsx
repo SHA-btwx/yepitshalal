@@ -121,6 +121,13 @@ export function SiteFooter() {
                     Privacy
                   </Link>
                 </li>
+                {/* Saying no to a recording has to be as easy as saying yes, so
+                    the answer can be changed from every page. */}
+                <li>
+                  <Link href="/privacy#recordings" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
+                    Recordings
+                  </Link>
+                </li>
                 <li>
                   <Link href="/terms" className="inline-flex min-h-[40px] items-center text-muted transition-colors hover:text-ink sm:min-h-[32px]">
                     Terms

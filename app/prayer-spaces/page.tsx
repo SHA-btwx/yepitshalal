@@ -21,6 +21,7 @@ import { Reveal } from '@/components/Reveal';
 import { inlineLink, noteWarm, panel } from '@/components/prose';
 import { PRAYER_ROOM } from '@/lib/media';
 import { FocusOnArrive } from '@/components/FocusOnArrive';
+import { MASK_CLASS } from '@/lib/analytics/scrub';
 
 export const revalidate = 3600;
 
@@ -48,6 +49,8 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
   const lng = Number(searchParams.lng);
   const hasPoint = Number.isFinite(lat) && Number.isFinite(lng);
   const label = searchParams.label?.slice(0, 80);
+  // The place the visitor searched from, which recordings blank (MASK_CLASS).
+  const near = label && label !== 'you' ? <span className={MASK_CLASS}>{label}</span> : 'you';
 
   const [total, withHours, boroughs, nearby, areas] = await Promise.all([
     countPrayerSpaces(),
@@ -81,7 +84,7 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
         <>
           <PageHero
             titleId="near-title"
-            title={nearby.length ? (label && label !== 'you' ? `Mosques near ${label}` : 'Mosques near you') : `Nothing found near ${label ?? 'you'}`}
+            title={nearby.length ? <>Mosques near {near}</> : <>Nothing found near {near}</>}
             lede={
               nearby.length
                 ? `The ${nearby.length} nearest, closest first, with roughly how long each is to walk.`
@@ -130,12 +133,12 @@ export default async function PrayerSpacesPage({ searchParams }: Props) {
                 <li key={s.id} className="animate-fade-up px-4 py-3" style={{ animationDelay: `${Math.min(i, 8) * 55}ms` }}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
                     <p className="font-display text-[15px] font-semibold text-ink">{s.name}</p>
-                    <p className="text-[13px] font-semibold text-accent-ink">
+                    <p className={`${MASK_CLASS} text-[13px] font-semibold text-accent-ink`}>
                       about {walkingMinutes(s.distance_meters)} min walk
                     </p>
                   </div>
                   <p className="mt-0.5 text-[13px] text-muted">
-                    {formatMetres(s.distance_meters)}
+                    <span className={MASK_CLASS}>{formatMetres(s.distance_meters)}</span>
                     {s.address ? ` · ${s.address}` : s.postcode ? ` · ${s.postcode}` : ''}
                     {s.borough ? ` · ${s.borough}` : ''}
                   </p>

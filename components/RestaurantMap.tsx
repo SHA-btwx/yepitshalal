@@ -8,6 +8,7 @@ import type { SearchResultRestaurant } from '@/lib/types';
 import { circleBounds, circlePolygon } from '@/lib/geo';
 import { HALAL_DOT_COLOR, HALAL_PIN_LABEL } from './halalColors';
 import { statusOf } from '@/lib/types';
+import { UNRECORDED_CLASS } from '@/lib/analytics/scrub';
 
 // The only thing this component knows is "MapLibre + a style URL." Swapping
 // tile providers later is a change to NEXT_PUBLIC_MAP_STYLE_URL, nothing here.
@@ -334,8 +335,10 @@ export function RestaurantMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prayerSpaces]);
 
+  // The map is drawn around the place someone searched from, so recordings
+  // show it as an empty box (lib/analytics/scrub.ts).
   return (
-    <div className="relative h-full w-full">
+    <div className={`${UNRECORDED_CLASS} relative h-full w-full`}>
       <div ref={containerRef} className="h-full w-full" />
       {basemapFailed && (
         <p className="pointer-events-none absolute inset-x-3 bottom-8 z-10 mx-auto w-fit rounded-full bg-ink/85 px-3.5 py-1.5 text-center text-xs font-medium text-white shadow-lg backdrop-blur">

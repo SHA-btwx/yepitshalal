@@ -10,6 +10,7 @@ import { getOpenStatus } from '@/lib/openingStatus';
 import { coverFor } from '@/lib/representativeImages';
 import { isBusinessLogo, isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
 import { whyListed } from '@/lib/whyListed';
+import { MASK_CLASS } from '@/lib/analytics/scrub';
 
 function formatDistance(meters: number): string {
   const miles = meters / 1609.34;
@@ -95,7 +96,8 @@ export function RestaurantCard({
         </h3>
 
         <p className="mt-1 truncate text-[13px] leading-snug text-muted">
-          <span className="font-semibold text-ink/75">{distance}</span>
+          {/* Measured from where the visitor searched (MASK_CLASS). */}
+          <span className={`${MASK_CLASS} font-semibold text-ink/75`}>{distance}</span>
           {restaurant.branch_label && (
             <>
               <span className="mx-1.5 text-black/20" aria-hidden="true">•</span>

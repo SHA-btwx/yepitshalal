@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { PageHero } from '@/components/PageHero';
 import { PageBody } from '@/components/PageLayout';
 import { inlineLink, noteWarm, sectionTitle } from '@/components/prose';
+import { RecordingChoice } from '@/components/RecordingChoice';
 import { CONTACT_EMAIL } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -29,12 +30,18 @@ export const metadata: Metadata = {
  * trading address and registration number. That registration produces exactly
  * those details, which is why they are not guessed at here.
  *
- * The PostHog row, and the PostHog paragraph under Cookies, describe
- * lib/analytics/: the PostHog config and the scrubber every event passes
- * through before it is sent. If either changes, so do they. "How fast pages
- * load" is the web vitals setting in that config. "It does not keep your IP
- * address" rests on cookieless server hash mode, which strips the IP before
- * anything is stored, so that switch in PostHog has to stay on.
+ * The PostHog row, the PostHog paragraph under Cookies and the Recordings
+ * section describe lib/analytics/: the PostHog config, and the scrubber every
+ * event and every recording passes through. If either changes, so do they.
+ * "How fast pages load" is the web vitals setting there, "where people tap
+ * and how far they scroll" is heatmaps, and recording starts only after a yes
+ * in components/RecordingConsent.tsx. "It does not keep your IP address"
+ * rests on cookieless server hash mode, which strips the IP before anything
+ * is stored, so that switch in PostHog has to stay on. "30 days" is the free
+ * plan's limit for keeping recordings. "Where you are" under Recordings, and
+ * "never gets your exact location" under Cookies, rest on MASK_CLASS around
+ * the searched place and every distance from it, UNRECORDED_CLASS on the
+ * map, and autocapture leaving out each map pin's style.
  */
 
 const COLLECTED: [string, string, string][] = [
@@ -68,12 +75,17 @@ const COLLECTED: [string, string, string][] = [
     'Only if you manage a restaurant listing and choose to add pictures of it.',
     'Kept while the listing shows them.',
   ],
+  [
+    'A recording of your visit',
+    'Only if you say yes when we ask. It shows where you clicked, tapped and scrolled, and what the pages looked like, so we can see what is hard to use. It never shows what you type, the place you search near, or pages with your own details.',
+    'Kept for 30 days, then deleted.',
+  ],
 ];
 
 const PROCESSORS: [string, string, string][] = [
   ['Supabase', 'Database, sign in, and photo storage.', 'https://supabase.com/privacy'],
   ['Vercel', 'Hosting, and privacy friendly visitor analytics.', 'https://vercel.com/legal/privacy-policy'],
-  ['PostHog', 'Counting which pages and buttons get used, timing how fast pages load, and spotting pages that break. No cookies. Its servers are in the EU.', 'https://posthog.com/privacy'],
+  ['PostHog', 'Counting which pages and buttons get used, seeing where people tap and scroll, timing how fast pages load, and spotting pages that break. If you say yes, it also records your visit. Its servers are in the EU.', 'https://posthog.com/privacy'],
   ['Stripe', 'Payments, if you support us or buy a priority verification.', 'https://stripe.com/gb/privacy'],
   ['Resend', 'Delivering what you send through a form on this site to our own inbox, so a person reads it.', 'https://resend.com/legal/privacy-policy'],
 ];
@@ -102,7 +114,7 @@ export default function PrivacyPage() {
           Search, the map, every restaurant page and the prayer spaces work signed out.
           When you search near yourself, your location is sent to our server to find what
           is nearby and is then thrown away. We do not store it, and we do not build a
-          history of where you have searched.
+          history of where you have searched. We only record a visit if you say yes.
         </p>
       </div>
 
@@ -126,7 +138,8 @@ export default function PrivacyPage() {
         <li>
           <span className="font-medium text-ink">Because you asked us to.</span> Signing in,
           submitting a restaurant, asking for a language, asking to be told when we reach
-          your area. Consent, and you can withdraw it at any time.
+          your area, saying yes to a recording. Consent, and you can withdraw it at any
+          time.
         </li>
         <li>
           <span className="font-medium text-ink">Because we have a contract with you.</span>{' '}
@@ -137,29 +150,54 @@ export default function PrivacyPage() {
             Because we have a legitimate interest.
           </span>{' '}
           Hashing an IP address, to stop the forms being flooded. Counting visits and
-          button taps, so we know which pages are worth keeping. Timing how fast pages
-          load, so we can make slow ones faster. Hearing when a page breaks, so we can
-          fix it. Each is the gentlest way we could think of to do it.
+          button taps, so we know which pages are worth keeping. Seeing where people tap
+          and how far they scroll, added up across everyone, so we know what to fix.
+          Timing how fast pages load, so we can make slow ones faster. Hearing when a page
+          breaks, so we can fix it. Each is the gentlest way we could think of to do it.
         </li>
       </ul>
 
       <h2 className={`mt-12 ${sectionTitle}`}>Cookies</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        We do not use advertising or tracking cookies, and there is no cookie banner
-        because there is nothing to ask you about. Our visitor analytics, from Vercel,
-        does not use cookies and does not follow you between sites. If you sign in,
-        Supabase sets a cookie that keeps you signed in. That is the only one, and it is
-        there because you asked to be signed in.
+        We do not use advertising or tracking cookies. Our visitor analytics, from
+        Vercel, does not use cookies and does not follow you between sites. If you sign
+        in, Supabase sets a cookie that keeps you signed in, because you asked to be
+        signed in.
       </p>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        PostHog counts which pages and buttons get used. It times how fast each page
-        loads, and it tells us when a page breaks. It sets no cookies, and it stores
-        nothing on your device. To tell one
-        visit from another, it makes a code from your IP address and your browser. The
-        code changes every day. Nobody can turn it back into your IP address or your
-        browser, and PostHog does not keep your IP address. It never gets your exact
-        location, your full postcode, or your email address.
+        PostHog counts which pages and buttons get used, and sees where people tap and
+        how far they scroll. It times how fast each page loads, and it tells us when a
+        page breaks. For all of that it sets no cookies and stores nothing on your
+        device. To tell one visit from another, it makes a code from your IP address and
+        your browser. The code changes every day. Nobody can turn it back into your IP
+        address or your browser, and PostHog does not keep your IP address. It never
+        gets your exact location, your full postcode, or your email address.
       </p>
+      <p className="mt-3 text-sm leading-relaxed text-muted">
+        The one thing we ask about is recording your visit, below. Whatever you answer,
+        your browser remembers it, so we do not ask again.
+      </p>
+
+      <h2 id="recordings" className={`mt-12 scroll-mt-24 ${sectionTitle}`}>Recordings</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
+        We ask before we record a visit. A recording shows where someone clicked, tapped
+        and scrolled, and what the pages looked like. We watch them to find what is hard
+        to use, so we can fix it.
+      </p>
+      <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
+        <li>
+          What you type is hidden. So is anything on the page that shows where you are:
+          the place you search near, how far things are from it, and the map.
+        </li>
+        <li>Pages with your own details, like your account, show as an empty box.</li>
+        <li>
+          If you say yes, PostHog keeps a small note in your browser, so the pages of your
+          visit join up. It goes when you close the tab, or as soon as you say no.
+        </li>
+        <li>PostHog keeps each recording for 30 days, then deletes it.</li>
+        <li>You can change your answer here at any time. Saying no stops the recording.</li>
+      </ul>
+      <RecordingChoice />
 
       <h2 className={`mt-12 ${sectionTitle}`}>Who else sees it</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">

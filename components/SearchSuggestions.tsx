@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { HalalBadge } from './HalalBadge';
 import { MapPinIcon, MapIcon, NavigationIcon, SearchIcon, ForkKnifeIcon } from './icons';
 import type { HalalStatus } from '@/lib/types';
+import { MASK_CLASS } from '@/lib/analytics/scrub';
 
 export interface LocationItem {
   kind: 'postcode' | 'outcode' | 'place' | 'borough' | 'street' | 'station' | 'landmark';
@@ -112,7 +113,7 @@ export function SuggestionPanel({
         </p>
       )}
       {items.length === 0 ? (
-        <p role="status" className="px-4 py-3.5 text-sm text-muted">
+        <p role="status" className={`${MASK_CLASS} px-4 py-3.5 text-sm text-muted`}>
           {loading
             ? 'Looking…'
             : `Nothing matching “${query}”. Try a postcode, area, street or restaurant name.`}
@@ -122,7 +123,7 @@ export function SuggestionPanel({
           id={listId}
           role="listbox"
           aria-label="Search suggestions"
-          className="max-h-[min(60vh,26rem)] overflow-y-auto py-1.5"
+          className={`${MASK_CLASS} max-h-[min(60vh,26rem)] overflow-y-auto py-1.5`}
         >
           {locations.length > 0 && <GroupHeading>Places</GroupHeading>}
           {locations.map((item) => {

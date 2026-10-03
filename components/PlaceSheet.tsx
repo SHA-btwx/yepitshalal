@@ -14,6 +14,7 @@ import { tidyAddress } from '@/lib/address';
 import { isStockPhoto, statusOf, type SearchResultRestaurant } from '@/lib/types';
 import { whyListed } from '@/lib/whyListed';
 import type { PlacePreview } from '@/lib/placePreview';
+import { MASK_CLASS } from '@/lib/analytics/scrub';
 import {
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -216,7 +217,8 @@ export function PlaceSheet({
           </h2>
 
           <p className="mt-1 text-[13px] text-muted">
-            <span className="font-medium text-ink/75">{distance}</span>
+            {/* Measured from where the visitor searched (MASK_CLASS). */}
+            <span className={`${MASK_CLASS} font-medium text-ink/75`}>{distance}</span>
             {restaurant.branch_label && <> · {restaurant.branch_label}</>}
             {cuisine && <> · {cuisine}</>}
           </p>

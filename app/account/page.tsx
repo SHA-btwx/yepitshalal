@@ -9,6 +9,7 @@ import { PageHero } from '@/components/PageHero';
 import { pageShell, panel } from '@/components/prose';
 import { ctaPrimary, ctaSecondary } from '@/components/cta';
 import { Free } from '@/components/Free';
+import { BLOCK_CLASS } from '@/lib/analytics/scrub';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,8 +42,10 @@ export default async function AccountPage() {
     isActive ? supabase.rpc('area_vote_tally') : Promise.resolve({ data: null }),
   ]);
 
+  // Your email address and your area votes: session recordings show the
+  // whole page as an empty box (BLOCK_CLASS in lib/analytics/scrub.ts).
   return (
-    <>
+    <div className={BLOCK_CLASS}>
     <PageHero tone="sand" title="Your account" lede={user.email} />
     <div className={`${pageShell} pb-4 pt-10 sm:pt-12`}>
     <div className="max-w-md">
@@ -99,6 +102,6 @@ export default async function AccountPage() {
       )}
     </div>
     </div>
-    </>
+    </div>
   );
 }

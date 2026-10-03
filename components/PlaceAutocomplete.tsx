@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import type { PlaceSuggestion } from '@/app/api/places/suggest/route';
+import { MASK_CLASS } from '@/lib/analytics/scrub';
 
 // The "which city?" field, with suggestions, so the answers can be counted.
 //
@@ -156,7 +157,7 @@ export function PlaceAutocomplete({
 
       {/* Announced without stealing focus, so a screen reader hears that
           options appeared rather than being dropped into them. */}
-      <span aria-live="polite" className="sr-only">
+      <span aria-live="polite" className={`${MASK_CLASS} sr-only`}>
         {showList ? `${results.length} ${results.length === 1 ? 'place' : 'places'} found` : ''}
       </span>
 
@@ -165,7 +166,7 @@ export function PlaceAutocomplete({
           id={listId}
           role="listbox"
           aria-label={label}
-          className="absolute z-40 mt-1.5 max-h-64 w-full overflow-auto rounded-2xl bg-white py-1.5 text-start shadow-[0_8px_30px_rgba(15,37,43,0.18)] ring-1 ring-black/10"
+          className={`${MASK_CLASS} absolute z-40 mt-1.5 max-h-64 w-full overflow-auto rounded-2xl bg-white py-1.5 text-start shadow-[0_8px_30px_rgba(15,37,43,0.18)] ring-1 ring-black/10`}
         >
           {results.map((r, i) => (
             <li
