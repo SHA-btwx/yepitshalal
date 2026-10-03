@@ -26,7 +26,8 @@ export function AdminPage({
   title: string;
   description?: React.ReactNode;
   action?: React.ReactNode;
-  width?: 'sm' | 'md' | 'lg';
+  /** `xl` is the dashboard's width: room for charts side by side. */
+  width?: 'sm' | 'md' | 'lg' | 'xl';
   children: React.ReactNode;
 }) {
   return (
@@ -35,7 +36,8 @@ export function AdminPage({
         'mx-auto px-4 py-8 sm:px-6 sm:py-10',
         width === 'sm' && 'max-w-xl',
         width === 'md' && 'max-w-2xl',
-        width === 'lg' && 'max-w-3xl'
+        width === 'lg' && 'max-w-3xl',
+        width === 'xl' && 'max-w-6xl lg:px-8'
       )}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">

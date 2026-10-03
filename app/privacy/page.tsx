@@ -55,7 +55,7 @@ const COLLECTED: [string, string, string][] = [
   ],
   [
     'What you write to us',
-    'Feedback, language requests, restaurant details you submit, and anything you send about your own restaurant.',
+    'Feedback, language requests, restaurant details you submit, and anything you send about your own restaurant. If we write back, we keep a copy of our reply with it.',
     'Kept for two years, so we can see whether we fixed the thing you told us about.',
   ],
   [
@@ -90,7 +90,7 @@ const PROCESSORS: [string, string, string][] = [
   ['Vercel', 'Hosting, and privacy friendly visitor analytics.', 'https://vercel.com/legal/privacy-policy'],
   ['PostHog', 'Counting which pages and buttons get used, seeing where people tap and scroll, timing how fast pages load, and spotting pages that break. If you say yes, it also records your visit. Its servers are in the EU.', 'https://posthog.com/privacy'],
   ['Stripe', 'Payments, if you support us or buy a priority verification.', 'https://stripe.com/gb/privacy'],
-  ['Resend', 'Delivering what you send through a form on this site to our own inbox, so a person reads it.', 'https://resend.com/legal/privacy-policy'],
+  ['Resend', 'Delivering what you send through a form on this site to our own inbox, so a person reads it, and sending our reply back to you. It does not track whether you open it.', 'https://resend.com/legal/privacy-policy'],
 ];
 
 const RIGHTS = [

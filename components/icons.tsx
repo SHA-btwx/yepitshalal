@@ -390,3 +390,72 @@ export function HalalNotCheckedMark({ className = 'h-4 w-4' }: { className?: str
     </svg>
   );
 }
+
+// Added for the admin dashboard, drawn to the same 24px grid and stroke.
+
+export function GridIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+    </Svg>
+  );
+}
+
+export function InboxIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M3 13H7.5L9 15.5H15L16.5 13H21" />
+      <path d="M3 13L5.5 5.6C5.8 4.7 6.6 4 7.6 4H16.4C17.4 4 18.2 4.7 18.5 5.6L21 13V18C21 19.1 20.1 20 19 20H5C3.9 20 3 19.1 3 18V13Z" />
+    </Svg>
+  );
+}
+
+export function ChartIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M4 4V20H20" />
+      <path d="M8 15L11.5 10.5L14.5 13L19 7" />
+    </Svg>
+  );
+}
+
+export function ReplyIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M9.5 14L4.5 9L9.5 4" />
+      <path d="M4.5 9H14C17.04 9 19.5 11.46 19.5 14.5C19.5 17.54 17.04 20 14 20H11" />
+    </Svg>
+  );
+}
+
+export function ArchiveIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3" y="4" width="18" height="4.5" rx="1.2" />
+      <path d="M5 8.5V18C5 19.1 5.9 20 7 20H17C18.1 20 19 19.1 19 18V8.5" />
+      <path d="M10 12.5H14" />
+    </Svg>
+  );
+}
+
+export function MenuIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M4 7H20" />
+      <path d="M4 12H20" />
+      <path d="M4 17H20" />
+    </Svg>
+  );
+}
+
+export function ArrowLeftIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M19 12H5" />
+      <path d="M11 6L5 12L11 18" />
+    </Svg>
+  );
+}

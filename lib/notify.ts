@@ -41,7 +41,7 @@ function present(value: Value): string | null {
   return s ? s : null;
 }
 
-function escapeHtml(s: string): string {
+export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
@@ -78,10 +78,70 @@ function renderHtml(n: Notice, rows: [string, string][]): string {
   );
 }
 
-export async function notifyInbox(n: Notice): Promise<NotifyResult> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return 'not_configured';
+/** What Resend needs for one email. Addresses are already validated by the caller. */
+export interface OutgoingEmail {
+  from: string;
+  to: string[];
+  subject: string;
+  text: string;
+  html: string;
+  replyTo?: string;
+  bcc?: string[];
+}
 
+export type SendResult =
+  | { ok: true; id: string | null }
+  | { ok: false; reason: 'not_configured' | 'failed'; detail?: string };
+
+/** True when a Resend key is set, so the admin can say so before anyone types a reply. */
+export function emailConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY);
+}
+
+/**
+ * One email through Resend's HTTP API. Form alerts and admin replies both come
+ * through here. An idempotency key makes a double click, or a retry after a
+ * timeout, send once: Resend keeps the key for 24 hours and answers a repeat
+ * with the first result instead of a second email.
+ */
+export async function sendThroughResend(
+  email: OutgoingEmail,
+  options: { idempotencyKey?: string; timeoutMs?: number } = {}
+): Promise<SendResult> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, reason: 'not_configured' };
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        ...(options.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}),
+      },
+      body: JSON.stringify({
+        from: email.from,
+        to: email.to,
+        subject: email.subject.slice(0, 200),
+        text: email.text,
+        html: email.html,
+        ...(email.replyTo ? { reply_to: email.replyTo } : {}),
+        ...(email.bcc?.length ? { bcc: email.bcc } : {}),
+      }),
+      signal: AbortSignal.timeout(options.timeoutMs ?? 5000),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      return { ok: false, reason: 'failed', detail: body?.message ?? `Resend answered ${res.status}` };
+    }
+    const body = (await res.json().catch(() => null)) as { id?: string } | null;
+    return { ok: true, id: body?.id ?? null };
+  } catch (e) {
+    return { ok: false, reason: 'failed', detail: (e as Error).name === 'TimeoutError' ? 'Resend did not answer in time' : undefined };
+  }
+}
+
+export async function notifyInbox(n: Notice): Promise<NotifyResult> {
   const rows = n.fields
     .map(([label, value]) => [label, present(value)] as const)
     .filter((r): r is readonly [string, string] => r[1] !== null)
@@ -89,22 +149,14 @@ export async function notifyInbox(n: Notice): Promise<NotifyResult> {
 
   const replyTo = n.replyTo && EMAIL.test(n.replyTo) ? n.replyTo : undefined;
 
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: process.env.NOTIFY_FROM_EMAIL || DEFAULT_FROM,
-        to: [INBOX[n.inbox]],
-        subject: n.subject.slice(0, 200),
-        text: renderText(n, rows),
-        html: renderHtml(n, rows),
-        ...(replyTo ? { reply_to: replyTo } : {}),
-      }),
-      signal: AbortSignal.timeout(5000),
-    });
-    return res.ok ? 'sent' : 'failed';
-  } catch {
-    return 'failed';
-  }
+  const result = await sendThroughResend({
+    from: process.env.NOTIFY_FROM_EMAIL || DEFAULT_FROM,
+    to: [INBOX[n.inbox]],
+    subject: n.subject,
+    text: renderText(n, rows),
+    html: renderHtml(n, rows),
+    replyTo,
+  });
+  if (result.ok) return 'sent';
+  return result.reason;
 }
