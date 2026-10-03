@@ -16,6 +16,8 @@ import { ReelShowcase } from '@/components/ReelShowcase';
 import { OwnershipCta } from '@/components/OwnershipCta';
 import { OpeningHoursList } from '@/components/OpeningHoursList';
 import { OffersList } from '@/components/OffersList';
+import { DealCard } from '@/components/deals/DealCard';
+import { getClaimableDeal } from '@/lib/deals/data';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { ShareButton } from '@/components/ShareButton';
 import { placeTitle as displayTitle, statusFor, summaryFor } from '@/lib/halalPages';
@@ -95,11 +97,12 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
   const restaurant = await getRestaurantBySlug(params.slug);
   if (!restaurant) notFound();
 
-  const [reels, partner, nearby, prayerSpaces] = await Promise.all([
+  const [reels, partner, nearby, prayerSpaces, deal] = await Promise.all([
     getPublishedReels(restaurant.id),
     isActivePartner(restaurant.id),
     getNearbyWithEvidence(restaurant),
     getNearestPrayerSpaces(restaurant.lat, restaurant.lng, 3),
+    getClaimableDeal(restaurant.id),
   ]);
 
   const title = displayTitle(restaurant);
@@ -302,6 +305,10 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
           facilityAt={restaurant.prayerFacilityAt}
         />
       </div>
+
+      {/* The restaurant's own deal, under the halal answer, never above it. A
+          closed place takes no claims (claim_deal checks too). */}
+      {deal && !closed && <DealCard deal={deal} label={status} />}
 
       {restaurant.description && (
         <p className="mt-5 max-w-2xl text-pretty text-[15px] leading-relaxed text-ink/80">{restaurant.description}</p>

@@ -3,6 +3,8 @@ import Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { addWorkingHours } from '@/lib/workingHours';
+import { handleDealCheckout, handleDealRefund, isDealCheckout } from '@/lib/deals/stripe-events';
+import { dealsDb } from '@/lib/deals/db';
 
 // This is the ONLY place `subscriptions` is ever written from the Stripe side.
 // search_restaurants() and offers_public read that table directly, never Stripe,
@@ -28,10 +30,25 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminSupabase();
+  const deals = dealsDb();
+  const rpc = (fn: string, args: Record<string, unknown>) => deals.rpc(fn, args);
 
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Deal credit. Unlike the branches below, a failure here answers 500 so
+      // Stripe sends the event again: the database posts it once however
+      // many times it arrives.
+      if (isDealCheckout(session)) {
+        try {
+          await handleDealCheckout(session, rpc);
+        } catch (e) {
+          console.error('[stripe] deal top up', (e as Error).message);
+          return NextResponse.json({ error: 'Could not record the top up.' }, { status: 500 });
+        }
+        break;
+      }
 
       if (session.mode === 'subscription') {
         const userId = session.metadata?.yepitshalal_user_id || session.client_reference_id;
@@ -85,6 +102,16 @@ export async function POST(request: Request) {
     // decision back into our own records once it happens.
     case 'charge.refunded': {
       const charge = event.data.object as Stripe.Charge;
+      // A refunded deal top up takes that credit back (see lib/deals).
+      if (charge.metadata?.yepitshalal_type === 'deal_credit') {
+        try {
+          await handleDealRefund(charge, rpc);
+        } catch (e) {
+          console.error('[stripe] deal refund', (e as Error).message);
+          return NextResponse.json({ error: 'Could not record the refund.' }, { status: 500 });
+        }
+        break;
+      }
       if (typeof charge.payment_intent === 'string') {
         const session = await stripe.checkout.sessions
           .list({ payment_intent: charge.payment_intent, limit: 1 })

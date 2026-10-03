@@ -10,6 +10,7 @@ import { pageShell, panel } from '@/components/prose';
 import { ctaPrimary, ctaSecondary } from '@/components/cta';
 import { Free } from '@/components/Free';
 import { BLOCK_CLASS } from '@/lib/analytics/scrub';
+import { getOwnedRestaurants } from '@/lib/deals/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,9 +38,10 @@ export default async function AccountPage() {
 
   // Only supporters can vote, so only they are asked to. The standings are the
   // same for everyone, counted by the database, not by this page.
-  const [areas, { data: tally }] = await Promise.all([
+  const [areas, { data: tally }, owned] = await Promise.all([
     isActive ? getAreas() : Promise.resolve([]),
     isActive ? supabase.rpc('area_vote_tally') : Promise.resolve({ data: null }),
+    getOwnedRestaurants(user.id).catch(() => []),
   ]);
 
   // Your email address and your area votes: session recordings show the
@@ -49,6 +51,17 @@ export default async function AccountPage() {
     <PageHero tone="sand" title="Your account" lede={user.email} />
     <div className={`${pageShell} pb-4 pt-10 sm:pt-12`}>
     <div className="max-w-md">
+      {owned.length > 0 && (
+        <Link href="/manage" className={`${panel} mb-4 flex items-center justify-between gap-3 p-5 transition hover:border-ink/15 sm:p-6`}>
+          <span>
+            <span className="block font-display text-base font-semibold text-ink">
+              {owned.length === 1 ? 'Your restaurant' : `Your ${owned.length} restaurants`}
+            </span>
+            <span className="mt-0.5 block text-sm text-muted">Your deal, reels and poster.</span>
+          </span>
+          <SparkleIcon className="h-5 w-5 shrink-0 text-accent-ink" />
+        </Link>
+      )}
       <div className={`${panel} p-5 sm:p-6`}>
         {isActive ? (
           <>

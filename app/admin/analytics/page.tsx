@@ -29,6 +29,8 @@ export const metadata = { title: 'Analytics' };
 // The site's own events, in words. An event not listed here shows its name.
 const EVENT_LABELS: Record<string, string> = {
   recording_choice: 'Answered the recording question',
+  deal_claimed: 'Got a deal code',
+  deal_redeemed: 'Had a deal confirmed by staff',
   location_search_submitted: 'Searched for a place',
   current_location_search_requested: 'Searched near where they are',
   restaurant_share_initiated: 'Shared a restaurant',

@@ -25,6 +25,8 @@ export const metadata: Metadata = {
  *   /api/founders             founder_applications
  *   /api/verification-requests
  *   Supabase Auth             magic link, email only
+ *   /api/deals/*              deal_claims, deal_pin_attempts, the yih_device cookie
+ *   /manage/[slug]/deals      deals, deal_ledger (restaurant owners)
  *
  * Still to add once ICO registration is done: the registered entity name,
  * trading address and registration number. That registration produces exactly
@@ -74,6 +76,16 @@ const COLLECTED: [string, string, string][] = [
     'Kept while your support is active, then as long as tax rules require.',
   ],
   [
+    'A deal code',
+    'Only if you tap "Get my code" on a restaurant deal. We keep the code, when you got it and used it, and anything you tell us if the restaurant did not give you the deal. We also keep a random number your phone holds in a cookie, so the code only works on your phone and a deal is used once a day. That number does not say who you are.',
+    'The link to your phone is removed after 400 days. Staff PIN tries are removed after 90 days.',
+  ],
+  [
+    'If you run a restaurant deal',
+    'Your email, the deal you set up, when you agreed to the deal terms, and every credit, fee and top up. Card top ups are handled by Stripe. We never see your card.',
+    'Kept while your deal runs, then as long as tax rules require.',
+  ],
+  [
     'Photographs you upload',
     'Only if you manage a restaurant listing and choose to add pictures of it.',
     'Kept while the listing shows them.',
@@ -89,7 +101,7 @@ const PROCESSORS: [string, string, string][] = [
   ['Supabase', 'Database, sign in, and photo storage.', 'https://supabase.com/privacy'],
   ['Vercel', 'Hosting, and privacy friendly visitor analytics.', 'https://vercel.com/legal/privacy-policy'],
   ['PostHog', 'Counting which pages and buttons get used, seeing where people tap and scroll, timing how fast pages load, and spotting pages that break. If you say yes, it also records your visit. Its servers are in the EU.', 'https://posthog.com/privacy'],
-  ['Stripe', 'Payments, if you support us or buy a priority verification.', 'https://stripe.com/gb/privacy'],
+  ['Stripe', 'Payments, if you support us, buy a priority verification, or top up deal credit.', 'https://stripe.com/gb/privacy'],
   ['Resend', 'Delivering what you send through a form on this site to our own inbox, so a person reads it, and sending our reply back to you. It does not track whether you open it.', 'https://resend.com/legal/privacy-policy'],
 ];
 
@@ -146,7 +158,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           <span className="font-medium text-ink">Because we have a contract with you.</span>{' '}
-          Supporting us, or buying a priority verification.
+          Supporting us, buying a priority verification, getting a deal code, or running a
+          deal for your restaurant.
         </li>
         <li>
           <span className="font-medium text-ink">
@@ -166,6 +179,11 @@ export default function PrivacyPage() {
         Vercel, does not use cookies and does not follow you between sites. If you sign
         in, Supabase sets a cookie that keeps you signed in, because you asked to be
         signed in.
+      </p>
+      <p className="mt-3 text-sm leading-relaxed text-muted">
+        If you tap &ldquo;Get my code&rdquo; on a restaurant deal, we set one more cookie.
+        It holds a random number, so your code only works on your phone. The deal needs
+        it to work. It does not follow you to other sites, and it goes after 400 days.
       </p>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         PostHog counts which pages and buttons get used, and sees where people tap and

@@ -21,6 +21,7 @@ import {
   ChartIcon,
   MenuIcon,
   XIcon,
+  TicketIcon,
 } from '../icons';
 
 // The admin's map. It used to be one row of fourteen tabs that scrolled
@@ -33,6 +34,7 @@ export interface NavCounts {
   submissions: number;
   checks: number;
   claims: number;
+  deals: number;
 }
 
 type Item = {
@@ -72,6 +74,10 @@ const GROUPS: { title: string | null; items: Item[] }[] = [
       { href: '/admin/offers', label: 'Offers', Icon: SparkleIcon },
       { href: '/admin/reels', label: 'Reels', Icon: MapIcon },
     ],
+  },
+  {
+    title: 'Deals',
+    items: [{ href: '/admin/deals', label: 'Deals and credit', Icon: TicketIcon, count: 'deals' }],
   },
   {
     title: 'People',
@@ -143,7 +149,7 @@ export function AdminNav({ counts }: { counts: NavCounts }) {
   const pathname = usePathname() ?? '';
   const [open, setOpen] = useState(false);
   const current = ALL.find((i) => isActive(i, pathname)) ?? ALL[0];
-  const waiting = counts.messages + counts.submissions + counts.checks + counts.claims;
+  const waiting = counts.messages + counts.submissions + counts.checks + counts.claims + counts.deals;
 
   useEffect(() => setOpen(false), [pathname]);
 

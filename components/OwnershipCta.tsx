@@ -32,14 +32,14 @@ export async function OwnershipCta({
   if (user && restaurant?.owner_id === user.id) {
     return (
       <Link
-        href={`/manage/${slug}`}
+        href={`/manage/${slug}/deals`}
         className="group flex items-center justify-between gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
       >
         <span>
           <span className="block font-display text-base font-semibold text-ink">
             You manage this restaurant
           </span>
-          <span className="mt-0.5 block text-sm text-muted">Add reels, update details.</span>
+          <span className="mt-0.5 block text-sm text-muted">Your deal, reels and poster.</span>
         </span>
         <ArrowRightIcon className="h-5 w-5 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" />
       </Link>

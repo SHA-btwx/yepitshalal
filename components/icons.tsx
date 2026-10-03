@@ -459,3 +459,14 @@ export function ArrowLeftIcon(p: IconProps) {
     </Svg>
   );
 }
+
+export function TicketIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M4 7C4 5.9 4.9 5 6 5H18C19.1 5 20 5.9 20 7V9.5C18.6 9.5 17.5 10.6 17.5 12C17.5 13.4 18.6 14.5 20 14.5V17C20 18.1 19.1 19 18 19H6C4.9 19 4 18.1 4 17V14.5C5.4 14.5 6.5 13.4 6.5 12C6.5 10.6 5.4 9.5 4 9.5V7Z" />
+      <path d="M10 9.5L14 14.5" />
+      <path d="M10 9.6H10.01" />
+      <path d="M14 14.4H14.01" />
+    </Svg>
+  );
+}

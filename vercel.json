@@ -2,5 +2,9 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "installCommand": "npm install",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "crons": [
+    { "path": "/api/cron/deals-daily", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/deals-weekly", "schedule": "0 8 * * 1" }
+  ]
 }

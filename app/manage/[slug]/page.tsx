@@ -14,6 +14,7 @@ import { SparkleIcon, ArrowUpRightIcon, TrashIcon, InfoIcon } from '@/components
 import { Free } from '@/components/Free';
 import type { Reel, ReelStatus } from '@/lib/reels';
 import { BLOCK_CLASS } from '@/lib/analytics/scrub';
+import { ManageTabs } from '@/components/manage/ManageTabs';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Manage reels', robots: { index: false } };
@@ -92,6 +93,8 @@ export default async function ManageRestaurantPage({ params }: { params: { slug:
           <ArrowUpRightIcon className="h-4 w-4" />
         </Link>
       </div>
+
+      <ManageTabs slug={restaurant.slug} active="reels" />
 
       {/* The commercial message lives here. It states what the free tier gives
           you before it mentions what more costs: a free restaurant should feel

@@ -13,12 +13,14 @@ export interface Waiting {
   submissions: number;
   checks: number;
   claims: number;
+  /** Deals paused by diners' reports, which only an admin can restart. */
+  deals: number;
 }
 
 /** What is waiting on a person. The sidebar badges and the overview's first row. */
 export const waitingCounts = cache(async (): Promise<Waiting> => {
   const db = createAdminSupabase();
-  const [inbox, submissions, checks, claims] = await Promise.all([
+  const [inbox, submissions, checks, claims, deals] = await Promise.all([
     loadInbox(),
     db.from('restaurant_submissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
     db
@@ -26,12 +28,14 @@ export const waitingCounts = cache(async (): Promise<Waiting> => {
       .select('id', { count: 'exact', head: true })
       .in('status', ['awaiting_slot', 'queued', 'in_review', 'pending_qc']),
     db.from('restaurant_ownership_claims').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    db.from('deals').select('id', { count: 'exact', head: true }).eq('status', 'paused').eq('paused_reason', 'reports'),
   ]);
   return {
     messages: inbox.items.filter((i) => statusOf(i) === 'to_answer').length,
     submissions: submissions.count ?? 0,
     checks: checks.count ?? 0,
     claims: claims.count ?? 0,
+    deals: deals.count ?? 0,
   };
 });
 
