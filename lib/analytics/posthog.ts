@@ -36,13 +36,15 @@ function start() {
       person_profiles: 'never',
       disable_session_recording: true,
       disable_surveys: true,
-      // The privacy page says PostHog learns which pages and buttons get used
-      // and when a page breaks. The project's own switches would add where
-      // the mouse rests on a page (heatmaps) and how long pages take to load
-      // (web vitals). Setting them here wins over those switches, so the
-      // PostHog dashboard cannot quietly widen what is collected.
+      // The privacy page says PostHog learns which pages and buttons get used,
+      // how fast pages load, and when a page breaks. Page speed is web vitals:
+      // four timings per page view, plus which part of the page was slow.
+      // Network timing only feeds session replay, which is off, so it stays
+      // off too. Heatmaps would add where the mouse rests on a page. Setting
+      // these here wins over the project's own switches, so the PostHog
+      // dashboard cannot quietly widen what is collected.
       capture_heatmaps: false,
-      capture_performance: false,
+      capture_performance: { web_vitals: true, network_timing: false },
       capture_exceptions: true,
       before_send: scrubEvent,
     });
