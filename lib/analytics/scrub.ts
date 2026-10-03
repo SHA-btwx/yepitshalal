@@ -96,7 +96,10 @@ export function scrubEvent(event: CaptureResult | null): CaptureResult | null {
   if (isPrivate(pathOf(properties))) return null;
   return {
     ...event,
-    properties: scrubDeep(properties) as CaptureResult['properties'],
+    // Cookieless counting drops the IP address before PostHog could look up
+    // where it is. A visitor who says yes to a recording leaves cookieless
+    // mode, so this tells PostHog not to look it up for them either.
+    properties: { ...(scrubDeep(properties) as CaptureResult['properties']), $geoip_disable: true },
     ...(event.$set ? { $set: scrubDeep(event.$set) as CaptureResult['$set'] } : {}),
     ...(event.$set_once ? { $set_once: scrubDeep(event.$set_once) as CaptureResult['$set_once'] } : {}),
   };

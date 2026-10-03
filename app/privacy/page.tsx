@@ -37,11 +37,14 @@ export const metadata: Metadata = {
  * and how far they scroll" is heatmaps, and recording starts only after a yes
  * in components/RecordingConsent.tsx. "It does not keep your IP address"
  * rests on cookieless server hash mode, which strips the IP before anything
- * is stored, so that switch in PostHog has to stay on. "30 days" is the free
- * plan's limit for keeping recordings. "Where you are" under Recordings, and
- * "never gets your exact location" under Cookies, rest on MASK_CLASS around
- * the searched place and every distance from it, UNRECORDED_CLASS on the
- * map, and autocapture leaving out each map pin's style.
+ * is stored, so that switch in PostHog has to stay on. For a visitor who says
+ * yes to a recording it rests on "Discard client IP data" in the project's
+ * settings instead, and scrub.ts asks PostHog not to look up where an IP
+ * address is. "30 days" is the free plan's limit for keeping recordings.
+ * "Where you are" under Recordings, and "never gets your exact location"
+ * under Cookies, rest on MASK_CLASS around the searched place and every
+ * distance from it, UNRECORDED_CLASS on the map, and autocapture leaving out
+ * each map pin's style.
  */
 
 const COLLECTED: [string, string, string][] = [
