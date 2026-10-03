@@ -1,0 +1,33 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { NavLink } from './NavLink';
+
+// Supabase keeps a signed-in visitor's session in a cookie named
+// sb-<project>-auth-token, split into .0, .1 and so on when it is long. The
+// PKCE helper cookie, ...-auth-token-code-verifier, is not a session.
+const SESSION_COOKIE = /(?:^|;\s*)sb-[^=;]+-auth-token(?:\.\d+)?=/;
+
+// "Sign in" or "My account", the one thing in the header that differs between
+// visitors. Until 2026-10-02 the header asked Supabase on the server, which
+// made every page on the site wait for that call on every visit and stopped
+// Vercel from keeping a copy of any page, even the ones set to be kept for an
+// hour. Now the header is the same for everybody and this link looks for the
+// session cookie in the browser.
+//
+// It only picks a label, so the cookie being there is enough: if the session
+// has expired, /account sends the visitor to sign in, as it always has. Every
+// page that shows private data still checks the session on the server.
+export function AccountNavLink() {
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    setSignedIn(SESSION_COOKIE.test(document.cookie));
+  }, []);
+
+  return (
+    <NavLink href={signedIn ? '/account' : '/sign-in'} tone="dark">
+      {signedIn ? 'My account' : 'Sign in'}
+    </NavLink>
+  );
+}

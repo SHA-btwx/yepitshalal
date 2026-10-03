@@ -1,6 +1,16 @@
+import { createClient } from '@supabase/supabase-js';
 import { createServerSupabase } from './supabase/server';
 import { createAdminSupabase } from './supabase/admin';
 import type { HalalClassification } from './types';
+
+// For reads that are the same for every visitor, like lib/areas.ts: no cookies,
+// so a page built from them can be kept and served by Vercel. The server
+// client reads the visitor's cookies, which makes the whole page dynamic.
+function publicClient() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    auth: { persistSession: false },
+  });
+}
 
 export type ReelMediaKind = 'upload' | 'embed';
 export type ReelStatus = 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived';
@@ -350,7 +360,9 @@ export interface FeaturedReel {
  * photos dressed as restaurant reels would misrepresent what is on the platform.
  */
 export async function getFeaturedReels(limit = 6): Promise<FeaturedReel[]> {
-  const supabase = createServerSupabase();
+  // Published, discovery-eligible reels only, so the answer is the same for
+  // everybody and the homepage can be kept (app/page.tsx).
+  const supabase = publicClient();
 
   const { data: reels } = await supabase
     .from('restaurant_reels')

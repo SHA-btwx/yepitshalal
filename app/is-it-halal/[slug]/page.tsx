@@ -26,6 +26,12 @@ import { ArrowRightIcon, GlobeIcon, MapPinIcon, NavigationIcon, PhoneIcon, Warni
 // branches of the same chain, and places nearby that have evidence. It never
 // says more than the evidence does, whatever the question in its title.
 
+// Read fresh on every visit. The label is the whole point of the page, and a
+// kept copy can be served once after it has gone stale, so a label that
+// changed could still show the old one. Until 2026-10-02 the header made every
+// page dynamic and this was implicit; now it has to be said.
+export const dynamic = 'force-dynamic';
+
 const LINK = 'font-semibold text-accent-ink hover:underline';
 
 function verdictWord(status: ReturnType<typeof statusFor>): string {

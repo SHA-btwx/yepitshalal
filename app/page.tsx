@@ -25,6 +25,13 @@ export const metadata: Metadata = {
   alternates: { canonical: '/', languages: hreflangAlternates(SITE_URL) },
 };
 
+// Kept and served by Vercel, rebuilt in the background at most every five
+// minutes. It was rebuilt in full on every visit, with three database reads
+// in front of the first byte, and the first screen came last. Five minutes
+// rather than the listing pages' hour because the reel strip shows labels;
+// tapping one opens the restaurant page, which is always read fresh.
+export const revalidate = 300;
+
 // Hand-picked London neighbourhoods with dense halal high streets. Linking
 // straight to coordinates removes the "what do I even type?" beat for a first
 // visit, the hardest moment in a location-first product.

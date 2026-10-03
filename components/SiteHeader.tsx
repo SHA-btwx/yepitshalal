@@ -3,7 +3,7 @@ import { LogoLockup } from './Logo';
 import { NavLink } from './NavLink';
 import { LanguageMenu } from './LanguageMenu';
 import { SparkleIcon } from './icons';
-import { createServerSupabase } from '@/lib/supabase/server';
+import { AccountNavLink } from './AccountNavLink';
 
 // The header is the logo's own ground since 2026-09-24: its deep teal, with
 // the lockup in the logo's white and lime, and the one button in lime.
@@ -13,12 +13,11 @@ import { createServerSupabase } from '@/lib/supabase/server';
 // it; and it sat inside the 1152px content column, so on a wide screen the logo
 // floated 200 to 400px in from the corner. Shabir, 2026-09-24: put the logo on
 // the top left and make sure it is properly visible.
-export async function SiteHeader() {
-  const supabase = createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+//
+// The same for every visitor, so it reads nothing from the request. The one
+// part that differs, "Sign in" or "My account", decides itself in the browser
+// (AccountNavLink). Reading the session here made every page dynamic.
+export function SiteHeader() {
   return (
     <header className="ground-dark sticky top-0 z-30 border-b border-white/10 bg-forest-deep text-white">
       <div className="flex h-14 w-full items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
@@ -50,9 +49,7 @@ export async function SiteHeader() {
           <NavLink href="/submit-restaurant" tone="dark">
             Add your restaurant
           </NavLink>
-          <NavLink href={user ? '/account' : '/sign-in'} tone="dark">
-            {user ? 'My account' : 'Sign in'}
-          </NavLink>
+          <AccountNavLink />
         </nav>
 
         <span className="inline-flex shrink-0 items-center gap-1 sm:gap-2">

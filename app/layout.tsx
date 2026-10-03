@@ -87,6 +87,12 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
+// The longest any page is kept before Vercel rebuilds it. Pages that read the
+// database say for themselves how long they may be kept, or that they must be
+// read fresh on every visit; this is the ceiling for anything that does not,
+// so no page waits for the next deploy to change.
+export const revalidate = 3600;
+
 export const viewport = {
   themeColor: '#0B2F3A',
   // Explicitly leaves pinch-zoom enabled: locking it out is an accessibility

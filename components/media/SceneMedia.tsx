@@ -30,6 +30,7 @@ import clsx from 'clsx';
 //  - the screen is at least `videoMinWidth` wide
 //  - the visitor has not asked for reduced motion or to save data
 //  - the frame is within a screen of being seen; it pauses when scrolled away
+//  - the page has finished loading, so the still is already on screen
 //
 // No player controls. Shabir, 2026-09-24: "the video should just be looping in
 // the background". Moving content that plays for more than five seconds still
@@ -165,13 +166,28 @@ export function SceneMedia({
     setPaused(remembered);
     // After the page has settled, so the loop never competes with the words.
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+    let cancelled = false;
+    const begin = () => {
+      if (cancelled) return;
+      if (idle) idle(() => !cancelled && setSrc(chosen));
+      else window.setTimeout(() => !cancelled && setSrc(chosen), 400);
+    };
+    // And never before the page has finished loading, the still included. On
+    // a phone the street loop is over 7 MB, and starting it while the still was
+    // on its way held the first picture back by seconds (Lighthouse,
+    // 2026-10-02). The loop itself is unchanged: the same original file, it
+    // just starts once the picture is up.
     const start = () => {
-      if (idle) idle(() => setSrc(chosen));
-      else window.setTimeout(() => setSrc(chosen), 400);
+      if (document.readyState === 'complete') begin();
+      else window.addEventListener('load', begin, { once: true });
+    };
+    const stop = () => {
+      cancelled = true;
+      window.removeEventListener('load', begin);
     };
     if (typeof IntersectionObserver === 'undefined') {
       start();
-      return;
+      return stop;
     }
     // The originals are 3 to 8 MB each, so a loop further down the page is
     // only fetched once it is within a screen of being seen.
@@ -184,7 +200,10 @@ export function SceneMedia({
       { rootMargin: '100% 0px' }
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      stop();
+    };
     // `src` is deliberately left out: once a loop is chosen it stays chosen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [art, videoMinWidth, active]);

@@ -19,6 +19,10 @@ import type { HalalStatus } from '@/lib/types';
 // the chain says on its own website is quoted separately, as its words, not as
 // a check of any kitchen.
 
+// Read fresh on every visit, like the single place pages: the answer is built
+// from the branches' labels, and a kept copy could show one that has changed.
+export const dynamic = 'force-dynamic';
+
 const LINK = 'font-semibold text-accent-ink hover:underline';
 const ORDER: HalalStatus[] = ['fully_halal', 'halal_options', 'unverified', 'unknown'];
 

@@ -12,6 +12,10 @@ import type { HalalStatus } from '@/lib/types';
 // sitemap; this is for people, and for the links that tell a crawler which
 // pages matter.
 
+// Read fresh on every visit: each chain is listed with its answer, built from
+// its branches' labels, and a kept copy could show one that has changed.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Is it halal? London restaurant chains, A to Z',
   description:
